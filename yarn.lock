@@ -4275,16 +4275,6 @@ elliptic@6.5.4, elliptic@^6.4.0, elliptic@^6.5.2, elliptic@^6.5.3, elliptic@^6.5
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-emoji-datasource-apple@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-apple/-/emoji-datasource-apple-14.0.0.tgz#ee040d210c07e038eb18f1c64a5a2f03ed977903"
-  integrity sha512-92Q53C44DzSqreHVlajEG24O5sFZjY1E9xRLWWyud7+/hW8S2vs4DiHuNuNZ0CLDCmZMQHc95okN9V8Mk6yBRw==
-
-emoji-datasource@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource/-/emoji-datasource-14.0.0.tgz#99529a62f3a86546fc670c09b672ddc9f24f3d44"
-  integrity sha512-SoOv0lSa+9/2X9ulSRDhu2u1zAOaOv5vtMY3OYUDcQCoReEh0/3eQAMuBM9LyD7Hy3G4K7mDPDqVeHUWvy7cow==
-
 emoji-mart@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/emoji-mart/-/emoji-mart-3.0.1.tgz#9ce86706e02aea0506345f98464814a662ca54c6"
