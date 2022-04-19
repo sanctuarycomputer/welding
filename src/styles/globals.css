@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* TODO */
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --error-color: #ff6961;
+    --warning-color: #FDDD5C;
+    --background-color: #1f2937;
+    --background-passive-color: #344051;
+    --text-color: #dedede;
+    --text-passive-color: #b3b3b3;
+  }
+}
+
+.background-color {
+  background-color: var(--background-color);
+}
+
+.background-passive-color {
+  background-color: var(--background-passive-color);
+}
+
+.background-warning-color {
+  background-color: var(--warning-color);
+}
+
+.text-color {
+  color: var(--text-color);
+}
+
+.text-background-color {
+  color: var(--background-color);
+}
+
+.content {
+  position: relative;
+  max-width: 650px;
+}
+
+/* Global */
+html,
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+hr {
+  border-color: var(--background-passive-color);
+}
+
+.pill {
+  border: 2px solid var(--background-passive-color);
+  background-color: var(--background-passive-color);
+  padding: 4px 6px 4px 4px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pill span {
+  background-color: var(--background-color);
+  color: var(--text-passive-color);
+  border-radius: 999px;
+  padding: 2px 4px;
+  margin-right: 4px;
+  font-weight: 700;
+  font-size: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif !important;
+}
+
+::selection {
+  background: var(--background-passive-color);
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: var(--text-passive-color);
+  opacity: 1; /* Firefox */
+  font-style: italic;
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: var(--text-passive-color);
+  font-style: italic;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: var(--text-passive-color);
+  font-style: italic;
+}
+
+.ConnectButtonWrapper:first-child {
+  display: inline-block;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 500;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+p {
+  font-size: 12px;
+}
+
+/* Editor.js */
+input {
+  background-color: transparent;
+  width: 100%;
+}
+
+/* React Modal */
+.ReactModal__Overlay {
+  z-index: 1;
+  background-color: rgba(31, 41, 55, 0.97) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ReactModal__Overlay .ReactModal__Content {
+  background-color: var(--background-color) !important;
+  border-color: var(--background-passive-color) !important;
+  inset: auto !important;
+  padding: unset !important;
+}
+
+/* Button */
+.Button {
+  box-shadow: inset 0 0 6px 0px #fff;
+  transition: all 0.25s cubic-bezier(0.42, 0, 0, 1.05);
+}
+.Button[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.Button:hover {
+  box-shadow: inset 0 0 20px 0px #fff;
+}
+
+/* EditNav */
+.EditNav {
+  height: 60px;
+}

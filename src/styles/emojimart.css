@@ -1,0 +1,38 @@
+/* Emojimart */
+.emoji-mart {
+  background-color: var(--background-color) !important;
+  border: var(--background-color) !important;
+}
+
+.emoji-mart-category-label span {
+  color: var(--text-passive-color) !important;
+  background-color: var(--background-color) !important;
+}
+
+.emoji-mart-dark .emoji-mart-search input {
+  color: var(--text-color) !important;
+  border-color: var(--background-passive-color) !important;
+  background-color: var(--background-color) !important;
+}
+
+.emoji-mart-dark .emoji-mart-bar {
+  border-color: var(--background-passive-color) !important;
+}
+
+.emoji-mart-anchor {
+  color: var(--background-passive-color) !important;
+}
+
+.emoji-mart-anchor-icon {
+  justify-content: center;
+  display: flex;
+}
+
+.emoji-mart-dark .emoji-mart-anchor:hover, .emoji-mart-dark .emoji-mart-anchor:focus, .emoji-mart-dark .emoji-mart-anchor-selected {
+  color: var(--text-passive-color) !important;
+}
+
+.emoji-mart-anchor-selected .emoji-mart-anchor-bar {
+  background-color: var(--text-passive-color) !important;
+  height: 2px !important;
+}

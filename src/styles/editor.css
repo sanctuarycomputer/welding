@@ -1,0 +1,39 @@
+.tc-wrap {
+  --color-border: var(--background-passive-color) !important;
+  --color-background: var(--background-passive-color) !important;
+  --color-text-secondary: var(--text-color) !important);
+}
+
+.ce-block--selected .ce-block__content,
+.ce-inline-toolbar,
+.codex-editor--narrow .ce-toolbox,
+.ce-conversion-toolbar,
+.ce-settings,
+.ce-settings__button,
+.ce-toolbar__settings-btn,
+.cdx-button {
+  background: var(--background-passive-color);
+  color: inherit;
+  border: none;
+}
+
+.ce-inline-tool,
+.ce-conversion-toolbar__label,
+.ce-toolbox__button,
+.cdx-settings-button,
+.ce-toolbar__plus {
+  color: inherit;
+  border: none;
+}
+
+.cdx-settings-button:hover,
+.ce-settings__button:hover,
+.ce-toolbox__button--active,
+.ce-toolbox__button:hover,
+.cdx-button:hover,
+.ce-inline-toolbar__dropdown:hover,
+.ce-inline-tool:hover {
+  background-color: var(--background-passive-color);
+  color: inherit;
+  border: none;
+}
