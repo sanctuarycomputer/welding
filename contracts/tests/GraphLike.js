@@ -168,6 +168,57 @@ describe("Behavior: GraphLike", function () {
     expect(subgraphBacklinkIdForTopic).to.equal(subgraphId);
   });
 
+  it("should be able to disconnect nodes", async function () {
+    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+    const subgraphId = transferEvent.args.tokenId;
+
+    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+    const topicId = transferEvent.args.tokenId;
+
+    await contract.connect(addr1).connectNodes(topicId, subgraphId);
+
+    let topicCountForSubgraph =
+      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
+    expect(topicCountForSubgraph).to.equal(1);
+
+    let subgraphBacklinksCountForTopic =
+      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
+    expect(subgraphBacklinksCountForTopic).to.equal(1);
+
+    await expect(
+      contract.connect(addr1).disconnectNodes(56, subgraphId)
+    ).to.be.revertedWith("node_nonexistent");
+
+    // These nodes aren't forward connected, so it doesn't do anything
+    contract.connect(addr1).disconnectNodes(subgraphId, topicId);
+
+    topicCountForSubgraph =
+      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
+    expect(topicCountForSubgraph).to.equal(1);
+
+    subgraphBacklinksCountForTopic =
+      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
+    expect(subgraphBacklinksCountForTopic).to.equal(1);
+
+    // Can only disconnect from an editable node
+    await expect(
+      contract.connect(addr2).disconnectNodes(topicId, subgraphId)
+    ).to.be.revertedWith('insufficient_permissions');
+
+    // Now it works
+    await contract.connect(addr1).disconnectNodes(topicId, subgraphId)
+
+    topicCountForSubgraph =
+      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
+    expect(topicCountForSubgraph).to.equal(0);
+
+    subgraphBacklinksCountForTopic =
+      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
+    expect(subgraphBacklinksCountForTopic).to.equal(0);
+  });
+
   it("should be able to load things for an address", async function () {
     // Nodes I'm an admin for
     // Nodes I'm an editor for

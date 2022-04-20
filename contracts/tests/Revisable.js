@@ -35,6 +35,20 @@ describe("Behavior: Revisable", function () {
     expect(currentRevision.hash).to.equal('456');
   });
 
+  it("should not be able to revise a burnt node", async function () {
+    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    tx = await tx.wait();
+    const transferEvent = tx.events.find(e => e.event === "Transfer");
+    const docId = transferEvent.args.tokenId;
+
+    tx = await contract.connect(addr1).burnNode(docId);
+    tx = await tx.wait();
+
+    expect(
+      contract.connect(addr1).makeRevision(docId, '456')
+    ).to.be.revertedWith("node_nonexistent");
+  });
+
   it("should require a non-empty hash string", async function () {
     let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
     tx = await tx.wait();

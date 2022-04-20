@@ -10,11 +10,11 @@ https://blog.chain.link/matic-defi-price-feeds/
 
 TODO
 
-- [ ] Burnable
-- [ ] Connection Fees
 - [x] Connection Permissions
-- [ ] Disconnectable nodes (and permissions)
-- [ ] 1-level Delegate Permissions
 - [x] Connectable Minting
+- [x] Disconnectable nodes (and permissions)
+- [x] Burnable
+- [ ] Connection Fees
+- [ ] 1-level Delegate Permissions
 - [ ] Events audit
 - [ ] Validation audit

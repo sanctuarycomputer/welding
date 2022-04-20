@@ -4,11 +4,14 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
+contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
+
+    string public constant ERR_RECURSIVE_DELEGATION = 'recursive_delegation';
+    string public constant ERR_NODE_NONEXISTENT = 'node_nonexistent';
+    string public constant ERR_INSUFFICIENT_PERMISSIONS = 'insufficient_permissions';
 
     /* ERC721 Miscellany & Utils, Helpers etc */
 
@@ -18,7 +21,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
 
-    function _ensureStringPresent(string memory str) private {
+    function _ensureStringPresent(string memory str) private pure {
         require(bytes(str).length > 0, "invalid_string");
     }
 
@@ -74,18 +77,23 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
       uint256[] memory fromConnections,
       uint256[] memory toConnections
     ) public {
+        /* Ya just GOTTA have a label */
         _ensureStringPresent(label);
+
         /* ERC721 standard minting */
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(_msgSender(), tokenId);
+
         /* Add node to the node LU tables */
         nodesForLabel[label].add(tokenId);
         nodeLabels[tokenId] = label;
+
         /* Minter automatically gets ADMIN_ROLE */
         _roles[tokenId][ADMIN_ROLE][_msgSender()] = true;
         emit RoleGranted(tokenId, ADMIN_ROLE, _msgSender(), _msgSender());
-        /* Record our initial revision */
+
+        /* Record our initial revision (ensures hash is a valid string too) */
         makeRevision(tokenId, hash);
 
         /* Make initial connections */
@@ -109,13 +117,14 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
         return nodesForLabel[label].at(index);
     }
 
-    function connectNodes(uint256 from, uint256 to) public onlyEditors(to) {
-        require(_exists(from), "node_nonexistent");
-        require(_exists(to), "node_nonexistent");
-
+    function connectNodes(uint256 from, uint256 to)
+      public
+      existentNode(from)
+      existentNode(to)
+      onlyEditors(to)
+    {
         string memory fromLabel = labelFor(from);
         string memory toLabel = labelFor(to);
-
         connections[to][fromLabel].add(from);
         backlinkedConnections[from][toLabel].add(to);
         // TODO Event
@@ -153,15 +162,27 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
         return backlinkedConnections[tokenId][label].at(index);
     }
 
-    // TODO Implement me
-    function disconnectNodes(uint256 from, uint256 to) public {
+    function disconnectNodes(uint256 from, uint256 to)
+      public
+      existentNode(from)
+      existentNode(to)
+      onlyEditors(to)
+    {
         string memory fromLabel = labelFor(from);
         string memory toLabel = labelFor(to);
+        connections[to][fromLabel].remove(from);
+        backlinkedConnections[from][toLabel].remove(to);
+
+        // TODO Event
     }
 
-    // TODO
-    //function burnNode(uint256) {
-    //}
+    function burnNode(uint256 tokenId)
+      existentNode(tokenId)
+      public
+    {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), ERR_INSUFFICIENT_PERMISSIONS);
+        _burn(tokenId);
+    }
 
     /* Per-token Role Management */
 
@@ -185,13 +206,18 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) private _roles;
     mapping(uint256 => mapping(uint256 => EnumerableSet.AddressSet)) private _roleMembers;
 
+    modifier existentNode(uint256 tokenId) {
+        require(_exists(tokenId), ERR_NODE_NONEXISTENT);
+        _;
+    }
+
     modifier onlyRole(uint256 tokenId, uint256 role) {
-        require(hasRole(tokenId, role, _msgSender()), "insufficient_permissions");
+        require(hasRole(tokenId, role, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
         _;
     }
 
     modifier onlyEditors(uint256 tokenId) {
-        require(canEdit(tokenId, _msgSender()), "insufficient_permissions");
+        require(canEdit(tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
         _;
     }
 
@@ -200,7 +226,11 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
       view
       returns (bool)
     {
-        return _roles[tokenId][role][account];
+        if (_roles[tokenId][role][account]) return true;
+        for (uint256 i = 0; i < _delegatesTo[tokenId].length(); i++) {
+            if (hasRole(_delegatesTo[tokenId].at(i), role, account)) return true;
+        }
+        return false;
     }
 
     function canEdit(uint256 tokenId, address account)
@@ -213,6 +243,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
 
     function grantRole(uint256 tokenId, uint256 role, address account)
       public
+      existentNode(tokenId)
       onlyRole(tokenId, ADMIN_ROLE)
     {
         if (!hasRole(tokenId, role, account)) {
@@ -224,6 +255,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
 
     function renounceRole(uint256 tokenId, uint256 role)
       public
+      existentNode(tokenId)
     {
         if (hasRole(tokenId, role, _msgSender())) {
             _roles[tokenId][role][_msgSender()] = false;
@@ -234,6 +266,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
 
     function revokeRole(uint256 tokenId, uint256 role, address account)
       public
+      existentNode(tokenId)
       onlyRole(tokenId, ADMIN_ROLE)
     {
         if (hasRole(tokenId, role, account)) {
@@ -257,6 +290,70 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
       returns (uint256)
     {
         return _roleMembers[tokenId][role].length();
+    }
+
+    /* Delegatable Role Management */
+
+    mapping(uint256 => EnumerableSet.UintSet) private _delegatesTo;
+    mapping(uint256 => EnumerableSet.UintSet) private _delegatesFor;
+
+    function delegatePermissions(uint256 forTokenId, uint256 toTokenId)
+      public
+      existentNode(forTokenId)
+      existentNode(toTokenId)
+      onlyRole(forTokenId, ADMIN_ROLE)
+      onlyRole(toTokenId, ADMIN_ROLE)
+    {
+        // Can't delegate to self
+        require(forTokenId != toTokenId, ERR_RECURSIVE_DELEGATION);
+        require(getDelegatesToCount(toTokenId) == 0, ERR_RECURSIVE_DELEGATION);
+        require(getDelegatesForCount(forTokenId) == 0, ERR_RECURSIVE_DELEGATION);
+
+        _delegatesTo[forTokenId].add(toTokenId);
+        _delegatesFor[toTokenId].add(forTokenId);
+    }
+
+    function renounceDelegatePermissions(uint256 forTokenId, uint256 toTokenId)
+      public
+      existentNode(forTokenId)
+      existentNode(toTokenId)
+      onlyRole(forTokenId, ADMIN_ROLE)
+      onlyRole(toTokenId, ADMIN_ROLE)
+    {
+        _delegatesTo[forTokenId].remove(toTokenId);
+        _delegatesFor[toTokenId].remove(forTokenId);
+    }
+
+    function getDelegatesToAtIndex(uint256 tokenId, uint256 index)
+      public
+      view
+      returns (uint256)
+    {
+        return _delegatesTo[tokenId].at(index);
+    }
+
+    function getDelegatesToCount(uint256 tokenId)
+      public
+      view
+      returns (uint256)
+    {
+        return _delegatesTo[tokenId].length();
+    }
+
+    function getDelegatesForAtIndex(uint256 tokenId, uint256 index)
+      public
+      view
+      returns (uint256)
+    {
+        return _delegatesFor[tokenId].at(index);
+    }
+
+    function getDelegatesForCount(uint256 tokenId)
+      public
+      view
+      returns (uint256)
+    {
+        return _delegatesFor[tokenId].length();
     }
 
     /* Per-token Revision Management */
@@ -286,9 +383,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable {
 
     function makeRevision(uint256 tokenId, string memory hash)
       public
+      existentNode(tokenId)
       onlyEditors(tokenId)
     {
-        require(_exists(tokenId), "node_nonexistent");
         _ensureStringPresent(hash);
         revisions[tokenId].push(Revision(block.timestamp, hash, _msgSender()));
         _setTokenURI(tokenId, hash);
