@@ -16,8 +16,25 @@ describe("Behavior: Delegatable", function () {
     EDITOR_ROLE = await contract.EDITOR_ROLE();
   });
 
+  it("should ensure the delegator has ADMIN permissions for that node", async function () {
+    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    tx = await tx.wait();
+    let transferEvent = tx.events.find(e => e.event === "Transfer");
+    const subgraphId = transferEvent.args.tokenId;
+
+    tx = await contract.connect(addr2).mintNode('document', '123', [], []);
+    tx = await tx.wait();
+    transferEvent = tx.events.find(e => e.event === "Transfer");
+    const doc1 = transferEvent.args.tokenId;
+
+    await expect(
+      contract.connect(addr1).delegatePermissions(doc1, subgraphId)
+    ).to.be.revertedWith("insufficient_permissions");
+
+    await contract.connect(addr2).delegatePermissions(doc1, subgraphId);
+  });
+
   // TODO: Only admins of both can do this
-  // TODO: Actually test that delegation works!
   it("should not allow recursive delegation", async function () {
     let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
     tx = await tx.wait();
@@ -64,5 +81,39 @@ describe("Behavior: Delegatable", function () {
 
     await contract.connect(addr1).delegatePermissions(document1Id, subgraph2Id);
     await contract.connect(addr1).delegatePermissions(document2Id, subgraph2Id);
+  });
+
+  it("hasRole respects delegations", async function () {
+    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    tx = await tx.wait();
+    let transferEvent = tx.events.find(e => e.event === "Transfer");
+    const subgraphId = transferEvent.args.tokenId;
+
+    // Give addr2 Subgraph EDITOR
+    await contract.connect(addr1).grantRole(subgraphId, EDITOR_ROLE, addr2.address);
+
+    tx = await contract.connect(addr1).mintNode('document', '123', [subgraphId], []);
+    tx = await tx.wait();
+    transferEvent = tx.events.find(e => e.event === "Transfer");
+    const docId = transferEvent.args.tokenId;
+
+    // Ask Doc to subsume Subgraph's permission set
+    await contract.connect(addr1).delegatePermissions(docId, subgraphId);
+
+    expect(await contract.hasRole(docId, EDITOR_ROLE, addr2.address)).to.equal(true);
+    expect(await contract.hasRole(docId, ADMIN_ROLE, addr2.address)).to.equal(false);
+
+    await contract.connect(addr1).renounceDelegatePermissions(docId, subgraphId);
+
+    // Addr2 is still an editor for the subgraph
+    expect(await contract.hasRole(subgraphId, EDITOR_ROLE, addr2.address)).to.equal(true);
+
+    // But they aren't editors on the doc, because the delegate was renounced
+    expect(await contract.hasRole(docId, EDITOR_ROLE, addr2.address)).to.equal(false);
+    expect(await contract.hasRole(docId, ADMIN_ROLE, addr2.address)).to.equal(false);
+
+    // Addr1's roles are still intact of course
+    expect(await contract.hasRole(docId, ADMIN_ROLE, addr1.address)).to.equal(true);
+    expect(await contract.hasRole(subgraphId, ADMIN_ROLE, addr1.address)).to.equal(true);
   });
 });

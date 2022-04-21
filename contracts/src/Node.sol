@@ -66,6 +66,18 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     constructor() ERC721("Node", "NODE") {}
 
+    event NodesConnected(
+      uint256 indexed from,
+      uint256 indexed to,
+      address indexed sender
+    );
+
+    event NodesDisconnected(
+      uint256 indexed from,
+      uint256 indexed to,
+      address indexed sender
+    );
+
     mapping(uint256 => string) private nodeLabels;
     mapping(string => EnumerableSet.UintSet) private nodesForLabel;
     mapping(uint256 => mapping(string => EnumerableSet.UintSet)) private connections;
@@ -84,6 +96,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(_msgSender(), tokenId);
+
+        /* Default connection fee */
+        _connectionFees[tokenId] = -1;
 
         /* Add node to the node LU tables */
         nodesForLabel[label].add(tokenId);
@@ -123,11 +138,13 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
       existentNode(to)
       onlyEditors(to)
     {
+        //int256 fee = getConnectionFee(to);
+        //require(int256(msg.value) >= fee, "insufficient_fee");
         string memory fromLabel = labelFor(from);
         string memory toLabel = labelFor(to);
         connections[to][fromLabel].add(from);
         backlinkedConnections[from][toLabel].add(to);
-        // TODO Event
+        emit NodesConnected(from, to, _msgSender());
     }
 
     function getConnectedNodeCountForNodeByLabel(uint256 tokenId, string memory label)
@@ -172,8 +189,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
         string memory toLabel = labelFor(to);
         connections[to][fromLabel].remove(from);
         backlinkedConnections[from][toLabel].remove(to);
-
-        // TODO Event
+        emit NodesDisconnected(from, to, _msgSender());
     }
 
     function burnNode(uint256 tokenId)
@@ -182,6 +198,31 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     {
         require(_isApprovedOrOwner(_msgSender(), tokenId), ERR_INSUFFICIENT_PERMISSIONS);
         _burn(tokenId);
+    }
+
+    /* Connection Fee Management */
+
+    event ConnectionFeeSet(
+      uint256 indexed tokenId,
+      int256 indexed connectionFee,
+      address indexed sender
+    );
+
+    int256 public constant FEE_FALLBACK = 999999;
+
+    mapping(uint256 => int256) private _connectionFees;
+
+    function getConnectionFee(uint256 tokenId) public view returns(int256) {
+        if (_connectionFees[tokenId] < 0) return FEE_FALLBACK;
+        return _connectionFees[tokenId];
+    }
+
+    function setConnectionFee(uint256 tokenId, int256 connectionFee)
+      public
+      onlyRole(tokenId, ADMIN_ROLE)
+    {
+        _connectionFees[tokenId] = connectionFee;
+        emit ConnectionFeeSet(tokenId, connectionFee, _msgSender());
     }
 
     /* Per-token Role Management */
@@ -212,13 +253,17 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     }
 
     modifier onlyRole(uint256 tokenId, uint256 role) {
-        require(hasRole(tokenId, role, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
-        _;
+        if (!hasPermissionsBypass(tokenId)) {
+          require(hasRole(tokenId, role, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+          _;
+        }
     }
 
     modifier onlyEditors(uint256 tokenId) {
-        require(canEdit(tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
-        _;
+        if (!hasPermissionsBypass(tokenId)) {
+          require(canEdit(tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+          _;
+        }
     }
 
     function hasRole(uint256 tokenId, uint256 role, address account)
@@ -294,6 +339,18 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     /* Delegatable Role Management */
 
+    event PermissionsDelegated(
+      uint256 indexed forTokenId,
+      uint256 indexed toTokenId,
+      address indexed sender
+    );
+
+    event DelegatePermissionsRenounced(
+      uint256 indexed forTokenId,
+      uint256 indexed toTokenId,
+      address indexed sender
+    );
+
     mapping(uint256 => EnumerableSet.UintSet) private _delegatesTo;
     mapping(uint256 => EnumerableSet.UintSet) private _delegatesFor;
 
@@ -302,7 +359,6 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
       existentNode(forTokenId)
       existentNode(toTokenId)
       onlyRole(forTokenId, ADMIN_ROLE)
-      onlyRole(toTokenId, ADMIN_ROLE)
     {
         // Can't delegate to self
         require(forTokenId != toTokenId, ERR_RECURSIVE_DELEGATION);
@@ -311,6 +367,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
 
         _delegatesTo[forTokenId].add(toTokenId);
         _delegatesFor[toTokenId].add(forTokenId);
+        emit PermissionsDelegated(forTokenId, toTokenId, _msgSender());
     }
 
     function renounceDelegatePermissions(uint256 forTokenId, uint256 toTokenId)
@@ -318,10 +375,10 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
       existentNode(forTokenId)
       existentNode(toTokenId)
       onlyRole(forTokenId, ADMIN_ROLE)
-      onlyRole(toTokenId, ADMIN_ROLE)
     {
         _delegatesTo[forTokenId].remove(toTokenId);
         _delegatesFor[toTokenId].remove(forTokenId);
+        emit DelegatePermissionsRenounced(forTokenId, toTokenId, _msgSender());
     }
 
     function getDelegatesToAtIndex(uint256 tokenId, uint256 index)
@@ -356,11 +413,38 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
         return _delegatesFor[tokenId].length();
     }
 
+    /* Supports Public Nodes */
+
+    event PermissionsBypassSet(
+      uint256 indexed tokenId,
+      bool bypassed,
+      address indexed sender
+    );
+
+    mapping(uint256 => bool) private _shouldBypassPermissions;
+
+    function setPermissionsBypass(uint256 tokenId, bool shouldBypassPermissions)
+      public
+    {
+        // The onlyRole modifier bypasses permissions, so we use the underlying method
+        require(hasRole(tokenId, ADMIN_ROLE, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+        _shouldBypassPermissions[tokenId] = shouldBypassPermissions;
+        emit PermissionsBypassSet(tokenId, shouldBypassPermissions, _msgSender());
+    }
+
+    function hasPermissionsBypass(uint256 tokenId)
+      public
+      view
+      returns (bool)
+    {
+        return _shouldBypassPermissions[tokenId];
+    }
+
     /* Per-token Revision Management */
 
     event RevisionMade(
-      uint256 tokenId,
-      uint256 indexed timestamp,
+      uint256 indexed tokenId,
+      uint256 timestamp,
       string indexed hash,
       address indexed sender
     );

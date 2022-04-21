@@ -14,7 +14,11 @@ TODO
 - [x] Connectable Minting
 - [x] Disconnectable nodes (and permissions)
 - [x] Burnable
-- [ ] Connection Fees
-- [ ] 1-level Delegate Permissions
-- [ ] Events audit
-- [ ] Validation audit
+- [x] 1-level Delegate Permissions
+- [x] Public Nodes
+- [x] Events audit
+- [ ] Connection Fees (post UI)
+- [ ] Payouts (post UI)
+- [ ] Who gets paid when the token is burnt? (post UI)
+- [ ] Validation audit (security)
+- [ ] Rentrent guards? Buffer Overflows? (security)

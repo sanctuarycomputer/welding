@@ -35,24 +35,4 @@ describe("Behavior: Burnable", function () {
     transferEvent = tx.events.find(e => e.event === "Transfer");
     expect(transferEvent.args.to).to.equal('0x0000000000000000000000000000000000000000');
   });
-
-  it("a burnt Node should not allow connections or disconnections", async function () {
-    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
-    tx = await tx.wait();
-    let transferEvent = tx.events.find(e => e.event === "Transfer");
-    const nodeId = transferEvent.args.tokenId;
-
-    await expect(
-      contract.burnNode(955)
-    ).to.be.revertedWith("node_nonexistent");
-
-    await expect(
-      contract.burnNode(nodeId)
-    ).to.be.revertedWith("insufficient_permissions");
-
-    tx = await contract.connect(addr1).burnNode(nodeId);
-    tx = await tx.wait();
-    transferEvent = tx.events.find(e => e.event === "Transfer");
-    expect(transferEvent.args.to).to.equal('0x0000000000000000000000000000000000000000');
-  });
 });
