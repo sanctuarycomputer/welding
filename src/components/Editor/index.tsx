@@ -43,6 +43,14 @@ class MyWarning extends Warning {
   }
 }
 
+// https://github.com/codex-team/editor.js/pull/1741
+const DEFAULT_CONTENT = {
+  blocks: [{
+    "data": {"text": "Start welding..."},
+    "type": "paragraph",
+  }]
+};
+
 const EDITOR_JS_TOOLS = {
   paragraph: {
     class: Paragraph,
@@ -78,12 +86,13 @@ const EDITOR_JS_TOOLS = {
 
 const DOM_ID = 'editor';
 
-// TODO: Handle readOnly and readOnly changing
 const Editor = ({
   content,
-  contentDidChange
+  contentDidChange,
+  readOnly
 }) => {
   const ejInstance = useRef();
+  const holder = useRef(DOM_ID);
 
   let guard = false;
   const initEditor = () => {
@@ -91,10 +100,15 @@ const Editor = ({
     guard = true;
 
     const editor = new EditorJS({
-      holder: DOM_ID,
+      readOnly,
+      holder: holder.current,
       logLevel: "ERROR",
-      data: content,
-      onReady: () => ejInstance.current = editor,
+      data: content || DEFAULT_CONTENT,
+      onReady: () => {
+        ejInstance.current = editor
+        editor.readOnly.toggle(readOnly);
+        window.EDITOR = editor;
+      },
       onChange: async function() {
         let newContent = await editor.saver.save();
         contentDidChange(newContent);
@@ -112,8 +126,14 @@ const Editor = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (ejInstance.current) {
+      ejInstance.current.readOnly.toggle(readOnly);
+    }
+  }, [readOnly]);
+
   return (
-    <div id={DOM_ID}></div>
+    <div id={holder.current}></div>
   );
 };
 

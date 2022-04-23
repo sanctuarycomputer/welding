@@ -8,13 +8,24 @@ const SubgraphSidebar = ({
   newDocument,
   documents,
   topics,
-  canEdit
+  canEdit,
+  hide,
+  didClickHide
 }) => {
+  const emoji = subgraph.metadata.properties.emoji.native;
+  const name = subgraph.metadata.name;
   return (
     <nav className="fixed left-0 top-0 my-2 ml-2 w-64 p-2 h-screen">
-      <p className="font-semibold pb-4">
-        {subgraph.metadata.properties.emoji.native} {subgraph.metadata.name}</p>
-       <div className="h-full border border-color rounded p-2">
+      <div onClick={didClickHide} className={`${styles.SubgraphHeader} flex cursor-pointer`}>
+        <p className={`${styles.hide} pb-4 mr-2 hidden py-1`}>
+          {hide ? 'Show →' : '← Hide'}
+        </p>
+        <p className="font-semibold pb-4 pt-1">
+          {emoji} {name}
+        </p>
+      </div>
+
+       <div className={`${hide ? styles.hidden : ''} h-full border border-color rounded p-2 transition-transform ease-in-out duration-500`}>
           <p className="pb-4">
             {subgraph.metadata.description || 'No description'}
           </p>

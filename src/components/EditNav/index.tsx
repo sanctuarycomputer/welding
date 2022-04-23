@@ -7,7 +7,7 @@ const EditNav = ({
 }) => {
   return (
     <nav className="mt-2 mb-4 w-full background-color flex items-center sticky top-0 z-10 justify-between">
-      <p>+ Add Cover Image</p>
+      <p className="pl-4">+ Add Cover Image</p>
 
       <div className="flex pr-4 py-4">
         {formik.dirty ? (

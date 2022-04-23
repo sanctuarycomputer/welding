@@ -1,7 +1,0 @@
-.Tile {
-  border-color: var(--background-passive-color);
-}
-
-.Tile:hover {
-  background-color: var(--background-passive-color);
-}

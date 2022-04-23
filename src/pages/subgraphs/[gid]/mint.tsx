@@ -1,18 +1,24 @@
 import type { NextPage, GetServerSideProps } from 'next';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Button from 'src/components/Button';
-import Frontmatter from 'src/components/Frontmatter';
+import { useSigner, useConnect, useAccount } from 'wagmi';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { emojiIndex } from 'emoji-mart';
+
+import Button from 'src/components/Button';
+import Frontmatter from 'src/components/Frontmatter';
 import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
-import { useSigner, useConnect, useAccount } from 'wagmi';
-import NProgress from 'nprogress';
 import TopicManager from 'src/components/TopicManager';
+
+import NProgress from 'nprogress';
 import Welding from 'src/lib/Welding';
+import { emojiIndex } from 'emoji-mart';
+import dynamic from 'next/dynamic';
+
+const Editor = dynamic(() => import('src/components/Editor'), {
+  ssr: false
+});
 
 const GraphsDocumentMint: NextPage = ({
   subgraph,
@@ -20,6 +26,7 @@ const GraphsDocumentMint: NextPage = ({
   subgraphTopics
 }) => {
   const router = useRouter();
+  const [sidebarHidden, setSidebarHidden] = useState(false);
 
   const [{ loading: connectionLoading}] = useConnect();
   const [{ data: signer, loading }] = useSigner();
@@ -54,7 +61,8 @@ const GraphsDocumentMint: NextPage = ({
     initialValues: {
       name: '',
       description: '',
-      emoji: Object.values(emojiIndex.emojis)[0]
+      emoji: Object.values(emojiIndex.emojis)[0],
+      content: null
     },
     onSubmit: async (values) => {
       try {
@@ -93,16 +101,20 @@ const GraphsDocumentMint: NextPage = ({
 
   return (
     <>
-      <div className="py-4 mt-6 ml-64 pl-4" style={{height: "3000px"}}>
+      <div
+        className={`py-4 mt-6 ${sidebarHidden ? '' : 'ml-64'}`}
+      >
         <SubgraphSidebar
           subgraph={subgraph}
           canEdit={canEdit}
           topics={subgraphTopics}
           documents={subgraphDocuments}
           newDocument={formik}
+          hide={sidebarHidden}
+          didClickHide={() => setSidebarHidden(!sidebarHidden)}
         />
 
-        {canEdit === true && (
+        {canEdit && (
           <>
             <EditNav
               formik={formik}
@@ -111,7 +123,9 @@ const GraphsDocumentMint: NextPage = ({
                 : "+ Mint Document"}
             />
 
-            <div className="content">
+            <div
+              className={`content ${sidebarHidden ? 'mx-auto' : 'pl-4'}`}
+            >
               <Frontmatter
                 formik={formik}
                 label={Welding.LABELS.document}
@@ -119,6 +133,13 @@ const GraphsDocumentMint: NextPage = ({
               <TopicManager
                 setTopics={setTopics}
                 topics={topics}
+              />
+              <Editor
+                readOnly={formik.isSubmitting}
+                content={formik.values.content}
+                contentDidChange={
+                  content => formik.setFieldValue('content', content)
+                }
               />
             </div>
           </>

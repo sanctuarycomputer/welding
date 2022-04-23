@@ -1,3 +1,11 @@
+.SubgraphHeader:hover .hide {
+  display: flex;
+}
+
 .SectionHeader:hover .cta {
   opacity: 1;
+}
+
+.hidden {
+  transform: translate(-300px, 0);
 }

@@ -1,20 +1,18 @@
 import type { NextPage, GetServerSideProps } from 'next';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Button from 'src/components/Button';
-import Frontmatter from 'src/components/Frontmatter';
-import Modal from 'react-modal';
+import { useSigner, useConnect, useAccount } from 'wagmi';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { emojiIndex } from 'emoji-mart';
+
+import Button from 'src/components/Button';
+import Frontmatter from 'src/components/Frontmatter';
 import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
-import { useSigner, useConnect, useAccount } from 'wagmi';
 import TopicManager from 'src/components/TopicManager';
+
 import NProgress from 'nprogress';
 import Welding from 'src/lib/Welding';
-import slugify from 'slugify';
 import dynamic from 'next/dynamic';
 
 const Editor = dynamic(() => import('src/components/Editor'), {
@@ -29,6 +27,7 @@ const GraphsDocumentMint: NextPage = ({
   documentTopics
 }) => {
   const router = useRouter();
+  const [sidebarHidden, setSidebarHidden] = useState(false);
 
   const [{ loading: connectionLoading}] = useConnect();
   const [{ data: signer, loading }] = useSigner();
@@ -47,6 +46,7 @@ const GraphsDocumentMint: NextPage = ({
     }
   };
 
+  useEffect(() => { loadCanEdit() }, []);
   useEffect(() => {
     loadCanEdit();
   }, [account, connectionLoading]);
@@ -60,7 +60,7 @@ const GraphsDocumentMint: NextPage = ({
       name: document.metadata.name,
       description: document.metadata.description,
       emoji: document.metadata.properties.emoji,
-      content: (document.metadata.properties.content || {})
+      content: document.metadata.properties.content
     },
     onSubmit: async (values) => {
       try {
@@ -94,15 +94,17 @@ const GraphsDocumentMint: NextPage = ({
   return (
     <>
       <div
-        className="py-4 mt-6 ml-64 pl-4"
-        style={{height: "3000px"}}
+        className={`py-4 mt-6 ${sidebarHidden ? '' : 'ml-64'}`}
       >
+
         <SubgraphSidebar
           subgraph={subgraph}
           canEdit={canEdit}
           topics={subgraphTopics}
           documents={subgraphDocuments}
           currentDocument={document}
+          hide={sidebarHidden}
+          didClickHide={() => setSidebarHidden(!sidebarHidden)}
         />
 
         {canEdit && (
@@ -115,11 +117,14 @@ const GraphsDocumentMint: NextPage = ({
           />
         )}
 
-        <div className="content">
+        <div
+          className={`content ${sidebarHidden ? 'mx-auto' : 'pl-4'}`}
+        >
           <Frontmatter
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
           />
+
           {canEdit && (
             <TopicManager
               setTopics={setTopics}

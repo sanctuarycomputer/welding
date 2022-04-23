@@ -88,15 +88,7 @@ const Welding = {
   loadNodeById: async function(id, provider) {
     const uri =
       await Welding.Nodes.connect(provider || Welding.fallbackProvider).tokenURI(id);
-
-    let metadata;
-    try {
-      metadata = await Welding.fetchMetadataFromIPFS(uri);
-    } catch(e) {
-      console.log(e);
-      metadata = "error";
-    }
-
+    const metadata = await Welding.fetchMetadataFromIPFS(uri);
     const slug = Welding.slugify(`${id} ${metadata.name}`);
     return { id, uri, slug, metadata };
   },
