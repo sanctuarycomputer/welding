@@ -7,6 +7,7 @@ https://eips.ethereum.org/EIPS/eip-165
 https://ethereum.stackexchange.com/questions/78333/efficient-solidity-storage-pattern-for-a-directional-weighted-graph/78334#78334
 https://medium.com/outco/how-to-build-a-graph-data-structure-d779d822f9b4
 https://blog.chain.link/matic-defi-price-feeds/
+https://blog.on2.dev/i18n-in-next-js-the-easy-way-8349336263c7
 
 TODO
 

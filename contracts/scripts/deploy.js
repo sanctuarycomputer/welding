@@ -16,10 +16,7 @@ async function deploy(name, args) {
 }
 
 async function deployAll() {
-  const graphsAddress = await deploy("Graph");
-  const topicsAddress = await deploy("Topic");
-  const documentsAddress = await deploy("Document");
-  await deploy("Plane", [graphsAddress, topicsAddress, documentsAddress]);
+  await deploy("Node");
 }
 
 deployAll()

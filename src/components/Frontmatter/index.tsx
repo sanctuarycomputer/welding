@@ -3,21 +3,21 @@ import { useState } from 'react';
 import Modal from 'react-modal';
 import { Picker } from 'emoji-mart';
 
-const FrontmatterReadOnly = ({ meta }) => {
+const FrontmatterReadOnly = ({ formik }) => {
   return (
     <div className={styles.Frontmatter}>
       <div className="pb-4">
         <div className="flex items-center">
           <div className={styles.emoji}>
-            {meta.metadata.properties.emoji.native}
+            {formik.values.emoji.native}
           </div>
           <div className="grow">
-            <h1>{meta.metadata.name}</h1>
+            <h1>{formik.values.name}</h1>
           </div>
         </div>
 
         <div>
-          <h2>{meta.metadata.description}</h2>
+          <h2>{formik.values.description}</h2>
         </div>
       </div>
 
@@ -28,9 +28,10 @@ const FrontmatterReadOnly = ({ meta }) => {
 
 const Frontmatter = ({
   formik,
-  meta
+  label,
+  readOnly
 }) => {
-  if (!formik && meta) return <FrontmatterReadOnly meta={meta} />
+  if (readOnly) return <FrontmatterReadOnly formik={formik} />
 
   const [emojiPickerIsOpen, setEmojiPickerIsOpen] = useState(false);
   const openEmojiPicker = () => setEmojiPickerIsOpen(true);
@@ -55,8 +56,6 @@ const Frontmatter = ({
       </Modal>
 
       <form className="pb-4" onSubmit={formik.handlesubmit}>
-        <button>+ Add Cover Image</button>
-
         <div className="flex items-center">
           <div className={`${styles.emoji} cursor-pointer`} onClick={openEmojiPicker}>
             {formik.values.emoji.native}
@@ -65,7 +64,7 @@ const Frontmatter = ({
             <input
               type="text"
               name="name"
-              placeholder="Name"
+              placeholder={`${label} name`}
               className="mb-2"
               value={formik.values.name}
               onChange={formik.handleChange}
@@ -83,7 +82,7 @@ const Frontmatter = ({
         <input
           name="description"
           placeholder="Description..."
-          value={formik.values.message}
+          value={formik.values.description}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
         />

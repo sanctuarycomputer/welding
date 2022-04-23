@@ -1,33 +1,33 @@
 import Link from 'next/link';
+import Button from 'src/components/Button';
 
 const EditNav = ({
-  backLinkHref,
-  backLinkLabel,
-  buttonDisabled,
-  onButtonClick,
+  formik,
   buttonLabel
 }) => {
   return (
-    <nav className="EditNav fixed top-0 w-full background-passive-color flex items-center justify-between">
-      <Link href={backLinkHref}>
-        <a className="text-xs flex items-center h-full px-4">
-          {backLinkLabel}
-        </a>
-      </Link>
+    <nav className="mt-2 mb-4 w-full background-color flex items-center sticky top-0 z-10 justify-between">
+      <p>+ Add Cover Image</p>
 
-      <div className="flex pr-4">
-        <div
-          className="background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2"
-        >
-          Unsaved Changes
-        </div>
-        <button
-          className="Button font-medium text-xs px-2 py-1 rounded-full"
-          disabled={buttonDisabled}
-          onClick={onButtonClick}
-        >
-          {buttonLabel}
-        </button>
+      <div className="flex pr-4 py-4">
+        {formik.dirty ? (
+          <div
+            className="background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2"
+          >
+            Unsaved Changes
+          </div>
+        ) : (
+          <div
+            className="text-passive-color text-xs px-2 py-1 rounded-full mr-2"
+          >
+            No Changes
+          </div>
+        )}
+        <Button
+          disabled={formik.isSubmitting || !(formik.isValid && formik.dirty)}
+          onClick={formik.handleSubmit}
+          label={buttonLabel}
+        />
       </div>
     </nav>
   );

@@ -78,6 +78,7 @@ const EDITOR_JS_TOOLS = {
 
 const DOM_ID = 'editor';
 
+// TODO: Handle readOnly and readOnly changing
 const Editor = ({
   content,
   contentDidChange

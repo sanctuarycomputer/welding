@@ -15,12 +15,20 @@
     --background-color: #1f2937;
     --background-passive-color: #344051;
     --text-color: #dedede;
-    --text-passive-color: #b3b3b3;
+    --text-passive-color: #455060;
   }
+}
+
+.border-color {
+  border-color: var(--background-passive-color);
 }
 
 .background-color {
   background-color: var(--background-color);
+}
+
+.background-text-color {
+  background-color: var(--text-color);
 }
 
 .background-passive-color {
@@ -35,8 +43,16 @@
   color: var(--text-color);
 }
 
+.text-passive-color {
+  color: var(--text-passive-color);
+}
+
 .text-background-color {
   color: var(--background-color);
+}
+
+.text-background-passive-color {
+  color: var(--background-passive-color);
 }
 
 .content {
@@ -100,16 +116,19 @@ hr {
   color: var(--text-passive-color);
   opacity: 1; /* Firefox */
   font-style: italic;
+  text-transform: capitalize;
 }
 
 :-ms-input-placeholder { /* Internet Explorer 10-11 */
   color: var(--text-passive-color);
   font-style: italic;
+  text-transform: capitalize;
 }
 
 ::-ms-input-placeholder { /* Microsoft Edge */
   color: var(--text-passive-color);
   font-style: italic;
+  text-transform: capitalize;
 }
 
 .ConnectButtonWrapper:first-child {
@@ -132,7 +151,8 @@ h3 {
 }
 
 p {
-  font-size: 12px;
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
 /* Editor.js */
@@ -143,8 +163,9 @@ input {
 
 /* React Modal */
 .ReactModal__Overlay {
-  z-index: 1;
-  background-color: rgba(31, 41, 55, 0.97) !important;
+  z-index: 10;
+  background-color: rgba(31, 41, 55, 0.6) !important;
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,9 +189,4 @@ input {
 }
 .Button:hover {
   box-shadow: inset 0 0 20px 0px #fff;
-}
-
-/* EditNav */
-.EditNav {
-  height: 60px;
 }

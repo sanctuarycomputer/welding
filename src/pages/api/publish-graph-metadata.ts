@@ -6,12 +6,16 @@ type Data = {
   hash: string
 };
 
+const nftstorage = new NFTStorage({
+  token: process.env.NFT_STORAGE_API_KEY
+});
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
   try {
-    const { name, description, emoji } = req.body;
+    const { name, description, emoji, content } = req.body;
 
     const apple64 =
       `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${emoji.unified}.png`;
@@ -21,14 +25,14 @@ export default async function handler(
       { type: 'image/png'}
     );
 
-    const nftstorage = new NFTStorage({ token: process.env.NFT_STORAGE_API_KEY });
+    const properties = { emoji };
+    if (content) properties.content = content;
+
     const data = await nftstorage.store({
       image: imageFile,
       name,
       description,
-      properties: {
-        emoji: emoji,
-      }
+      properties,
     });
 
     res.status(200).json({ hash: data.ipnft });
