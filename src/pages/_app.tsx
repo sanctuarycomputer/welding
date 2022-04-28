@@ -101,11 +101,11 @@ const client = createClient({
   //},
 })
 
-const title = `Welding • knowledge is valuable`;
+const title = `welding • knowledge is valuable`;
 const description = `
 There was only one problem. What was now identified as the most valuable aspect of a commodity was also – technically, at least – capable of infinite replication at near zero cost: once the cost of creating a new set of instructions has been incurred the instructions can be used over and over again at no additional cost. Developing new and better instructions is equivalent to incurring a fixed cost.’ Romer made no mention of the hacker movement, but this was starting to sound remarkably similar to Stewart Brand’s conclusion that ‘information wants to be free’ some six years earlier. — Aaron Bastini
 `;
-const image = `https://www.welding.app/share.jpg`;
+const image = `https://welding.vercel.app/share.jpg`;
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
