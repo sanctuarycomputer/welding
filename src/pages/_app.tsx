@@ -112,6 +112,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <Provider client={client}>
       <Head>
         <title>{title}</title>
+        <link rel="shortcut icon" href="/favicon.png" />
         <meta name="description" content={description} />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta property="og:type" content="website" />
