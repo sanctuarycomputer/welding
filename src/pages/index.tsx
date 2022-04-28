@@ -1,5 +1,3 @@
-import Button from 'src/components/Button';
-
 const Home = () => {
   return (
     <>
@@ -9,6 +7,7 @@ const Home = () => {
         </p>
         <a
           target="_blank"
+          rel="noreferrer"
           href="https://twitter.com/welding_app"
           className="Button font-medium text-xs px-2 py-1 rounded-full"
         >Follow</a>
@@ -23,6 +22,7 @@ const Home = () => {
           </p>
           <a
             target="_blank"
+            rel="noreferrer"
             href="https://law.unimelb.edu.au/__data/assets/pdf_file/0009/3445353/2.-aaron-bastani-fully-automated-luxury-communism-a-manifesto-2.pdf"
             className="text-base md:text-xl pb-8 text-warning-color text-warning-shadow"
           >— Aaron Bastini</a>

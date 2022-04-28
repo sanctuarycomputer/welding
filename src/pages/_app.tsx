@@ -8,7 +8,7 @@ import 'src/styles/nprogress.css';
 import Head from 'next/head';
 import type { AppProps } from 'next/app';
 import Modal from 'react-modal';
-import dynamic from 'next/dynamic';
+//import dynamic from 'next/dynamic';
 import NProgress from 'nprogress';
 import Router from 'next/router';
 
@@ -18,9 +18,9 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
 import { providers } from 'ethers';
 
-const Wallet = dynamic(() => import('src/components/Wallet'), {
-  ssr: false
-});
+//const Wallet = dynamic(() => import('src/components/Wallet'), {
+//  ssr: false
+//});
 
 NProgress.configure({ showSpinner: false });
 Router.events.on('routeChangeStart', (url) => {
