@@ -4,6 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import isEqual from 'lodash/isEqual';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
+import get from 'lodash/get';
 import ClearAllTags from './ClearAllTags';
 import Suggestions from './Suggestions';
 import PropTypes from 'prop-types';
@@ -17,6 +18,7 @@ import {
   KEYS,
   DEFAULT_PLACEHOLDER,
   DEFAULT_CLASSNAMES,
+  DEFAULT_ID_FIELD,
   DEFAULT_LABEL_FIELD,
   INPUT_FIELD_POSITIONS,
 } from './constants';
@@ -24,12 +26,9 @@ import {
 class ReactTags extends Component {
   static propTypes = {
     placeholder: PropTypes.string,
+    idField: PropTypes.string,
     labelField: PropTypes.string,
-    suggestions: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-      })
-    ),
+    suggestions: PropTypes.arrayOf(PropTypes.any),
     delimiters: PropTypes.arrayOf(PropTypes.number),
     autofocus: PropTypes.bool,
     inline: PropTypes.bool, // TODO: Remove in v7.x.x
@@ -60,12 +59,7 @@ class ReactTags extends Component {
     id: PropTypes.string,
     maxLength: PropTypes.number,
     inputValue: PropTypes.string,
-    tags: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        className: PropTypes.string,
-      })
-    ),
+    tags: PropTypes.arrayOf(PropTypes.any),
     allowUnique: PropTypes.bool,
     renderSuggestion: PropTypes.func,
     inputProps: PropTypes.object,
@@ -76,6 +70,7 @@ class ReactTags extends Component {
 
   static defaultProps = {
     placeholder: DEFAULT_PLACEHOLDER,
+    idField: DEFAULT_ID_FIELD,
     labelField: DEFAULT_LABEL_FIELD,
     suggestions: [],
     delimiters: [...KEYS.ENTER, KEYS.TAB],
@@ -145,11 +140,11 @@ class ReactTags extends Component {
   }
 
   filteredSuggestions = (query) => {
-    let { suggestions } = this.props;
+    let { suggestions, idField } = this.props;
     if (this.props.allowUnique) {
-      const existingTags = this.props.tags.map((tag) => tag.id.toLowerCase());
+      const existingTags = this.props.tags.map((tag) => get(tag, idField).toLowerCase());
       suggestions = suggestions.filter(
-        (suggestion) => !existingTags.includes(suggestion.id.toLowerCase())
+        (suggestion) => !existingTags.includes(get(suggestion, idField).toLowerCase())
       );
     }
     if (this.props.handleFilterSuggestions) {
@@ -166,7 +161,7 @@ class ReactTags extends Component {
   };
 
   getQueryIndex = (query, item) => {
-    return item[this.props.labelField]
+    return get(item, this.props.labelField)
       .toLowerCase()
       .indexOf(query.toLowerCase());
   };
@@ -188,7 +183,7 @@ class ReactTags extends Component {
     if (currentTags.length === 0) {
       return;
     }
-    let ariaLiveStatus = `Tag at index ${index} with value ${currentTags[index].id} deleted.`;
+    let ariaLiveStatus = `Tag at index ${index} with value ${get(currentTags[index], this.props.idField)} deleted.`;
     this.props.handleDelete(index, event);
     const allTags =
       this.reactTagsRef.current.querySelectorAll('.ReactTags__remove');
@@ -207,7 +202,7 @@ class ReactTags extends Component {
       nextElementToFocus = this.textInput;
     }
     if (nextIndex >= 0) {
-      ariaLiveStatus += ` Tag at index ${nextIndex} with value ${nextTag.id} focussed. Press backspace to remove`;
+      ariaLiveStatus += ` Tag at index ${nextIndex} with value ${get(nextTag, this.props.idField)} focussed. Press backspace to remove`;
     } else {
       ariaLiveStatus += 'Input focussed. Press enter to add a new tag';
     }
@@ -220,7 +215,7 @@ class ReactTags extends Component {
   handleTagClick(i, tag, e) {
     const { editable, handleTagClick, labelField } = this.props;
     if (editable) {
-      this.setState({ currentEditIndex: i, query: tag[labelField] }, () => {
+      this.setState({ currentEditIndex: i, query: get(tag, labelField) }, () => {
         this.tagInput.focus();
       });
     }
@@ -297,7 +292,7 @@ class ReactTags extends Component {
       const selectedQuery =
         selectionMode && selectedIndex !== -1
           ? suggestions[selectedIndex]
-          : { id: query, [this.props.labelField]: query };
+          : { [this.props.idField]: query, [this.props.labelField]: query };
 
       if (selectedQuery !== '') {
         this.addTag(selectedQuery);
@@ -357,24 +352,24 @@ class ReactTags extends Component {
 
     // Only add unique tags
     uniq(tags).forEach((tag) =>
-      this.addTag({ id: tag, [this.props.labelField]: tag })
+      this.addTag({ [this.props.idField]: tag, [this.props.labelField]: tag })
     );
   }
 
   addTag = (tag) => {
-    const { tags, labelField, allowUnique } = this.props;
+    const { tags, idField, labelField, allowUnique } = this.props;
     const { currentEditIndex } = this.state;
-    if (!tag.id || !tag[labelField]) {
+    if (!get(tag, idField) || !get(tag, labelField)) {
       return;
     }
-    const existingKeys = tags.map((tag) => tag.id.toLowerCase());
+    const existingKeys = tags.map((tag) => get(tag, idField).toLowerCase());
 
     // Return if tag has been already added
-    if (allowUnique && existingKeys.indexOf(tag.id.toLowerCase()) >= 0) {
+    if (allowUnique && existingKeys.indexOf(get(tag, idField).toLowerCase()) >= 0) {
       return;
     }
     if (this.props.autocomplete) {
-      const possibleMatches = this.filteredSuggestions(tag[labelField]);
+      const possibleMatches = this.filteredSuggestions(get(tag, labelField));
 
       if (
         (this.props.autocomplete === 1 && possibleMatches.length === 1) ||

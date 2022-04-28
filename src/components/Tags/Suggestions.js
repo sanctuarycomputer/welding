@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import escape from 'lodash/escape';
+import get from 'lodash/get';
 
 const maybeScrollSuggestionIntoView = (suggestionEl, suggestionsContainer) => {
   const containerHeight = suggestionsContainer.offsetHeight;
@@ -71,7 +72,7 @@ class Suggestions extends Component {
 
   markIt = (input, query) => {
     const escapedRegex = query.trim().replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
-    const { [this.props.labelField]: labelValue } = input;
+    const labelValue = get(input, this.props.labelField);
 
     return {
       __html: labelValue.replace(RegExp(escapedRegex, 'gi'), (x) => {

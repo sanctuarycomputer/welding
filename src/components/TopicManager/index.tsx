@@ -1,12 +1,12 @@
-import styles from './styles.module.css';
+import { FC } from 'react';
 import Modal from 'react-modal';
 import Button from 'src/components/Button';
 import { useState } from 'react';
 import { WithContext as ReactTags } from 'src/components/Tags';
-import { Picker, emojiIndex } from 'emoji-mart';
+import { Picker, emojiIndex, EmojiData, BaseEmoji } from 'emoji-mart';
 import TopicTile from 'src/components/TopicTile';
-
-import { ethers } from 'ethers';
+import { BaseNode, MintState } from 'src/types';
+import { useSigner } from 'wagmi';
 import Welding from 'src/lib/Welding';
 
 // TODO Discard unminted topics warning
@@ -14,96 +14,174 @@ import Welding from 'src/lib/Welding';
 
 const emojis = Object.values(emojiIndex.emojis);
 
-const Steps = {
-  CONNECT: 'connect',
-  MINT: 'mint'
+enum Steps {
+  CONNECT = "CONNECT",
+  MINT = "MINT",
 };
 
 const suggestions = [{
-  id: '1',
-  name: 'Thailand',
-  description: "A country in the world",
-  emoji: emojis[0]
+  tokenId: '1',
+  connections: [],
+  backlinks: [],
+  currentRevision: {
+    hash: '',
+    timestamp: 0,
+    metadata: {
+      name: 'Thailand',
+      description: "A country in the world",
+      properties: {
+        emoji: emojis[0]
+      }
+    }
+  }
 }];
 
-const TopicManager = ({ topics, setTopics, readOnly }) => {
-  const [modalStep, setModalStep] = useState(Steps.CONNECT);
-  const [current, setCurrent] = useState(null);
+type Props = {
+  topics: Array<BaseNode>,
+  setTopics: Function,
+  mintState: {
+    [tokenId: string]: MintState
+  },
+  setMintState: Function,
+  readOnly: boolean
+};
 
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+const TopicManager: FC<Props> = ({
+  topics,
+  setTopics,
+  mintState,
+  setMintState,
+  readOnly
+}) => {
+  const { data: signer } = useSigner();
+  const [modalStep, setModalStep] = useState<Steps>(Steps.CONNECT);
+  const [current, setCurrent] = useState<BaseNode | null>(null);
+
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const openModal = () => setModalIsOpen(true);
   const closeModal = () => {
     setModalIsOpen(false);
     setModalStep(Steps.CONNECT);
   };
 
-  const handleDelete = i => {
+  const handleDelete = (i: number) => {
     setTopics(topics.filter((tag, index) => index !== i));
   };
 
-  const handleAddition = tag => {
-    if (tag.id === tag.name) {
-      return setTopics([...topics, {
-        id: '-1',
-        name: tag.name,
-        description: '',
-        emoji: emojis[Math.floor(Math.random() * emojis.length)],
-        mintState: {
-          label: 'Mint',
-          progress: 0,
-          disabled: false
-        },
-      }]);
+  const handleAddition = (
+    tag: {
+      tokenId: string,
+      'currentRevision.metadata.name': string
     }
-    setTopics([...topics, tag]);
+  ) => {
+    if (tag.tokenId !== tag['currentRevision.metadata.name'])
+      return setTopics([...topics, tag]);
+
+    const newTopic: BaseNode = {
+      tokenId: '-1',
+      labels: ['Node', 'Topic'],
+      connections: [],
+      backlinks: [],
+      currentRevision: {
+        hash: '',
+        timestamp: 0,
+        content: '',
+        contentType: '',
+        metadata: {
+          name: tag['currentRevision.metadata.name'],
+          description: '',
+          image: '',
+          properties: {
+            emoji: emojis[Math.floor(Math.random() * emojis.length)]
+          }
+        }
+      },
+    };
+
+    setTopics([...topics, newTopic]);
+
+    setMintState({
+      ...mintState,
+      [newTopic.tokenId]: {
+        tokenId: newTopic.tokenId,
+        label: 'Mint',
+        progress: 0,
+        disabled: false
+      }
+    });
   };
 
-  const handleDrag = (tag, currPos, newPos) => {
+  const handleDrag = (
+    tag: BaseNode,
+    currPos: number,
+    newPos: number
+  ) => {
     const newTopics = topics.slice();
     newTopics.splice(currPos, 1);
     newTopics.splice(newPos, 0, tag);
     setTopics(newTopics);
   };
 
-  const topicsNeedMinting = topics.filter(t => !!t.mintState);
-  const allMinted = topicsNeedMinting.every(t => t.mintState.progress === 1);
+  const topicsNeedMinting = Object.values(mintState);
+  const allMinted =
+    topicsNeedMinting.every(t => t.progress === 1);
 
   const didClickConfirm = () => {
     if (topicsNeedMinting.length && !allMinted) return setModalStep(Steps.MINT);
     closeModal();
   };
 
-  const setEmojiForCurrentTag = emoji => {
-    const index = topics.indexOf(current);
-    if (index !== -1) topics[index] = { ...current, emoji };
+  const setEmojiForTopic = (t: BaseNode, emoji: EmojiData) => {
+    if (!(emoji as BaseEmoji).native) return;
+
+    const index = topics.indexOf(t);
+    if (index !== -1) topics[index] = {
+      ...t,
+      currentRevision: {
+        ...t.currentRevision,
+        metadata: {
+          ...t.currentRevision.metadata,
+          properties: {
+            ...t.currentRevision.metadata.properties,
+            emoji: (emoji as BaseEmoji)
+          }
+        }
+      }
+    };
     setTopics([...topics]);
     setCurrent(null);
   };
 
-  const setTagDescription = (t, description) => {
+  const setTagDescription = (t: BaseNode, description: string) => {
     const index = topics.indexOf(t);
-    if (index !== -1) topics[index] = { ...t, description };
+    if (index !== -1) topics[index] = {
+      ...t,
+      currentRevision: {
+        ...t.currentRevision,
+        metadata: {
+          ...t.currentRevision.metadata,
+          description
+        }
+      }
+    };
     setTopics([...topics]);
   };
 
-  const updateTopic = (t, params) => {
-    const index = topics.indexOf(t);
-    if (index !== -1) topics[index] = { ...t, ...params };
-    setTopics([...topics]);
-    return topics[index];
-  };
 
-  const mintTopic = async (t) => {
+  const mintTopic = async (t: BaseNode) => {
     try {
-      t = updateTopic(t, {
-        mintState: {
+      setMintState({
+        ...mintState,
+        [t.tokenId]: {
+          tokenId: t.tokenId,
           label: 'Publishing...',
           progress: 0.3,
           disabled: true
         }
       });
 
-      const { name, description, emoji } = t;
+      const { name, description, properties: { emoji }} =
+        t.currentRevision.metadata;
       const response = await fetch('/api/publish-graph-metadata', {
         method: 'POST',
         headers: {
@@ -117,21 +195,28 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
       });
       const { hash } = await response.json();
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-
-      t = updateTopic(t, {
-        mintState: {
+      setMintState({
+        ...mintState,
+        [t.tokenId]: {
+          tokenId: t.tokenId,
           label: 'Signing...',
           progress: 0.6,
           disabled: true
         }
       });
 
-      let tx = await Welding.Nodes.connect(signer).mintNode(Welding.LABELS.topic, hash, [], [])
+      if (!signer) return;
+      let tx = await Welding.Nodes.connect(signer).mintNode(
+        Welding.LABELS.topic,
+        hash,
+        [],
+        []
+      );
 
-      t = updateTopic(t, {
-        mintState: {
+      setMintState({
+        ...mintState,
+        [t.tokenId]: {
+          tokenId: t.tokenId,
           label: 'Minting...',
           progress: 0.8,
           disabled: true
@@ -139,29 +224,56 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
       });
 
       tx = await tx.wait();
-      const transferEvent = tx.events.find(e => e.event === "Transfer");
+      const transferEvent = tx.events.find((e: any) => e.event === "Transfer");
+      if (!transferEvent) return;
       const topicId = transferEvent.args.tokenId;
 
-      updateTopic(t, {
-        id: topicId.toString(),
-        metadata: {
-          name,
-          description,
-          properties: {
-            emoji,
-          }
-        },
-        uri: `ipfs://${hash}/metadata.json`,
-        mintState: {
+      const tempTopicId = t.tokenId;
+
+      // Replace the Topic with the minted ID (TODO: Should we pull this?)
+      const persistedTopic: BaseNode = {
+        tokenId: topicId.toString(),
+        labels: ['Node', 'Topic'],
+        connections: [],
+        backlinks: [],
+        currentRevision: {
+          hash,
+          timestamp: 0,
+          content: '',
+          contentType: '',
+          metadata: {
+            name,
+            description,
+            properties: {
+              emoji,
+            }
+          },
+        }
+      };
+      const index = topics.indexOf(t);
+      if (index !== -1) {
+        topics[index] = persistedTopic;
+        setTopics([...topics]);
+      }
+
+      // Update the mint state for the fully minted topic
+      const newMintState: { [id: string]: MintState } = {
+        ...mintState,
+        [topicId.toString()]: {
+          tokenId: topicId.toString(),
           label: 'Success',
           progress: 1,
           disabled: true
         }
-      })
+      };
+      delete newMintState[tempTopicId];
+      setMintState(newMintState);
     } catch(e) {
       console.log(e);
-      updateTopic(t, {
-        mintState: {
+      setMintState({
+        ...mintState,
+        [t.tokenId]: {
+          tokenId: t.tokenId,
           label: 'Retry',
           progress: 0,
           disabled: false
@@ -179,7 +291,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
             <p>
               Connect topics to improve discoverability for this Node.
               <br />
-              Selected topics that don't exist will be minted.
+              Selected topics that do not exist will be minted.
             </p>
           </div>
           <span onClick={closeModal} className="cursor-pointer flex items-center pl-8">✕</span>
@@ -187,7 +299,8 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
 
         <div className="border-b border-color">
           <ReactTags
-            labelField="name"
+            idField="tokenId"
+            labelField="currentRevision.metadata.name"
             tags={topics}
             suggestions={suggestions}
             handleDelete={handleDelete}
@@ -202,6 +315,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
           <div className="flex p-4 justify-between flex-row items-center">
             <p>What are topics?</p>
             <Button
+              disabled={false}
               label={(topicsNeedMinting.length && !allMinted) ? `Mint & Connect` : `Connect`}
               onClick={didClickConfirm}
             />
@@ -221,42 +335,50 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
             </p>
             <h2 className="pb-1">Mint Topics</h2>
             <p>
-              Mint the new topics you've selected below.
+              Mint the new topics selected below.
               <br />
-              Owners of topic NFTs get a small payment whenever they're used.
+              Owners of topic NFTs get a small payment whenever referenced.
             </p>
           </div>
           <span onClick={closeModal} className="cursor-pointer flex items-center pl-8">✕</span>
         </div>
 
         <div>
-          {topicsNeedMinting.map(t =>
-            <div key={t.name} className="flex relative p-4 justify-between items-center flex-row border-b border-color">
-              <div className="absolute background-text-color left-0 top-0 h-0.5 transition-all duration-1000 ease-in-out" style={{
-                width: `${t.mintState.progress * 100}%`,
-              }}></div>
-              <div className="flex flex-row items-center py-1 flex-grow">
-                <div className="cursor-pointer" onClick={() => setCurrent(t)}>
-                  <div className="aspect-square p-1 mr-2 background-passive-color rounded-full w-8 text-center">
-                    {t.emoji.native}
+          {topicsNeedMinting.map(mintState => {
+            const t =
+              topics.find(topic => topic.tokenId === mintState.tokenId);
+            if (!t) return null;
+
+            return (
+              <div key={t.currentRevision.metadata.name} className="flex relative p-4 justify-between items-center flex-row border-b border-color">
+                <div className="absolute background-text-color left-0 top-0 h-0.5 transition-all duration-1000 ease-in-out" style={{
+                  width: `${mintState.progress * 100}%`,
+                }}></div>
+                <div className="flex flex-row items-center py-1 flex-grow">
+                  <div className="cursor-pointer" onClick={() => setCurrent(t)}>
+                    <div className="aspect-square p-1 mr-2 background-passive-color rounded-full w-8 text-center">
+                      {t.currentRevision.metadata.properties.emoji.native}
+                    </div>
                   </div>
+                  <p className="pr-2 font-semibold w-32 truncate">
+                    #{t.currentRevision.metadata.name}
+                  </p>
+                  <input
+                    value={t.currentRevision.metadata.description}
+                    onChange={e => setTagDescription(t, e.target.value)}
+                    className="text-xs py-2 mr-4"
+                    placeholder="Add a description"
+                    disabled={mintState.disabled}
+                  />
                 </div>
-                <p className="pr-2 font-semibold w-32 truncate">#{t.name}</p>
-                <input
-                  value={t.description}
-                  onChange={e => setTagDescription(t, e.target.value)}
-                  className="text-xs py-2 mr-4"
-                  placeholder="Add a description"
-                  disabled={t.mintState.disabled}
+                <Button
+                  disabled={mintState.disabled}
+                  label={`${mintState.label}`}
+                  onClick={() => mintTopic(t)}
                 />
               </div>
-              <Button
-                disabled={t.mintState.disabled}
-                label={`${t.mintState.label}`}
-                onClick={() => mintTopic(t)}
-              />
-            </div>
-          )}
+            );
+          })}
         </div>
 
         <div>
@@ -273,7 +395,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
     );
   };
 
-  const renderEmojiSelectStep = () => {
+  const renderEmojiSelectStep = ({ topic }: { topic: BaseNode }) => {
     return (
       <>
         <div className="flex p-4 border-b border-color justify-between">
@@ -283,7 +405,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
             </p>
             <h2 className="pb-1">Select Emoji</h2>
             <p>
-              Select an emoji for <span className="font-semibold">#{current.text}</span>
+              Select an emoji for <span className="font-semibold">#{topic.currentRevision.metadata.name}</span>
             </p>
           </div>
           <span onClick={closeModal} className="cursor-pointer flex items-center pl-8">✕</span>
@@ -291,7 +413,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
 
         <div>
           <Picker
-            onSelect={setEmojiForCurrentTag}
+            onSelect={emoji => setEmojiForTopic(topic, emoji)}
             showSkinTones={false}
             showPreview={false}
           />
@@ -310,7 +432,7 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
         <div className="max-w-xl">
           {modalStep === Steps.CONNECT ? renderConnectStep() : null}
           {modalStep === Steps.MINT ?
-            (current ? renderEmojiSelectStep() : renderMintStep()) :
+            (current ? renderEmojiSelectStep({ topic: current }) : renderMintStep()) :
             null
           }
         </div>
@@ -319,12 +441,13 @@ const TopicManager = ({ topics, setTopics, readOnly }) => {
       <div className="flex mb-4">
         {!readOnly && (
           <Button
+            disabled={false}
             onClick={openModal}
             label={'+ Manage Topics'}
           />
         )}
         {topics.map(t => {
-          return <TopicTile key={t.id} topic={t} />
+          return <TopicTile key={t.tokenId} topic={t} />
         })}
       </div>
     </>

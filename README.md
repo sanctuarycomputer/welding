@@ -23,3 +23,29 @@ TODO
 - [ ] Who gets paid when the token is burnt? (post UI)
 - [ ] Validation audit (security)
 - [ ] Rentrent guards? Buffer Overflows? (security)
+- [ ] Contract should only store state for it's own operations
+
+UI
+
+- [ ] Twitter
+- [ ] Combine Mint & Docs Edit?
+- [ ] Better flow for switching & creating subgraphs?
+- [ ] Handle unauthenticated, empty subgraph (remove redirects?)
+- [ ] CORS
+- [ ] Apollo Local Storage Caching strategy using latestTransactionBlock
+- [ ] Full Text Search (name, description)
+- [ ] Node Permissions & Fees
+- [ ] Modal Sizing
+- [ ] Mobile UI
+- [ ] Cover Image
+- [ ] Editor!
+- [ ] next/head
+- [ ] Page Caching
+- [ ] Deploys
+
+Roadmap
+- [ ] Iron Session? (Persisted Drafts)
+- [ ] Comments
+- [ ] Favorites
+- [ ] i18n (chinese)
+- [ ] Custom domains

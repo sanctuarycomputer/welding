@@ -66,16 +66,22 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     constructor() ERC721("Node", "NODE") {}
 
+    event NodeLabeled(
+      uint256 tokenId,
+      string label,
+      address sender
+    );
+
     event NodesConnected(
-      uint256 indexed from,
-      uint256 indexed to,
-      address indexed sender
+      uint256 from,
+      uint256 to,
+      address sender
     );
 
     event NodesDisconnected(
-      uint256 indexed from,
-      uint256 indexed to,
-      address indexed sender
+      uint256 from,
+      uint256 to,
+      address sender
     );
 
     mapping(uint256 => string) private nodeLabels;
@@ -103,6 +109,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
         /* Add node to the node LU tables */
         nodesForLabel[label].add(tokenId);
         nodeLabels[tokenId] = label;
+        emit NodeLabeled(tokenId, label, _msgSender());
 
         /* Minter automatically gets ADMIN_ROLE */
         _roles[tokenId][ADMIN_ROLE][_msgSender()] = true;
@@ -203,9 +210,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     /* Connection Fee Management */
 
     event ConnectionFeeSet(
-      uint256 indexed tokenId,
-      int256 indexed connectionFee,
-      address indexed sender
+      uint256 tokenId,
+      int256 connectionFee,
+      address sender
     );
 
     int256 public constant FEE_FALLBACK = 999999;
@@ -232,16 +239,16 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     event RoleGranted(
       uint256 tokenId,
-      uint256 indexed role,
-      address indexed account,
-      address indexed sender
+      uint256 role,
+      address account,
+      address sender
     );
 
     event RoleRevoked(
       uint256 tokenId,
-      uint256 indexed role,
-      address indexed account,
-      address indexed sender
+      uint256 role,
+      address account,
+      address sender
     );
 
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) private _roles;
@@ -340,15 +347,15 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     /* Delegatable Role Management */
 
     event PermissionsDelegated(
-      uint256 indexed forTokenId,
-      uint256 indexed toTokenId,
-      address indexed sender
+      uint256 forTokenId,
+      uint256 toTokenId,
+      address sender
     );
 
     event DelegatePermissionsRenounced(
-      uint256 indexed forTokenId,
-      uint256 indexed toTokenId,
-      address indexed sender
+      uint256 forTokenId,
+      uint256 toTokenId,
+      address sender
     );
 
     mapping(uint256 => EnumerableSet.UintSet) private _delegatesTo;
@@ -416,9 +423,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     /* Supports Public Nodes */
 
     event PermissionsBypassSet(
-      uint256 indexed tokenId,
+      uint256 tokenId,
       bool bypassed,
-      address indexed sender
+      address sender
     );
 
     mapping(uint256 => bool) private _shouldBypassPermissions;
@@ -443,10 +450,10 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage {
     /* Per-token Revision Management */
 
     event RevisionMade(
-      uint256 indexed tokenId,
+      uint256 tokenId,
       uint256 timestamp,
-      string indexed hash,
-      address indexed sender
+      string hash,
+      address sender
     );
 
     struct Revision {

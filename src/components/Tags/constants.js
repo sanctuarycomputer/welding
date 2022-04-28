@@ -11,6 +11,7 @@ export const KEYS = {
 
 export const DEFAULT_PLACEHOLDER = 'Press enter to add new tag';
 
+export const DEFAULT_ID_FIELD = 'text';
 export const DEFAULT_LABEL_FIELD = 'text';
 
 export const DEFAULT_CLASSNAMES = {

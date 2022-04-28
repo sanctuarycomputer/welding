@@ -1,17 +1,19 @@
-import type { NextPage, GetServerSideProps } from 'next';
+import { FC } from 'react';
+import type { GetServerSideProps } from 'next';
+import type { BaseNodeFormValues, MintState, BaseNode } from 'src/types';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSigner, useConnect, useAccount } from 'wagmi';
-import { useFormik } from 'formik';
+import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
 
-import Button from 'src/components/Button';
 import Frontmatter from 'src/components/Frontmatter';
 import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
 import TopicManager from 'src/components/TopicManager';
 
 import NProgress from 'nprogress';
+import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
 import dynamic from 'next/dynamic';
 
@@ -19,48 +21,58 @@ const Editor = dynamic(() => import('src/components/Editor'), {
   ssr: false
 });
 
-const GraphsDocumentMint: NextPage = ({
+type Props = {
+  subgraph: BaseNode,
+  document: BaseNode,
+};
+
+const GraphsDocumentMint: FC<Props> = ({
   subgraph,
-  subgraphDocuments,
-  subgraphTopics,
   document,
-  documentTopics
 }) => {
   const router = useRouter();
   const [sidebarHidden, setSidebarHidden] = useState(false);
 
-  const [{ loading: connectionLoading}] = useConnect();
-  const [{ data: signer, loading }] = useSigner();
-  const [{ data: account }] = useAccount();
-  const [canEdit, setCanEdit] = useState(null);
+  const { isConnecting } = useConnect();
+  const { data: signer } = useSigner();
+  const { data: account } = useAccount();
+  const [canEdit, setCanEdit] = useState<boolean | null>(null);
 
   const loadCanEdit = async () => {
-    if (signer && account) {
-      const canEdit =
-        await Welding.Nodes
-          .connect(signer)
-          .canEdit(subgraph.id, account.address);
-      setCanEdit(canEdit);
-    } else {
-      setCanEdit(false);
-    }
+    if (!signer || !account?.address) return setCanEdit(false);
+    const canEdit =
+      await Welding.Nodes
+        .connect(signer)
+        .canEdit(subgraph.tokenId, account.address);
+    setCanEdit(canEdit);
   };
 
   useEffect(() => { loadCanEdit() }, []);
   useEffect(() => {
     loadCanEdit();
-  }, [account, connectionLoading]);
+  }, [account, isConnecting]);
 
-  const [topics, setTopics] = useState(documentTopics);
-  const [mintProgress, setMintProgress] = useState(null);
+  const subgraphDocuments = subgraph.backlinks.filter(n =>
+    n.labels.includes('Document')
+  );
+  const subgraphTopics = subgraph.backlinks.filter(n =>
+    n.labels.includes('Topic')
+  );
+  const documentTopics = document.backlinks.filter(n =>
+    n.labels.includes('Topic')
+  );
 
-  const formik = useFormik({
+  const [topics, setTopics] = useState<BaseNode[]>(documentTopics);
+  const [mintState, setMintState] =
+    useState<{ [tokenId: string]: MintState }>({});
+
+  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
     initialValues: {
-      name: document.metadata.name,
-      description: document.metadata.description,
-      emoji: document.metadata.properties.emoji,
-      content: document.metadata.properties.content
+      name: document.currentRevision.metadata.name,
+      description: document.currentRevision.metadata.description,
+      emoji: document.currentRevision.metadata.properties.emoji,
+      content: document.currentRevision.metadata.properties.content
     },
     onSubmit: async (values) => {
       try {
@@ -69,17 +81,17 @@ const GraphsDocumentMint: NextPage = ({
           await Welding.publishMetadataToIPFS(values);
         NProgress.done();
 
+        if (!signer) return;
         const tx =
           await Welding.Nodes.connect(signer).makeRevision(
-            document.id,
+            document.tokenId,
             hash,
           );
         NProgress.start();
         await tx.wait();
 
-        const slug =
-          Welding.slugify(`${document.id} ${values.name}`);
-        router.replace(`/subgraphs/${subgraph.slug}/${slug}`);
+        // TODO: prewarm things?
+        router.replace(`/subgraphs/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(document)}`);
       } catch(e) {
         NProgress.done();
         console.log(e);
@@ -96,10 +108,9 @@ const GraphsDocumentMint: NextPage = ({
       <div
         className={`py-4 mt-6 ${sidebarHidden ? '' : 'ml-64'}`}
       >
-
         <SubgraphSidebar
           subgraph={subgraph}
-          canEdit={canEdit}
+          canEdit={!!canEdit}
           topics={subgraphTopics}
           documents={subgraphDocuments}
           currentDocument={document}
@@ -113,7 +124,6 @@ const GraphsDocumentMint: NextPage = ({
             buttonLabel={formik.isSubmitting
               ? "Loading..."
               : "+ Mint Revision"}
-            onButtonClick={formik.handleSubmit}
           />
         )}
 
@@ -123,10 +133,13 @@ const GraphsDocumentMint: NextPage = ({
           <Frontmatter
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
+            label="document"
           />
 
           {canEdit && (
             <TopicManager
+              mintState={mintState}
+              setMintState={setMintState}
               setTopics={setTopics}
               topics={topics}
               readOnly={!canEdit || formik.isSubmitting}
@@ -148,30 +161,24 @@ const GraphsDocumentMint: NextPage = ({
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { gid, did } = context.query;
-  gid = gid.split('-')[0];
-  did = did.split('-')[0];
-
+  gid = ((Array.isArray(gid) ? gid[0] : gid) || '').split('-')[0];
   const subgraph =
-    await Welding.loadNodeById(gid, null);
-  const topics =
-    await Welding.loadNodeConnectionsByLabel(subgraph.id, 'topic');
-  const documents =
-    await Welding.loadNodeConnectionsByLabel(subgraph.id, 'document');
-  const document = documents.find(d => d.id === did);
+    await Client.fetchBaseNodeByTokenId(gid);
+  if (!subgraph || !subgraph.labels.includes('Subgraph')) return {
+    redirect: { permanent: false, destination: `/` },
+    props: {},
+  };
 
-  // If no document, redirect
-
-  const documentTopics =
-    await Welding.loadNodeConnectionsByLabel(did, 'topic');
+  did = ((Array.isArray(did) ? did[0] : did) || '').split('-')[0];
+  const document =
+    await Client.fetchBaseNodeByTokenId(did);
+  if (!document || !document.labels.includes('Document')) return {
+    redirect: { permanent: false, destination: `/subgraphs/${subgraph.tokenId}`},
+    props:{},
+  };
 
   return {
-    props: {
-      subgraph,
-      subgraphTopics: topics,
-      subgraphDocuments: documents,
-      document: document,
-      documentTopics
-    },
+    props: { subgraph, document }
   };
 }
 

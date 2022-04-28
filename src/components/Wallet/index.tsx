@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useConnect, useAccount } from 'wagmi';
+import { useState } from 'react';
+import {
+  useConnect,
+  useAccount,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName
+} from 'wagmi';
 import Button from 'src/components/Button';
 import Modal from 'react-modal';
 
-const truncateAddress = (address) =>
+const truncateAddress = (address: string) =>
   `${address.substring(0, 6)}...`;
 
 const Wallet = () => {
@@ -12,10 +18,11 @@ const Wallet = () => {
   const [accountModalIsOpen, setAccountModalIsOpen] =
     useState(false);
 
-  const [{ data, error }, connect] = useConnect();
-  const [{ data: accountData, loading }, disconnect] = useAccount({
-    fetchEns: true,
-  });
+  const { connect, connectors, error } = useConnect();
+  const { data: account } = useAccount();
+  const { data: ensAvatar } = useEnsAvatar({ addressOrName: account?.address });
+  const { data: ensName } = useEnsName({ address: account?.address });
+  const { disconnect } = useDisconnect();
 
   const closeModal = () => setConnectModalIsOpen(false);
   const openModal = () => setConnectModalIsOpen(true);
@@ -23,7 +30,7 @@ const Wallet = () => {
   const closeAccountModal = () => setAccountModalIsOpen(false);
   const openAccountModal = () => setAccountModalIsOpen(true);
 
-  if (accountData) {
+  if (account) {
     return (
       <>
         <Modal
@@ -37,7 +44,7 @@ const Wallet = () => {
               <p>
                 Connect topics to improve discoverability for this Node.
                 <br />
-                Selected topics that don't exist will be minted.
+                Selected topics that do not exist will be minted.
               </p>
             </div>
             <span
@@ -51,6 +58,7 @@ const Wallet = () => {
             <div className="flex p-4 justify-between flex-row items-center">
               <p>Why mint a topic?</p>
               <Button
+                disabled={false}
                 label="Disconnect"
                 onClick={disconnect}
               />
@@ -59,13 +67,13 @@ const Wallet = () => {
         </Modal>
 
         <div onClick={openAccountModal} className="cursor-pointer rounded-full background-text-color flex pl-1 py-1">
-          {accountData.ens?.avatar
-            ? <img src={accountData.ens?.avatar} alt="ENS Avatar" />
+          {ensAvatar
+            ? <img src={ensAvatar} alt="ENS Avatar" />
             : <div className="aspect-square w-4 background-color rounded-full inline-block"></div>}
           <p className="ml-1 text-background-color font-semibold inline-block pr-2">
-            {accountData.ens?.name
-              ? accountData.ens?.name
-              : truncateAddress(accountData.address)}
+            {ensName
+              ? ensName
+              : truncateAddress(account.address || 'null')}
           </p>
         </div>
       </>
@@ -85,7 +93,7 @@ const Wallet = () => {
             <p>
               Connect topics to improve discoverability for this Node.
               <br />
-              Selected topics that don't exist will be minted.
+              Selected topics that don not exist will be minted.
             </p>
           </div>
           <span
@@ -96,7 +104,7 @@ const Wallet = () => {
         </div>
 
         <div>
-          {data.connectors.map(connector =>
+          {connectors.map(connector =>
             <div
               onClick={() => connect(connector)}
               key={connector.id} className="cursor-pointer flex relative p-4 justify-between items-center flex-row border-b border-color">
@@ -122,7 +130,11 @@ const Wallet = () => {
         </div>
       </Modal>
 
-      <Button label="Connect" onClick={openModal} />
+      <Button
+        disabled={false}
+        label="Connect"
+        onClick={openModal}
+      />
     </>
   );
 }

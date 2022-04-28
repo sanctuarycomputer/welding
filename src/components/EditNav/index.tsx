@@ -1,7 +1,14 @@
-import Link from 'next/link';
+import { FC } from 'react';
 import Button from 'src/components/Button';
+import { FormikProps } from 'formik';
+import { BaseNodeFormValues } from 'src/types';
 
-const EditNav = ({
+type Props = {
+  formik: FormikProps<BaseNodeFormValues>;
+  buttonLabel: string;
+};
+
+const EditNav: FC<Props> = ({
   formik,
   buttonLabel
 }) => {
@@ -25,7 +32,7 @@ const EditNav = ({
         )}
         <Button
           disabled={formik.isSubmitting || !(formik.isValid && formik.dirty)}
-          onClick={formik.handleSubmit}
+          onClick={() => formik.handleSubmit()}
           label={buttonLabel}
         />
       </div>

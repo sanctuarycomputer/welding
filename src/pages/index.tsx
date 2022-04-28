@@ -1,85 +1,35 @@
-import { Blob } from 'nft.storage';
-import type { NextPage } from 'next';
-import Frontmatter from 'src/components/Frontmatter';
-import { useFormik } from 'formik';
-import Modal from 'react-modal';
-import React, { useState } from 'react';
-import { emojiIndex } from 'emoji-mart';
-import dynamic from 'next/dynamic';
-import * as yup from 'yup';
+import Button from 'src/components/Button';
 
-const Editor = dynamic(() => import('../components/Editor'), {
-  ssr: false
-});
-
-const allEmojis = Object.values(emojiIndex.emojis);
-//const RANDOM_EMOJI = allEmojis[Math.floor(Math.random()*allEmojis.length)];
-const RANDOM_EMOJI = allEmojis[0];
-
-const IS_BROWSER = typeof window !== "undefined";
-
-const Home: NextPage = () => {
-  const editableKey = 'draft:document:0x0123:content';
-
-  const [content, setContent] = useState(JSON.parse(
-    (IS_BROWSER && window.localStorage.getItem(editableKey)) ||
-    '{}'
-  ));
-
-  const contentDidChange = (newContent) => {
-    if (IS_BROWSER) {
-      window.localStorage.setItem(
-        editableKey,
-        JSON.stringify(newContent)
-      );
-    }
-    setContent(newContent);
-  };
-
-  //const saveDraftAsFile = () => {
-  //  const blob = new Blob([JSON.stringify(content)], { type: "text/json" });
-  //  const link = document.createElement("a");
-  //  link.download = editableKey;
-  //  link.href = window.URL.createObjectURL(blob);
-  //  link.dataset.downloadurl = ["text/json", link.download, link.href].join(":");
-  //  link.dispatchEvent(new MouseEvent("click", {
-  //    view: window,
-  //    bubbles: true,
-  //    cancelable: true,
-  //  }));
-  //  link.remove();
-  //};
-
-  const formik = useFormik({
-    initialValues: {
-      name: '',
-      description: '',
-      emoji: RANDOM_EMOJI
-    },
-    onSubmit: () => {
-    },
-    validationSchema: yup.object({
-      name:
-        yup.string().trim().required('Document name is required'),
-    }),
-  });
-
+const Home = () => {
   return (
-    <div className="content py-4 mt-24 mx-auto">
-      <div className="mb-24">
-        <div className="pill inline"><span>0x123</span>minemeld</div>
-        <span className="px-2 font-bold">/</span>
-        <div className="pill inline"><span>0x456</span>Intro to minemeld</div>
+    <>
+      <nav className="fixed w-full left-0 top-0 p-4 flex justify-between nav-blur">
+        <p className="font-semibold pt-1">
+          👩‍🏭 Welding
+        </p>
+        <a
+          target="_blank"
+          href="https://twitter.com/welding_app"
+          className="Button font-medium text-xs px-2 py-1 rounded-full"
+        >Follow</a>
+      </nav>
+      <div className="md:h-screen w-full flex flex-col items-center md:justify-center text-justify px-4">
+        <div className="content mt-14 md:mt-0 ">
+          <p className="text-base md:text-xl pb-4 text-warning-color text-warning-shadow">
+  There was only one problem. What was now identified as the most valuable aspect of a commodity was also – technically, at least – capable of infinite replication at near zero cost: once the cost of creating a new set of instructions has been incurred the instructions can be used over and over again at no additional cost. Developing new and better instructions is equivalent to incurring a fixed cost.’ Romer made no mention of the hacker movement, but this was starting to sound remarkably similar to Stewart Brand’s conclusion that ‘information wants to be free’ some six years earlier.
+          </p>
+          <p className="text-base md:text-xl pb-8 text-warning-color text-warning-shadow">
+  This contradiction was particularly portentous for market capitalism. As Larry Summers and J. Bradford DeLong would write in August 2001, just a month after the file-sharing service Napster was taken down, ‘the most basic condition for economic efficiency … [is] that price equal marginal cost.’ They went on: ‘with information goods, the social and marginal cost of distribution is close to zero.’ This held true not only for films, music, books and academic papers but also for the design of an industrial robot or pharmaceutical drug.
+          </p>
+          <a
+            target="_blank"
+            href="https://law.unimelb.edu.au/__data/assets/pdf_file/0009/3445353/2.-aaron-bastani-fully-automated-luxury-communism-a-manifesto-2.pdf"
+            className="text-base md:text-xl pb-8 text-warning-color text-warning-shadow"
+          >— Aaron Bastini</a>
+        </div>
       </div>
-
-      <Frontmatter formik={formik} />
-
-      <Editor
-        content={content}
-        contentDidChange={contentDidChange}
-      />
-    </div>
-  )
+    </>
+  );
 };
 
 export default Home;

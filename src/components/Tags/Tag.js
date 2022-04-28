@@ -3,6 +3,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
 import { canDrag, canDrop } from './utils';
+import get from 'lodash/get';
 
 import RemoveComponent from './RemoveComponent';
 
@@ -37,7 +38,7 @@ const Tag = (props) => {
 
   drag(drop(tagRef));
 
-  const label = props.tag[props.labelField];
+  const label = get(props.tag, props.labelField);
   const { className = '' } = tag;
   /* istanbul ignore next */
   const opacity = isDragging ? 0 : 1;
@@ -68,11 +69,7 @@ const Tag = (props) => {
 Tag.propTypes = {
   labelField: PropTypes.string,
   onDelete: PropTypes.func.isRequired,
-  tag: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    className: PropTypes.string,
-    key: PropTypes.string,
-  }),
+  tag: PropTypes.any,
   moveTag: PropTypes.func,
   removeComponent: PropTypes.func,
   onTagClicked: PropTypes.func,

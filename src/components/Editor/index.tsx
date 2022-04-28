@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+// @ts-nocheck
+import { FC, useState, useEffect, useRef } from 'react';
 import EditorJS from '@editorjs/editorjs';
 
 import Header from '@editorjs/header';
@@ -18,7 +19,7 @@ import Delimiter from '@editorjs/delimiter';
 import InlineCode from '@editorjs/inline-code';
 import SimpleImage from '@editorjs/simple-image';
 
-// Pattern for building a readOnly format
+//Pattern for building a readOnly format
 class MyWarning extends Warning {
   render() {
     if (!this.readOnly) return super.render();
@@ -86,7 +87,13 @@ const EDITOR_JS_TOOLS = {
 
 const DOM_ID = 'editor';
 
-const Editor = ({
+type Props = {
+  content: any,
+  contentDidChange: Function,
+  readOnly: boolean
+};
+
+const Editor: FC<Props> = ({
   content,
   contentDidChange,
   readOnly

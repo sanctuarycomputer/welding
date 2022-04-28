@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --error-color: #ff6961;
+  --warning-color: #FDDD5C;
+  --background-color: #1f2937;
+  --background-passive-color: #344051;
+  --text-color: #dedede;
+  --text-passive-color: #455060;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     /* TODO */
@@ -51,6 +60,20 @@
   color: var(--background-color);
 }
 
+.text-warning-color {
+  color: var(--warning-color);
+}
+
+.nav-blur {
+  background-color: #1f2937c2;
+  z-index: 1;
+  backdrop-filter: blur(2px);
+}
+
+.text-warning-shadow {
+  text-shadow: 1px 1px 7px #fddd5ce8;
+}
+
 .text-background-passive-color {
   color: var(--background-passive-color);
 }
@@ -63,6 +86,8 @@
 /* Global */
 html,
 body {
+  height: 100%;
+  background: linear-gradient(0deg, rgba(52,64,81,1) 0%, rgba(31,41,55,1) 100%);
   background-color: var(--background-color);
   color: var(--text-color);
   padding: 0;

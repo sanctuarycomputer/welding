@@ -1,8 +1,22 @@
-// TODO Topics
+import { FC } from 'react';
 import Link from 'next/link';
 import styles from './styles.module.css';
+import type { BaseNodeFormValues, BaseNode } from 'src/types';
+import type { FormikProps } from 'formik';
+import Welding from 'src/lib/Welding';
 
-const SubgraphSidebar = ({
+type Props = {
+  subgraph: BaseNode;
+  currentDocument?: BaseNode;
+  newDocument?: FormikProps<BaseNodeFormValues>;
+  documents: Array<BaseNode>;
+  topics: Array<BaseNode>;
+  canEdit: boolean;
+  hide: boolean;
+  didClickHide: Function;
+};
+
+const SubgraphSidebar: FC<Props> = ({
   subgraph,
   currentDocument,
   newDocument,
@@ -12,11 +26,14 @@ const SubgraphSidebar = ({
   hide,
   didClickHide
 }) => {
-  const emoji = subgraph.metadata.properties.emoji.native;
-  const name = subgraph.metadata.name;
+  const emoji = subgraph.currentRevision.metadata.properties.emoji.native;
+  const name = subgraph.currentRevision.metadata.name;
   return (
     <nav className="fixed left-0 top-0 my-2 ml-2 w-64 p-2 h-screen">
-      <div onClick={didClickHide} className={`${styles.SubgraphHeader} flex cursor-pointer`}>
+      <div
+        onClick={() => didClickHide()}
+        className={`${styles.SubgraphHeader} flex cursor-pointer`}
+      >
         <p className={`${styles.hide} pb-4 mr-2 hidden py-1`}>
           {hide ? 'Show →' : '← Hide'}
         </p>
@@ -27,7 +44,7 @@ const SubgraphSidebar = ({
 
        <div className={`${hide ? styles.hidden : ''} h-full border border-color rounded p-2 transition-transform ease-in-out duration-500`}>
           <p className="pb-4">
-            {subgraph.metadata.description || 'No description'}
+            {subgraph.currentRevision.metadata.description || 'No description'}
           </p>
           <div className="flex justify-between">
             <p className="pb-2">
@@ -42,19 +59,26 @@ const SubgraphSidebar = ({
           <div className={`${styles.SectionHeader} flex justify-between`}>
             <p className="pb-2 font-semibold tracking-wide text-passive-color uppercase">Documents</p>
             {canEdit && (
-              <Link href={`/subgraphs/${subgraph.slug}/mint`}>
+              <Link href={`/subgraphs/${Welding.slugifyNode(subgraph)}/mint`}>
                 <a className={`${styles.cta} transition-opacity ease-in-out duration-150 opacity-0 pb-2 text-xs`}>+ New</a>
               </Link>
             )}
           </div>
 
           {documents.map(d => {
-            if (d.id === currentDocument?.id) {
-              return <p key={d.id} className="text-xs font-semibold">{d.metadata.properties.emoji.native} {d.metadata.name}</p>
+            if (d.tokenId === currentDocument?.tokenId) {
+              return (
+                <p
+                  key={d.tokenId}
+                  className="text-xs font-semibold"
+                >
+                  {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                </p>
+              );
             }
             return (
-              <Link key={d.id} href={`/subgraphs/${subgraph.slug}/${d.slug}`}>
-                <a className="block text-xs pb-1">{d.metadata.properties.emoji.native} {d.metadata.name}</a>
+              <Link key={d.tokenId} href={`/subgraphs/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
+                <a className="block text-xs pb-1">{d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
               </Link>
             );
           })}

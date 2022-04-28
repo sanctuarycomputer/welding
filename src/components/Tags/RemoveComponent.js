@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { KEYS } from './constants';
+import get from 'lodash/get';
 
 const crossStr = String.fromCharCode(215);
 const RemoveComponent = (props) => {
-  const { readOnly, removeComponent, onRemove, className, tag, index } = props;
+  const { readOnly, removeComponent, onRemove, className, tag, index, idField } = props;
 
   const onKeydown = (event) => {
     if (KEYS.ENTER.includes(event.keyCode) || event.keyCode === KEYS.SPACE) {
@@ -21,7 +22,7 @@ const RemoveComponent = (props) => {
     return <span />;
   }
 
-  const ariaLabel = `Tag at index ${index} with value ${tag.id} focussed. Press backspace to remove`;
+  const ariaLabel = `Tag at index ${index} with value ${get(tag, idField)} focussed. Press backspace to remove`;
   if (removeComponent) {
     const Component = removeComponent;
     return (
@@ -50,14 +51,11 @@ const RemoveComponent = (props) => {
 
 RemoveComponent.propTypes = {
   className: PropTypes.string,
+  idField: PropTypes.string,
   onRemove: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
   removeComponent: PropTypes.func,
-  tag: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    className: PropTypes.string,
-    key: PropTypes.string,
-  }),
+  tag: PropTypes.any,
   index: PropTypes.number.isRequired,
 };
 

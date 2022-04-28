@@ -1,49 +1,56 @@
-import type { NextPage, GetServerSideProps } from 'next';
+import { FC } from 'react';
+import type { GetServerSideProps } from 'next';
+import type { BaseNodeFormValues, MintState, BaseNode } from 'src/types';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSigner, useConnect, useAccount } from 'wagmi';
-import { useFormik } from 'formik';
+import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
 
-import Button from 'src/components/Button';
 import Frontmatter from 'src/components/Frontmatter';
 import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
 import TopicManager from 'src/components/TopicManager';
 
 import NProgress from 'nprogress';
+import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
-import { emojiIndex } from 'emoji-mart';
+import { emojiIndex, BaseEmoji } from 'emoji-mart';
 import dynamic from 'next/dynamic';
+
+const DEFAULT_EMOJI: BaseEmoji =
+  (Object.values(emojiIndex.emojis)[0] as BaseEmoji);
 
 const Editor = dynamic(() => import('src/components/Editor'), {
   ssr: false
 });
 
-const GraphsDocumentMint: NextPage = ({
+type Props = {
+  subgraph: BaseNode,
+};
+
+const GraphsDocumentMint: FC<Props> = ({
   subgraph,
-  subgraphDocuments,
-  subgraphTopics
 }) => {
   const router = useRouter();
   const [sidebarHidden, setSidebarHidden] = useState(false);
 
-  const [{ loading: connectionLoading}] = useConnect();
-  const [{ data: signer, loading }] = useSigner();
-  const [{ data: account }] = useAccount();
-  const [canEdit, setCanEdit] = useState(null);
+  const { isConnecting } = useConnect();
+  const { data: signer } = useSigner();
+  const { data: account } = useAccount();
+  const [canEdit, setCanEdit] = useState<boolean | null>(null);
 
   const loadCanEdit = async () => {
-    if (!connectionLoading && !account) {
-      return router.push(`/subgraphs/${subgraph.slug}`);
+    if ((!isConnecting && !account) || !account?.address) {
+      return router.push(`/subgraphs/${Welding.slugifyNode(subgraph)}`);
     }
     if (signer) {
       const canEdit =
         await Welding.Nodes
           .connect(signer)
-          .canEdit(subgraph.id, account.address);
+          .canEdit(subgraph.tokenId, account.address);
       if (!canEdit) {
-        return router.push(`/subgraphs/${subgraph.slug}`);
+        return router.push(`/subgraphs/${Welding.slugifyNode(subgraph)}`);
       }
       setCanEdit(true);
     }
@@ -52,16 +59,24 @@ const GraphsDocumentMint: NextPage = ({
   useEffect(() => { loadCanEdit() }, []);
   useEffect(() => {
     loadCanEdit();
-  }, [account, connectionLoading]);
+  }, [account, isConnecting]);
 
-  const [topics, setTopics] = useState([]);
-  const [mintProgress, setMintProgress] = useState(null);
+  const subgraphDocuments = subgraph.backlinks.filter(n =>
+    n.labels.includes('Document')
+  );
+  const subgraphTopics = subgraph.backlinks.filter(n =>
+    n.labels.includes('Topic')
+  );
 
-  const formik = useFormik({
+  const [topics, setTopics] = useState<BaseNode[]>([]);
+  const [mintState, setMintState] =
+    useState<{ [tokenId: string]: MintState }>({});
+
+  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
     initialValues: {
       name: '',
       description: '',
-      emoji: Object.values(emojiIndex.emojis)[0],
+      emoji: DEFAULT_EMOJI,
       content: null
     },
     onSubmit: async (values) => {
@@ -71,11 +86,12 @@ const GraphsDocumentMint: NextPage = ({
           await Welding.publishMetadataToIPFS(values);
         NProgress.done();
 
+        if (!signer) return;
         let tx = await Welding.Nodes.connect(signer).mintNode(
           Welding.LABELS.document,
           hash,
-          topics.map(t => t.id),
-          [subgraph.id]
+          topics.map(t => t.tokenId),
+          [subgraph.tokenId]
         );
         NProgress.start();
         tx = await tx.wait();
@@ -86,7 +102,7 @@ const GraphsDocumentMint: NextPage = ({
         const slug =
           Welding.slugify(`${documentId} ${values.name}`);
         router.push(
-          `/subgraphs/${subgraph.slug}/${slug}`
+          `/subgraphs/${Welding.slugifyNode(subgraph)}/${slug}`
         );
       } catch(e) {
         NProgress.done();
@@ -106,7 +122,7 @@ const GraphsDocumentMint: NextPage = ({
       >
         <SubgraphSidebar
           subgraph={subgraph}
-          canEdit={canEdit}
+          canEdit={!!canEdit}
           topics={subgraphTopics}
           documents={subgraphDocuments}
           newDocument={formik}
@@ -127,10 +143,14 @@ const GraphsDocumentMint: NextPage = ({
               className={`content ${sidebarHidden ? 'mx-auto' : 'pl-4'}`}
             >
               <Frontmatter
+                readOnly={false}
                 formik={formik}
                 label={Welding.LABELS.document}
               />
               <TopicManager
+                readOnly={false}
+                setMintState={setMintState}
+                mintState={mintState}
                 setTopics={setTopics}
                 topics={topics}
               />
@@ -151,23 +171,16 @@ const GraphsDocumentMint: NextPage = ({
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { gid } = context.query;
-  gid = gid.split('-')[0];
-
+  gid = ((Array.isArray(gid) ? gid[0] : gid) || '').split('-')[0];
   const subgraph =
-    await Welding.loadNodeById(gid, null);
+    await Client.fetchBaseNodeByTokenId(gid);
+  if (!subgraph || !subgraph.labels.includes('Subgraph')) return {
+    redirect: { permanent: false, destination: `/` },
+    props: {},
+  };
 
-  // TODO: redirect if not found
-
-  const topics =
-    await Welding.loadNodeConnectionsByLabel(subgraph.id, 'topic');
-  const documents =
-    await Welding.loadNodeConnectionsByLabel(subgraph.id, 'document');
   return {
-    props: {
-      subgraph,
-      subgraphTopics: topics,
-      subgraphDocuments: documents
-    },
+    props: { subgraph }
   };
 }
 

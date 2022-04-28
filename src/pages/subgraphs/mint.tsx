@@ -1,63 +1,86 @@
-import type { NextPage, GetServerSideProps } from 'next';
-import { useState } from 'react';
+import { FC } from 'react';
+import type { GetServerSideProps } from 'next';
+import type { BaseNodeFormValues, MintState, BaseNode } from 'src/types';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Button from 'src/components/Button';
-import Frontmatter from 'src/components/Frontmatter';
-import { useFormik } from 'formik';
+import { useSigner, useConnect, useAccount } from 'wagmi';
+import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
-import { emojiIndex } from 'emoji-mart';
+
 import EditNav from 'src/components/EditNav';
+import Frontmatter from 'src/components/Frontmatter';
 import TopicManager from 'src/components/TopicManager';
 
-import { ethers } from 'ethers';
+import NProgress from 'nprogress';
 import Welding from 'src/lib/Welding';
+import { emojiIndex, BaseEmoji } from 'emoji-mart';
 
-const GraphsMint: NextPage = ({ }) => {
+const DEFAULT_EMOJI: BaseEmoji =
+  (Object.values(emojiIndex.emojis)[0] as BaseEmoji);
+
+const GraphsMint: FC<{}> = () => {
   const router = useRouter();
-  const [topics, setTopics] = useState([]);
 
-  const formik = useFormik({
+  const { isConnecting } = useConnect();
+  const { data: signer } = useSigner();
+  const { data: account } = useAccount();
+  const [canEdit, setCanEdit] = useState<boolean | null>(null);
+
+  const loadCanEdit = async () => {
+    if ((!isConnecting && !account) || !account?.address) {
+      return router.push(`/`);
+    }
+    setCanEdit(true);
+  };
+
+  useEffect(() => { loadCanEdit() }, []);
+  useEffect(() => {
+    loadCanEdit();
+  }, [account, isConnecting]);
+
+  const [topics, setTopics] = useState<BaseNode[]>([]);
+  const [mintState, setMintState] =
+    useState<{ [tokenId: string]: MintState }>({});
+
+  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
     initialValues: {
       name: '',
       description: '',
-      emoji: Object.values(emojiIndex.emojis)[0]
+      emoji: DEFAULT_EMOJI
     },
     onSubmit: async (values) => {
-      const { name, description, emoji } = values;
-      const response = await fetch('/api/publish-graph-metadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          emoji,
-        })
-      });
-      const { hash } = await response.json();
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
       try {
-        const tx = await (
+        NProgress.start();
+        const hash =
+          await Welding.publishMetadataToIPFS(values);
+        NProgress.done();
+
+        if (!signer) return;
+        let tx =
           await Welding.Nodes.connect(signer).mintNode(
             Welding.LABELS.subgraph,
             hash,
-            topics.map(t => t.id),
+            topics.map(t => t.tokenId),
             []
-          )
-        ).wait();
-        const transferEvent = tx.events.find(e => e.event === "Transfer");
+          );
+        NProgress.start();
+        tx = await tx.wait();
+        const transferEvent =
+          tx.events.find(e => e.event === "Transfer");
         const subgraphId = transferEvent.args.tokenId;
-        router.push(`/subgraphs/${subgraphId.toString()}/mint`);
+        const slug =
+          Welding.slugify(`${subgraphId} ${values.name}`);
+        router.push(
+          `/subgraphs/${slug}/${slug}`
+        );
       } catch(e) {
+        NProgress.done();
         console.log(e);
       }
     },
     validationSchema: yup.object({
       name:
-        yup.string().trim().required('Graph name is required'),
+        yup.string().trim().required('Subgraph name is required'),
     }),
   });
 
@@ -70,12 +93,16 @@ const GraphsMint: NextPage = ({ }) => {
 
       <div className="content py-4 mt-24 mx-auto">
         <Frontmatter
+          readOnly={!canEdit}
           formik={formik}
           label={Welding.LABELS.subgraph}
         />
         <TopicManager
+          readOnly={!canEdit}
           setTopics={setTopics}
           topics={topics}
+          mintState={mintState}
+          setMintState={setMintState}
         />
       </div>
     </>

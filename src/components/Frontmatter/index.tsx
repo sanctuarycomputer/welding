@@ -1,9 +1,16 @@
+import { FC } from 'react';
 import styles from './styles.module.css';
 import { useState } from 'react';
 import Modal from 'react-modal';
-import { Picker } from 'emoji-mart';
+import { Picker, EmojiData, BaseEmoji } from 'emoji-mart';
+import { FormikProps } from 'formik';
+import { BaseNodeFormValues } from 'src/types';
 
-const FrontmatterReadOnly = ({ formik }) => {
+type ReadOnlyProps = {
+  formik: FormikProps<BaseNodeFormValues>;
+};
+
+const FrontmatterReadOnly: FC<ReadOnlyProps> = ({ formik }) => {
   return (
     <div className={styles.Frontmatter}>
       <div className="pb-4">
@@ -26,20 +33,27 @@ const FrontmatterReadOnly = ({ formik }) => {
   );
 };
 
-const Frontmatter = ({
+type Props = {
+  formik: FormikProps<BaseNodeFormValues>;
+  label: string;
+  readOnly: boolean;
+};
+
+const Frontmatter: FC<Props> = ({
   formik,
   label,
   readOnly
 }) => {
-  if (readOnly) return <FrontmatterReadOnly formik={formik} />
-
   const [emojiPickerIsOpen, setEmojiPickerIsOpen] = useState(false);
   const openEmojiPicker = () => setEmojiPickerIsOpen(true);
   const closeModal = () => setEmojiPickerIsOpen(false);
-  const didSelectEmoji = (emoji) => {
+  const didSelectEmoji = (emoji: EmojiData) => {
     setEmojiPickerIsOpen(false);
-    formik.setFieldValue('emoji', emoji);
+    if (!(emoji as BaseEmoji).native) return;
+    formik.setFieldValue('emoji', (emoji as BaseEmoji));
   };
+
+  if (readOnly) return <FrontmatterReadOnly formik={formik} />;
 
   return (
     <div className={styles.Frontmatter}>
@@ -55,10 +69,10 @@ const Frontmatter = ({
         />
       </Modal>
 
-      <form className="pb-4" onSubmit={formik.handlesubmit}>
+      <form className="pb-4" onSubmit={formik.handleSubmit}>
         <div className="flex items-center">
           <div className={`${styles.emoji} cursor-pointer`} onClick={openEmojiPicker}>
-            {formik.values.emoji.native}
+            {formik.values.emoji.native ?? '?'}
           </div>
           <div className="grow">
             <input
@@ -73,7 +87,7 @@ const Frontmatter = ({
           </div>
         </div>
 
-        {formik.errors.name && (
+        {(typeof formik.errors.name === "string") && (
           <div className="mb-4 mt-1">
             <div className="pill inline">{formik.errors.name}</div>
           </div>
