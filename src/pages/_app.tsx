@@ -8,9 +8,13 @@ import 'src/styles/nprogress.css';
 import Head from 'next/head';
 import type { AppProps } from 'next/app';
 import Modal from 'react-modal';
-//import dynamic from 'next/dynamic';
+import dynamic from 'next/dynamic';
 import NProgress from 'nprogress';
 import Router from 'next/router';
+
+import { GraphProvider } from 'src/hooks/useGraphData';
+import { ModalProvider, ModalType } from 'src/hooks/useModal';
+import { Toaster } from 'react-hot-toast';
 
 import { Provider, chain, createClient } from 'wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
@@ -18,9 +22,9 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
 import { providers } from 'ethers';
 
-//const Wallet = dynamic(() => import('src/components/Wallet'), {
-//  ssr: false
-//});
+const Wallet = dynamic(() => import('src/components/Wallet'), {
+  ssr: false
+});
 
 NProgress.configure({ showSpinner: false });
 Router.events.on('routeChangeStart', (url) => {
@@ -31,57 +35,29 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 Modal.setAppElement('#__next');
 
-const infuraId =
-  process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
-
 const chains = [chain.polygon, chain.polygonMumbai];
 const defaultChain = chains[0];
-
-//const connectors = ({ chainId }) => {
-//  const rpcUrl =
-//    chains.find((x) => x.id === chainId)?.rpcUrls?.[0] ??
-//    chain.mainnet.rpcUrls[0];
-//  return [
-//    new InjectedConnector({
-//      chains,
-//      options: { shimDisconnect: true },
-//    }),
-//    new WalletConnectConnector({
-//      options: {
-//        infuraId,
-//        qrcode: true,
-//      },
-//    }),
-//    new CoinbaseWalletConnector({
-//      options: {
-//        appName: 'welding.app',
-//        jsonRpcUrl: `${rpcUrl}/${infuraId}`,
-//      },
-//    }),
-//  ]
-//}
 
 const client = createClient({
   autoConnect: true,
   connectors({ chainId }) {
     const chain = chains.find((x) => x.id === chainId) ?? defaultChain;
-    const rpcUrl =
-      chains.find((x) => x.id === chainId)?.rpcUrls?.[0] ??
-      defaultChain.rpcUrls[0];
+    const rpcUrl = chain.rpcUrls.alchemy
+      ? `${chain.rpcUrls.alchemy}/${process.env.NEXT_PUBLIc_ALCHEMY_PROJECT_ID}`
+      : chain.rpcUrls.default
     return [
       new InjectedConnector({ chains }),
       new CoinbaseWalletConnector({
         chains,
         options: {
-          appName: 'welding.xyz',
+          appName: 'welding.app',
           chainId: chain.id,
-          jsonRpcUrl: `${rpcUrl}/${infuraId}`,
+          jsonRpcUrl: rpcUrl,
         },
       }),
       new WalletConnectConnector({
         chains,
         options: {
-          infuraId,
           qrcode: true,
           rpc: {
             [chain.id]: rpcUrl,
@@ -90,9 +66,9 @@ const client = createClient({
       }),
     ]
   },
-  provider({ chainId }) {
-    return new providers.InfuraProvider(chainId, infuraId);
-  },
+  //provider({ chainId }) {
+  //  return new providers.InfuraProvider(chainId, infuraId);
+  //},
   //webSocketProvider({ chainId }) {
   //  return new providers.AlchemyWebSocketProvider(
   //    isChainSupported(chainId) ? chainId : defaultChain.id,
@@ -128,8 +104,17 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="twitter:creator" content="@welding_app" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
-      {/*<div className="absolute right-0 top-0 pr-4 py-4"><Wallet /></div>*/}
-      <Component {...pageProps} />
+
+      <GraphProvider>
+        <ModalProvider>
+          <div className="absolute right-0 top-0 pr-4 py-4">
+            <Wallet />
+          </div>
+          <Component {...pageProps} />
+          <Toaster />
+        </ModalProvider>
+      </GraphProvider>
+
     </Provider>
   );
 };

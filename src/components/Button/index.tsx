@@ -13,7 +13,7 @@ const Button: FC<Props> = ({
 }) => {
   return (
     <button
-      className="Button font-medium text-xs px-2 py-1 rounded-full"
+      className="Button"
       disabled={disabled}
       onClick={() => onClick()}
     >

@@ -38,6 +38,7 @@ export default async function handler(
 
     const response =
       await fetch(`${Welding.ipfsGateways[0]}/ipfs/${hash}/metadata.json`);
+    if (!response.ok) throw new Error("failed_to_fetch");
     const contentType = response.headers.get('content-type');
     const content = await response.text();
 

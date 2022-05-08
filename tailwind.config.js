@@ -4,7 +4,11 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      aspectRatio: {
+        'sharecard': '120/63'
+      }
+    },
   },
   plugins: [],
 }

@@ -1,5 +1,3 @@
-// https://lyonwj.com/blog/graphql-server-next-js-neo4j-aura-vercel
-
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { gql, ApolloServer } from 'apollo-server-micro';
 import { Neo4jGraphQL } from '@neo4j/graphql';
@@ -21,24 +19,18 @@ const typeDefs = gql`
     revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
     connections: [BaseNode!]! @relationship(type: "TO", direction: OUT)
     backlinks: [BaseNode!]! @relationship(type: "TO", direction: IN)
+    owner: Account! @cypher(statement:"MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
+    admins: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a")
+    editors: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a")
   }
 
   type Account {
     address: String!
+    adminOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:CAN {role: '0'}]->(n:BaseNode) RETURN n")
+    editorOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:CAN {role: '1'}]->(n:BaseNode) RETURN n")
+    ownerOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:OWNS]->(n:BaseNode) RETURN n")
   }
-  type Subgraph {
-    tokenId: String!
-    revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
-  }
-  type Topic {
-    tokenId: String!
-    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[:REVISES]-(rev:Revision) RETURN rev ORDER BY rev.timestamp DESC LIMIT 1")
-    revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
-  }
-  type Document {
-    tokenId: String!
-    revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
-  }
+
   type Revision {
     hash: String!
     timestamp: Int
@@ -57,7 +49,6 @@ export default async function handler(req, res) {
   const schema = await (new Neo4jGraphQL({ typeDefs, driver })).getSchema();
   const server = new ApolloServer({
     schema,
-    //playground: true,
     introspection: true,
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
   });

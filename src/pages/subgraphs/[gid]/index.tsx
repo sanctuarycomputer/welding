@@ -1,11 +1,10 @@
-import type { NextPage, GetServerSideProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
-
-const SubgraphShow: NextPage = () => null;
+import SubgraphShow from 'src/pages/subgraphs/[gid]/[did]';
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { gid } = context.query;
+  let { gid, m } = context.query;
   gid = ((Array.isArray(gid) ? gid[0] : gid) || '').split('-')[0];
 
   const subgraph =
@@ -29,11 +28,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 
   return {
-    redirect: {
-      permanent: false,
-      destination: `/subgraphs/${Welding.slugifyNode(subgraph)}/mint`
-    },
-    props:{},
+    props: { subgraph }
   };
 }
 

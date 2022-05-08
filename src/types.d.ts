@@ -1,5 +1,11 @@
 import { BaseEmoji } from 'emoji-mart';
 
+enum Roles {
+  OWNER = "Owner",
+  ADMIN = "Admin",
+  EDITOR = "Editor"
+};
+
 type BaseNodeFormValues = {
   name: string,
   description: string,
@@ -16,6 +22,9 @@ type MintState = {
 
 type Account = {
   address: string;
+  ownerOf: BaseNode[];
+  adminOf: BaseNode[];
+  editorOf: BaseNode[];
 };
 
 type MetadataProperties = {

@@ -19,31 +19,6 @@ import Delimiter from '@editorjs/delimiter';
 import InlineCode from '@editorjs/inline-code';
 import SimpleImage from '@editorjs/simple-image';
 
-//Pattern for building a readOnly format
-class MyWarning extends Warning {
-  render() {
-    if (!this.readOnly) return super.render();
-    const container = this._make('div', [this.CSS.baseClass, this.CSS.wrapper]);
-
-    const title = this._make('div', [this.CSS.input, this.CSS.title], {
-      contentEditable: !this.readOnly,
-      innerHTML: this.data.title,
-    });
-    const message = this._make('div', [this.CSS.input, this.CSS.message], {
-      contentEditable: !this.readOnly,
-      innerHTML: this.data.message,
-    });
-
-    title.dataset.placeholder = this.titlePlaceholder;
-    message.dataset.placeholder = this.messagePlaceholder;
-
-    container.appendChild(title);
-    container.appendChild(message);
-
-    return container;
-  }
-}
-
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
   blocks: [{
@@ -60,13 +35,11 @@ const EDITOR_JS_TOOLS = {
   embed: Embed,
   table: Table,
   list: List,
-  warning: MyWarning,
+  warning: Warning,
   code: Code,
   linkTool: {
     class: LinkTool,
-    config: {
-      endpoint: '/api/fetch-link-metadata',
-    }
+    config: { endpoint: '/api/og' }
   },
   //image: Image,
   raw: Raw,

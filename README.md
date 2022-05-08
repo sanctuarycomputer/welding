@@ -27,23 +27,27 @@ TODO
 
 UI
 
-- [ ] Twitter
-- [ ] Combine Mint & Docs Edit?
-- [ ] Better flow for switching & creating subgraphs?
-- [ ] Handle unauthenticated, empty subgraph (remove redirects?)
+- [ ] Security - Alchemy settings, IPFS settings, etc
+- [ ] Better flow for creating subgraphs?
 - [ ] CORS
 - [ ] Apollo Local Storage Caching strategy using latestTransactionBlock
-- [ ] Full Text Search (name, description)
 - [ ] Node Permissions & Fees
-- [ ] Modal Sizing
 - [ ] Mobile UI
-- [ ] Cover Image
 - [ ] Editor!
 - [ ] next/head
 - [ ] Page Caching
 - [ ] Deploys
+- [ ] Sidebar should show backlinked Subgraphs
+- [ ] I should be able to remove my cover image
+- [ ] I should be able to backlink a subgraph/document I didn't create
+- [ ] Wrong Network Handler
+
+Bugs
+- [ ] Editor does not properly support undo/redo
+- [ ] The topic modal should actually work
 
 Roadmap
+- [ ] Reorderable Sidebar
 - [ ] Iron Session? (Persisted Drafts)
 - [ ] Comments
 - [ ] Favorites

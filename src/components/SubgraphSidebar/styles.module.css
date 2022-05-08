@@ -9,3 +9,6 @@
 .hidden {
   transform: translate(-300px, 0);
 }
+
+@media (min-width: 768px) {
+}

@@ -32,7 +32,9 @@ const merge = async (e, session) => {
          `MERGE (n:BaseNode {tokenId: $tokenId})
           MERGE (from:Account {address: $fromAddress})
           MERGE (to:Account {address: $toAddress})
-          MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)`;
+          MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
+          MERGE (to)-[:OWNS]->(n)
+          WITH from, n MATCH (from)-[r:OWNS]->(n) DELETE r`;
       await session.writeTransaction(tx => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -82,8 +84,7 @@ const merge = async (e, session) => {
         `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         MERGE (sender)-[:GRANTS_ROLE {role: $role, tokenId: $tokenId}]->(recipient)
-         MERGE (recipient)-[:CAN {role: $role}]->(n2)`;
+         MERGE (recipient)-[:CAN {role: $role}]->(n)`;
       await session.writeTransaction(tx => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -95,9 +96,26 @@ const merge = async (e, session) => {
       break;
     }
 
+    case 'RoleRevoked': {
+      const q =
+        `MERGE (n:BaseNode {tokenId: $tokenId})
+         MERGE (recipient:Account {address: $toAddress})
+         MERGE (sender:Account {address: $senderAddress})
+         WITH recipient, n MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r`;
+      await session.writeTransaction(tx => {
+        tx.run(q, {
+          tokenId: args.tokenId.toString(),
+          role: args.role.toString(),
+          toAddress: args.account,
+          senderAddress: args.sender
+        });
+      });
+      break;
+    }
+
+
     case 'Approval':
     case 'ApprovalForAll':
-    case 'RoleRevoked':
     case 'PermissionsDelegated':
     case 'DelegatePermissionsRenounced':
     case 'PermissionsBypassSet':
@@ -106,11 +124,6 @@ const merge = async (e, session) => {
     default:
       console.log(`Implement Me: ${event}`);
   }
-
-  const q =
-    `MERGE (b:Block {id: '__singleton__'})
-     SET b.number = $blockNumber`;
-  await session.writeTransaction(tx => tx.run(q, { blockNumber }));
 };
 
 export default async function handler(
@@ -120,13 +133,19 @@ export default async function handler(
   try {
     const session = driver.session();
 
-    if (true) {
+    if (false) {
       const flushQ1 = `MATCH (a)-[r]->() DELETE a, r`
       const flushQ2 = `MATCH (a) DELETE a`;
       await session.writeTransaction(tx => tx.run(flushQ1));
       await session.writeTransaction(tx => tx.run(flushQ2));
+      try {
+        await session.readTransaction(tx =>
+          tx.run(`CREATE FULLTEXT INDEX revisionContent FOR (n:Revision) ON EACH [n.content]`)
+        );
+      } catch(e) {}
     }
 
+    // Load our cursor
     const latestQ =
       `MATCH (b:Block {id: '__singleton__'})
        RETURN b.number
@@ -134,24 +153,38 @@ export default async function handler(
     const readResult =
       await session.readTransaction(tx => tx.run(latestQ));
 
-    let lastBlock =
+    let cursor =
       parseInt(process.env.NEXT_PUBLIC_NODE_DEPLOY_BLOCK || '0');
     if (readResult.records.length) {
-      lastBlock = readResult.records[0].get('b.number');
+      cursor = readResult.records[0].get('b.number');
     }
 
-    const { latestBlock, events } =
-      await Welding.queryEvents(null, lastBlock + 1);
+    // Load the latest block
+    const latestBlock = await Welding.getBlockNumber();
+
+    // If we're ensuring that our cursor is up to a point
+    let { ensure } = req.query;
+    if (ensure) {
+      ensure = parseInt(ensure);
+      if (ensure > latestBlock)
+        throw new Error("invalid_ensure_block_given");
+      if (cursor >= ensure)
+        return res.status(200).json({ status: "already_processed", cursor });
+    }
+
+    const { endAt, events } =
+      await Welding.queryEvents(null, cursor + 1, ensure);
     for (const event of events) await merge(event, session);
 
+    // Store our cursor
     const q =
       `MERGE (b:Block {id: '__singleton__'})
        SET b.number = $blockNumber`;
     await session.writeTransaction(tx => tx.run(q, {
-      blockNumber: latestBlock
+      blockNumber: endAt
     }));
 
-    res.status(200).json({ status: "ok" });
+    res.status(200).json({ status: "synced", cursor: endAt });
   } catch(e) {
     console.log(e);
     if (e instanceof Error) {

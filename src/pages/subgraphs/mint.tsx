@@ -7,6 +7,7 @@ import { useSigner, useConnect, useAccount } from 'wagmi';
 import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
 
+import Molecule from 'src/components/Icons/Molecule';
 import EditNav from 'src/components/EditNav';
 import Frontmatter from 'src/components/Frontmatter';
 import TopicManager from 'src/components/TopicManager';
@@ -92,6 +93,14 @@ const GraphsMint: FC<{}> = () => {
       />
 
       <div className="content py-4 mt-24 mx-auto">
+        <div className="background-passive-color rounded p-4 flex flex-row">
+          <div className="pr-2">
+            <Molecule />
+          </div>
+          <div>
+            <p className="text-sm">You're minting a subgraph.</p>
+          </div>
+        </div>
         <Frontmatter
           readOnly={!canEdit}
           formik={formik}

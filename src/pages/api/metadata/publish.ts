@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createCanvas, loadImage } from 'canvas';
-import { NFTStorage, File } from 'nft.storage';
+import { NFTStorage, File, Blob } from 'nft.storage';
 import { MetadataProperties } from 'src/types';
+import { fileTypeFromBuffer } from 'file-type';
 
 type Data = {
   hash: string
@@ -9,6 +10,15 @@ type Data = {
 type ApiError = {
   error: string
 };
+
+export const config = {
+  api: {
+    responseLimit: false,
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  },
+}
 
 const nftstorage = new NFTStorage({
   token: process.env.NFT_STORAGE_API_KEY || ''
@@ -38,8 +48,19 @@ const makeImageFileForEmoji = async (emoji) => {
 
   return new File(
     [canvas.toBuffer('image/jpeg', { quality: 1 })],
-    `${emoji.unified}.jpg`,
+    'emoji.jpg',
     { type: 'image/jpeg'}
+  );
+};
+
+const base64ImageToFile = async (base64: string) => {
+  const buffer = Buffer.from(base64, 'base64');
+  const fileType = await fileTypeFromBuffer(buffer);
+  if (!fileType) throw new Error("unknown_filetype");
+  return new File(
+    [buffer],
+    `image.${fileType.ext}`,
+    { type: fileType.mime }
   );
 };
 
@@ -48,22 +69,44 @@ export default async function handler(
   res: NextApiResponse<Data | ApiError>
 ) {
   try {
-    const { name, description, emoji, content } = req.body;
+    const { name, description, emoji, content, image } = req.body;
 
-    const image = await makeImageFileForEmoji(emoji);
+    let coverImage = image;
+    if (coverImage) {
+      if (!image.startsWith("ipfs://")) {
+        coverImage = await base64ImageToFile(image)
+      }
+    } else {
+      coverImage = await makeImageFileForEmoji(emoji);
+    };
+
     const properties: MetadataProperties = { emoji };
     if (content) properties.content = content;
 
+    if (typeof coverImage === "string") {
+      const metadataFile = new File(
+        [JSON.stringify({
+          image: coverImage,
+          name,
+          description,
+          properties,
+        })],
+        'metadata.json',
+        { type: 'application/json' }
+      );
+      const hash = await nftstorage.storeDirectory([metadataFile]);
+      return res.status(200).json({ hash });
+    }
+
     const data = await nftstorage.store({
-      image,
+      image: coverImage,
       name,
       description,
       properties,
     });
 
     // TODO: Warm the metadata cache?
-
-    res.status(200).json({ hash: data.ipnft });
+    return res.status(200).json({ hash: data.ipnft });
   } catch(e) {
     console.log(e);
     if (e instanceof Error) {

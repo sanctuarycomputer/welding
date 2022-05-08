@@ -2,14 +2,18 @@ import { FC } from 'react';
 import { BaseNode } from 'src/types';
 
 type Props = {
-  topic: BaseNode
+  topic: BaseNode;
+  textSize?: string;
 };
 
-const TopicTile: FC<Props> = ({ topic }) => {
+const TopicTile: FC<Props> = ({
+  topic,
+  textSize,
+}) => {
   const emoji = topic.currentRevision.metadata.properties.emoji.native;
   const name = topic.currentRevision.metadata.name;
   return (
-    <p className="ml-2 border-2 border-color flex rounded-full text-xs px-2 py-1 font-medium">
+    <p className={`mr-1 border-2 border-color background-color flex rounded-full text-${textSize || 'xs'} px-2 py-1 font-medium shadow-lg`}>
       {emoji} #{name}
     </p>
   );
