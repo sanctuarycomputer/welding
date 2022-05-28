@@ -12,42 +12,86 @@ import TopicTile from 'src/components/TopicTile';
 import { BaseNode } from 'src/types';
 import { useSigner } from 'wagmi';
 import slugifyNode from 'src/utils/slugifyNode';
+import getRelatedNodes from 'src/utils/getRelatedNodes';
+import Tooltip from 'src/components/Tooltip';
 
 type Props = {
-  topics: Array<BaseNode>;
-  setTopics: Function;
   readOnly: boolean;
 };
 
 const TopicManager: FC<Props> = ({
-  topics,
-  setTopics,
+  formik,
   readOnly
 }) => {
   const { openModal } = useContext(ModalContext);
 
+  const setTopics = (topics) => {
+    // get related nodes without incoming topics
+    // get incoming edges without incoming topics
+    //
+    const node = formik.values.__node__;
+
+    const topicIds = topics.map(t => t.tokenId);
+    const otherRelatedNodes = node.related.filter((n: BaseNode) => {
+      return !topicIds.includes(n.tokenId);
+    });
+
+    const nonTopicIncomingEdges =
+      node.incoming.filter((e: Edge) => {
+        const n = node.related.find((r: BaseNode) => r.tokenId === e.tokenId);
+        if (!n) return false;
+        return !n.labels.includes("Topic") && (e.name !== "DESCRIBES");
+      });
+
+    const topicIncomingEdges = topics.map((n: BaseNode) => {
+      return {
+        __typename: "Edge",
+        name: "DESCRIBES",
+        tokenId: n.tokenId
+      };
+    });
+
+    formik.setFieldValue('incoming', [
+      ...nonTopicIncomingEdges,
+      ...topicIncomingEdges
+    ]);
+
+    formik.setFieldValue('related', [
+      ...otherRelatedNodes,
+      ...topics
+    ]);
+  };
+
+  const node = formik.values.__node__;
+  const topics = getRelatedNodes(node, 'incoming', 'Topic');
+
   return (
-    <div className="flex mb-4">
+    <div className="mb-4">
       {topics.map(t => {
         return (
           <Link key={t.tokenId} href={`/${slugifyNode(t)}`}>
-            <a className="inline-block">
-              <TopicTile key={t.tokenId} topic={t} />
+            <a className="inline-block pb-2">
+              <Tooltip message={t.currentRevision.metadata.description || 'No Description'}>
+                <TopicTile key={t.tokenId} topic={t} />
+              </Tooltip>
             </a>
           </Link>
         );
       })}
 
-      <div
-        onClick={() => openModal({
-          type: ModalType.TOPIC_CONNECTOR,
-          meta: {
-            topics,
-            setTopics
-          }
-        })}>
-        <p className="cursor-pointer shadow-lg border-2 border-color background-color flex rounded-full text-xs px-2 py-1 font-medium">+ Add Topics</p>
-      </div>
+      {!readOnly && (
+        <div
+          className={`cursor-pointer inline-block `}
+          onClick={() => openModal({
+            type: ModalType.TOPIC_CONNECTOR,
+            meta: {
+              topics,
+              setTopics
+            }
+          })}>
+          <p className="inline-block border-2 border-color background-color rounded-full text-xs px-2 py-1 font-medium">+ Topic</p>
+        </div>
+      )}
     </div>
   );
 };

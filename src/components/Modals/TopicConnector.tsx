@@ -5,15 +5,23 @@ import Modal from 'react-modal';
 import ModalHeader from 'src/components/Modals/ModalHeader';
 import Button from 'src/components/Button';
 import Hashtag from 'src/components/Icons/Hashtag';
-
 import { WithContext as ReactTags } from 'src/components/Tags';
-import { emojiIndex, BaseEmoji } from 'emoji-mart';
+import DEFAULT_EMOJI, { emojis } from 'src/utils/defaultEmoji';
+import Client from 'src/lib/Client';
 
-const emojis = Object.values(emojiIndex.emojis).filter(e => {
-  return 'native' in e;
-});
-const DEFAULT_EMOJI: BaseEmoji =
-  (Object.values(emojiIndex.emojis)[0] as BaseEmoji);
+import { gql, useQuery } from '@apollo/client';
+
+const baseNodesShallowQuery = gql`
+  query BaseNodes {
+    baseNodes {
+      tokenId
+      labels
+      currentRevision {
+        hash, block, content, contentType
+      }
+    }
+  }
+`;
 
 export type TopicConnectorMeta = {
   topics: BaseNode[];
@@ -28,11 +36,13 @@ type Props = {
 
 const suggestions = [{
   tokenId: '999',
-  connections: [],
-  backlinks: [],
+  labels: ['BaseNode', 'Topic'],
+  related: [],
+  outgoing: [],
+  incoming: [],
   currentRevision: {
     hash: '',
-    timestamp: 0,
+    block: 0,
     metadata: {
       name: 'Thailand',
       description: "A country in the world",
@@ -48,10 +58,15 @@ const TopicConnector: FC<Props> = ({
   onRequestClose,
   meta
 }) => {
+  const { shallowNodes, shallowNodesLoading, loadShallowNodes } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
   const newTopics = topics.filter(t => t.tokenId.startsWith('-'));
+
+  const suggestions = shallowNodes
+    ? shallowNodes.filter(n => n.labels.includes("Topic"))
+    : [];
 
   const setTopics = (topics) => {
     setInternalTopics(topics);
@@ -73,12 +88,13 @@ const TopicConnector: FC<Props> = ({
 
     const newTopic: BaseNode = {
       tokenId: `-${newTopics.length + 1}`,
-      labels: ['Node', 'Topic'],
-      connections: [],
-      backlinks: [],
+      labels: ['BaseNode', 'Topic'],
+      related: [],
+      outgoing: [],
+      incoming: [],
       currentRevision: {
         hash: '',
-        timestamp: 0,
+        block: 0,
         content: '',
         contentType: '',
         metadata: {
@@ -113,6 +129,34 @@ const TopicConnector: FC<Props> = ({
       onRequestClose();
     }
   };
+
+  if (
+    shallowNodesLoading === null ||
+    shallowNodesLoading === true
+  ) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={attemptClose}
+      >
+        <div className="h-screen sm:h-auto flex flex-col">
+          <ModalHeader
+            title="Topics"
+            hint="Connect or mint topics to make this node easier to find."
+            onClickClose={attemptClose}
+          />
+        </div>
+
+        <div
+          className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+          <Hashtag />
+          <p className="pt-2 font-semibold">
+            Loading Topics, please wait...
+          </p>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal

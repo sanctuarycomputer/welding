@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
   useAccount,
+  useSigner,
   useDisconnect
 } from 'wagmi';
 import Button from 'src/components/Button';
@@ -15,16 +16,23 @@ const Address = dynamic(() => import('src/components/Address'), {
 const Wallet = () => {
   const { openModal } = useContext(ModalContext);
   const { data: account } = useAccount();
+  const { data: signer } = useSigner();
+
   const { disconnect } = useDisconnect();
   const router = useRouter();
 
   if (router.route === "/accounts/[address]" && router.query.address === account?.address)
     return (
+      <>
+      <Link href="/mint">
+        <a className="Button text-xs font-semibold mr-1">+ Mint Subgraph</a>
+      </Link>
       <Button
         disabled={false}
         label="Disconnect"
         onClick={disconnect}
       />
+      </>
     );
 
   if (account?.address)

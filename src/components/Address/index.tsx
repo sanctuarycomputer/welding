@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useEnsAvatar, useEnsName } from 'wagmi';
-import truncateAddress from 'src/utils/truncateAddress';
+import truncate from 'src/utils/truncate';
 import toast from 'react-hot-toast';
 import Copy from 'src/components/Icons/Copy';
 import Avatar from 'src/components/Avatar';
@@ -43,8 +43,8 @@ const Address: FC<Props> = ({
 
         <p className="ml-1 text-background-color font-semibold inline-block pr-2">
           {ensName
-            ? (<><span className="border-r border-color pr-1 mr-1">{ensName}</span><span>{truncateAddress(address || 'null')}</span></>)
-            : truncateAddress(address || 'null')}
+            ? (<><span className="border-r border-color pr-1 mr-1">{ensName}</span><span>{truncate(address || 'null', 6)}</span></>)
+            : truncate(address || 'null', 6)}
         </p>
       </div>
 

@@ -11,6 +11,11 @@ const useEditableImage = (
   }
   const [imagePreview, setImagePreview] = useState<string | null>(imageSrc);
 
+  const clearImage = () => {
+    setImagePreview(null);
+    formik.setFieldValue('image', '');
+  };
+
   const imageDidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLInputElement;
@@ -25,7 +30,7 @@ const useEditableImage = (
     fileReader.readAsDataURL(file);
   };
 
-  return [imagePreview, imageDidChange];
+  return [imagePreview, imageDidChange, clearImage];
 }
 
 export default useEditableImage;

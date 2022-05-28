@@ -40,6 +40,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  let { did: givenDidSlug, nid: givenNidSlug  } = context.query;
+  givenNidSlug = ((Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || '');
+  givenDidSlug = ((Array.isArray(givenDidSlug) ? givenDidSlug[0] : givenDidSlug) || '');
+  if (
+    givenNidSlug !== slugifyNode(subgraph) ||
+    givenDidSlug !== slugifyNode(document)
+  ) {
+    return {
+      redirect: {
+        permanent: false,
+        destination:
+          `/${slugifyNode(subgraph)}/${slugifyNode(document)}`
+      }
+    };
+  }
+
   return {
     props: {
       key: `${subgraph.tokenId}-${document.tokenId}`,

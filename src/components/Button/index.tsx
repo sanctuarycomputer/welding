@@ -4,16 +4,18 @@ type Props = {
   label: string;
   disabled: boolean;
   onClick: Function;
+  className?: string;
 };
 
 const Button: FC<Props> = ({
   label,
   disabled,
-  onClick
+  onClick,
+  className
 }) => {
   return (
     <button
-      className="Button"
+      className={`Button ${className}`}
       disabled={disabled}
       onClick={() => onClick()}
     >

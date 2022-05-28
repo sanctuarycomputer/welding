@@ -10,6 +10,11 @@ import {
   Revision
 } from 'src/types';
 
+import {
+  persistCache,
+  LocalStorageWrapper
+} from 'apollo3-cache-persist';
+
 import { emojiIndex, BaseEmoji } from 'emoji-mart';
 
 const DEFAULT_EMOJI: BaseEmoji =
@@ -24,29 +29,69 @@ const ERROR_METADATA: Metadata = {
   }
 };
 
-const client = new ApolloClient({
-  uri: "http://localhost:3000/api/graphql",
-  cache: new InMemoryCache(),
-});
+const baseNodeShape = `
+tokenId
+labels
+fee
+currentRevision {
+  hash, block, content, contentType
+}
+related {
+  tokenId
+  labels
+  currentRevision {
+    hash, block, content, contentType
+  }
+}
+incoming {
+  name
+  tokenId
+}
+outgoing {
+  name
+  tokenId
+}
+admins {
+  address
+}
+editors {
+  address
+}
+owner {
+  address
+}
+`;
 
 const Client = {
-  searchNodes: async function(term: string, label: string | null): Promise<BaseNode[]> {
-    const latestQ =
-      `CALL db.index.fulltext.queryNodes("content", $term)
-       YIELD node, score
-       RETURN node, score`
-    const readResult =
-      await session.readTransaction(tx => tx.run(latestQ));
-    console.log(readResult);
+  _client: null,
+  getClient: async function() {
+    if (Client._client) return Client._client;
+
+    const cache = new InMemoryCache();
+    if (typeof window !== 'undefined') {
+      await persistCache({
+        cache,
+        storage: new LocalStorageWrapper(window.localStorage),
+        debug: true,
+        trigger: 'write'
+      });
+    }
+    Client._client = new ApolloClient({
+      cache,
+      uri: "http://localhost:3000/api/graphql",
+    });
+
+    return Client._client;
   },
 
   processRevision: async function(revision: Revision): Promise<void> {
-    if (!revision.content)
+    if (!revision.content) {
       revision.metadata = await Client.fetchMetadataForHash(revision.hash);
-    if (revision.contentType === 'application/json')
+    }
+
+    if (revision.contentType === 'application/json') {
       revision.metadata = JSON.parse(revision.content);
-    // Should never happen
-    revision.metdata = revision.content;
+    }
   },
 
   fetchMetadataForHash: async function(hash: string): Promise<Metadata> {
@@ -60,75 +105,40 @@ const Client = {
     if (!response.ok) throw new Error("could_not_fastforward");
   },
 
+  makeShallowNodesSubscription: async function() {
+    const client = await Client.getClient();
+    return client.watchQuery({
+      fetchPolicy: 'cache-and-network',
+      query: gql`
+        query BaseNodes {
+          baseNodes {
+            tokenId
+            labels
+            fee
+            currentRevision {
+              hash, block, content, contentType
+            }
+          }
+        }
+      `
+    });
+  },
+
   fetchAccount: async function(accountAddress: string): Promise<Account | null> {
+    const client = await Client.getClient();
     const { data: { accounts }} = await client.query({
+      fetchPolicy: 'network-only',
       variables: { accountAddress },
       query: gql`
         query Account($accountAddress: String) {
           accounts(where: { address: $accountAddress }) {
             address
-            ownerOf {
+            roles {
+              role
               tokenId
-              labels
-              currentRevision {
-                hash, timestamp, content, contentType
-              }
-              connections {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
-              backlinks {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
             }
-            adminOf {
-              tokenId
-              labels
-              currentRevision {
-                hash, timestamp, content, contentType
-              }
-              connections {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
-              backlinks {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
-            }
-            editorOf {
-              tokenId
-              labels
-              currentRevision {
-                hash, timestamp, content, contentType
-              }
-              connections {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
-              backlinks {
-                tokenId
-                labels
-                currentRevision {
-                  hash, timestamp, content, contentType
-                }
-              }
+            related {
+              ${baseNodeShape}
             }
           }}`,
     });
@@ -136,82 +146,36 @@ const Client = {
     let account: Account = accounts[0];
     if (!account) return null;
     account = JSON.parse(JSON.stringify(account));
-    if (!account) return null;
 
-    for (const node of account.ownerOf) {
+    for (const node of account.related) {
       await Client.processRevision(node.currentRevision);
-      for (const connection of node.connections)
-        await Client.processRevision(connection.currentRevision);
-      for (const backlink of node.backlinks)
-        await Client.processRevision(backlink.currentRevision);
-    }
-
-    for (const node of account.adminOf) {
-      await Client.processRevision(node.currentRevision);
-      for (const connection of node.connections)
-        await Client.processRevision(connection.currentRevision);
-      for (const backlink of node.backlinks)
-        await Client.processRevision(backlink.currentRevision);
-    }
-
-    for (const node of account.editorOf) {
-      await Client.processRevision(node.currentRevision);
-      for (const connection of node.connections)
-        await Client.processRevision(connection.currentRevision);
-      for (const backlink of node.backlinks)
-        await Client.processRevision(backlink.currentRevision);
+      for (const related of node.related) {
+        await Client.processRevision(related.currentRevision);
+      }
     }
 
     return account;
   },
 
   fetchBaseNodeByTokenId: async function(tokenId: string): Promise<BaseNode | null> {
+    const client = await Client.getClient();
     const { data: { baseNodes }} = await client.query({
+      fetchPolicy: 'network-only',
       variables: { tokenId },
       query: gql`
         query BaseNode($tokenId: String) {
           baseNodes(where: { tokenId: $tokenId }) {
-            tokenId
-            labels
-            currentRevision {
-              hash, timestamp, content, contentType
-            }
-            connections {
-              tokenId
-              labels
-              currentRevision {
-                hash, timestamp, content, contentType
-              }
-            }
-            backlinks {
-              tokenId
-              labels
-              currentRevision {
-                hash, timestamp, content, contentType
-              }
-            }
-            admins {
-              address
-            }
-            editors {
-              address
-            }
-            owner {
-              address
-            }
+            ${baseNodeShape}
           }}`,
     });
 
     let baseNode: BaseNode = baseNodes[0];
     if (!baseNode) return null;
     baseNode = JSON.parse(JSON.stringify(baseNode));
-    if (!baseNode) return null;
 
     await Client.processRevision(baseNode.currentRevision);
-    for (const connection of baseNode.connections)
+    for (const connection of baseNode.related)
       await Client.processRevision(connection.currentRevision);
-    for (const backlink of baseNode.backlinks)
-      await Client.processRevision(backlink.currentRevision);
 
     return baseNode;
   },

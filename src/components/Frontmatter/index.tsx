@@ -18,7 +18,7 @@ const FrontmatterReadOnly: FC<ReadOnlyProps> = ({ formik }) => {
           <div className={styles.emoji}>
             {formik.values.emoji.native}
           </div>
-          <div className="grow">
+          <div className="grow truncate">
             <h1>{formik.values.name}</h1>
           </div>
         </div>

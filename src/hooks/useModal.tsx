@@ -7,6 +7,8 @@ import TopicMinterModal, { TopicMinterMeta } from 'src/components/Modals/TopicMi
 import EmojiPickerModal, { EmojiPickerMeta } from 'src/components/Modals/EmojiPicker';
 import AddMemberModal, { AddMemberMeta } from 'src/components/Modals/AddMember';
 import NodeSettingsModal, { NodeSettingsMeta } from 'src/components/Modals/NodeSettings';
+import PublisherModal, { PublisherMeta } from 'src/components/Modals/Publisher';
+import SubgraphConnectorModal, { SubgraphConnectorMeta } from 'src/components/Modals/SubgraphConnector';
 
 interface IModalContext {
   openModal: (type: ModalType) => void;
@@ -21,6 +23,8 @@ export enum ModalType {
   EMOJI_PICKER = "EMOJI_PICKER"
   ADD_MEMBER = "ADD_MEMBER"
   NODE_SETTINGS = "NODE_SETTINGS"
+  PUBLISHER = "PUBLISHER"
+  SUBGRAPH_CONNECTOR = "SUBGRAPH_CONNECTOR"
 };
 
 type CurrentModal = {
@@ -42,6 +46,12 @@ type CurrentModal = {
 } | {
   type: ModalType.NODE_SETTINGS,
   meta: NodeSettingsMeta
+} | {
+  type: ModalType.PUBLISHER,
+  meta: PublisherMeta
+} | {
+  type: ModalType.SUBGRAPH_CONNECTOR,
+  meta: SubgraphConnectorMeta
 };
 
 const ModalContext = createContext<IModalContext>();
@@ -113,6 +123,20 @@ const ModalProvider = ({ children }) => {
       )}
       {currentModal?.type === ModalType.NODE_SETTINGS && (
         <NodeSettingsModal
+          isOpen
+          onRequestClose={closeModal}
+          meta={currentModal.meta}
+        />
+      )}
+      {currentModal?.type === ModalType.PUBLISHER && (
+        <PublisherModal
+          isOpen
+          onRequestClose={closeModal}
+          meta={currentModal.meta}
+        />
+      )}
+      {currentModal?.type === ModalType.SUBGRAPH_CONNECTOR && (
+        <SubgraphConnectorModal
           isOpen
           onRequestClose={closeModal}
           meta={currentModal.meta}

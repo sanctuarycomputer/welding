@@ -30,7 +30,8 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
   topic,
   setTopicId,
   setTopicDescription,
-  openEmojiPicker
+  openEmojiPicker,
+  currentlyMinting
 }) => {
   const { openModal } = useContext(ModalContext);
   const { data: signer } = useSigner();
@@ -45,7 +46,9 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
     currentlyMinting.current.add(tempId);
 
     try {
-      toastId = toast.loading(`Publishing metadata for ${topic.currentRevision.metadata.name}...`, {
+      if (!signer) throw new Error("no_signer_present");
+
+      toastId = toast.loading(`Publishing metadata...`, {
         position: 'bottom-right',
         className: 'toast'
       });
@@ -58,9 +61,10 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         topic.currentRevision.metadata;
       const hash =
         await Welding.publishMetadataToIPFS({ name, description, emoji });
-      if (!signer) return;
 
-      toast.loading(`Requesting signature for ${topic.currentRevision.metadata.name}...`, {
+      if (!signer) throw new Error("no_signer_present");
+
+      toast.loading(`Requesting signature...`, {
         id: toastId
       });
       setMintState({
@@ -68,14 +72,14 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         label: "Signing...",
       });
 
-      let tx = await Welding.Nodes.connect(signer).mintNode(
+      let tx = await Welding.Nodes.connect(signer).mint(
         Welding.LABELS.topic,
         hash,
         [],
         []
       );
 
-      toast.loading(`Minting ${topic.currentRevision.metadata.name}...`, {
+      toast.loading(`Minting...`, {
         id: toastId
       });
       setMintState({
@@ -85,7 +89,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
 
       tx = await tx.wait();
 
-      toast.loading(`Confirming ${topic.currentRevision.metadata.name}...`, {
+      toast.loading(`Confirming...`, {
         id: toastId
       });
       setMintState({
@@ -97,8 +101,6 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         tx.events.find((e: any) => e.event === "Transfer");
       if (!transferEvent) return;
       const topicId = transferEvent.args.tokenId;
-
-      // Ensure we've processed this block before continuing
       await Client.fastForward(tx.blockNumber);
 
       toast.success('Success!', {
@@ -108,7 +110,9 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
     } catch(e) {
       console.log(e);
       toast.error('An error occured.', {
-        id: toastId
+        id: toastId,
+        position: 'bottom-right',
+        className: 'toast'
       });
     } finally {
       currentlyMinting.current.delete(tempId);
@@ -118,6 +122,8 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       });
     }
   };
+
+  const isMinting = mintState.progress !== 0;
 
   return (
     <div
@@ -129,7 +135,13 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         style={{ width: `${mintState.progress * 100}%` }}
       ></div>
       <div className="flex flex-row items-center py-1 flex-grow">
-        <div className="cursor-pointer" onClick={() => openEmojiPicker(topic)}>
+        <div
+          className={isMinting ? "cursor-wait" : "cursor-pointer"}
+          onClick={() => {
+            if (isMinting) return;
+            openEmojiPicker(topic);
+          }}
+        >
           <div className="aspect-square p-1 mr-2 background-passive-color rounded-full w-8 text-center">
             {topic.currentRevision.metadata.properties.emoji.native}
           </div>
@@ -140,9 +152,9 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         <input
           value={topic.currentRevision.metadata.description}
           onChange={e => setTopicDescription(topic, e.target.value)}
-          className="text-xs py-2 mr-4"
+          className={`text-xs py-2 mr-4 ${isMinting ? 'cursor-wait' : ''}`}
           placeholder="Add a description"
-          disabled={false}
+          disabled={isMinting}
         />
         <Button
           label={mintState.label}

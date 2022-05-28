@@ -1,15 +1,15 @@
 const HUGH_SUBGRAPH_METADATA =
-  'bafyreidd7c3jyne7lmixstttq6oayoqqll7idf7mvkmsvpyl622mpkti6a';
+  'bafyreidxcii7rpfkibdd2o27tpgyjrumfjwyp7sewhueoaeay4njhvfu5q';
 const WELDING_SUBGRAPH_METADATA =
-  'bafyreihfpbb2obyyypum57rjs2atcdleehrdggsd34a2ltpset4vsawhrq';
+  'bafyreic2cpdw3fqxwtpasvokrf5tkozk2bk63gb7scaojvlief2iazmpbe';
 const INTRO_DOC_METADATA =
-  'bafyreign76il4a5jq4x5lzj2dpdpsxzsqhmtdwrt6utwruewberhcerwj4';
+  'bafyreih6nuukqnfaiwnsejxfrczsnhfwq5dtg7gl7ehajabg7b6jwdy6aq';
 const ETH_TOPIC_METADATA =
-  'bafyreid6eydnjq7ffrswk6u7ewunnmpawfoqlaguruk3lzwyljtqokzjee';
+  'bafyreiaxhjverhyncf3gdmaxkqpk5hgxtxgmzdw2lyqewn7t23aotujuui';
 const IPFS_TOPIC_METADATA =
-  'bafyreieqexbkdienxvsuvpn3upe3dqpilqt3abilftptemn6wluhnkbtvm';
+  'bafyreiejobhfsq7ysnwny2kxq7enoak6n66pjzcnv6jr2pq46abrhh2dfm';
 const WELDING_TOPIC_METADATA =
-  'bafyreiead6til3rcxtwj3jka2lfb64vdd2ppgpinda63obxpzxkc2pfe64';
+  'bafyreihss6dihabqagwi2vgevgkndxmt2tjjayj7rtwatmhdsbctzoqgeu';
 const GRAPH_THEORY_TOPIC_METADATA =
   'bafyreiaopqvufupxtbl722ay4tzc3odf6ic3akcwgexh7rxtoslzqify5e';
 
@@ -17,33 +17,58 @@ async function seed(contract) {
   let tx, transferEvent;
 
   // Seed Topics
-  tx = await contract.mintNode('topic', ETH_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', ETH_TOPIC_METADATA, [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ethId = transferEvent.args.tokenId;
 
-  tx = await contract.mintNode('topic', IPFS_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', IPFS_TOPIC_METADATA, [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ipfsId = transferEvent.args.tokenId;
 
-  tx = await contract.mintNode('topic', WELDING_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', WELDING_TOPIC_METADATA, [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const weldingId = transferEvent.args.tokenId;
 
-  tx = await contract.mintNode('topic', GRAPH_THEORY_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', GRAPH_THEORY_TOPIC_METADATA, [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const graphTheoryId = transferEvent.args.tokenId;
 
   // Seed Subgraph
-  tx = await contract.mintNode('subgraph', WELDING_SUBGRAPH_METADATA, [weldingId, graphTheoryId], []);
+  tx = await contract.mint('subgraph', WELDING_SUBGRAPH_METADATA, [{
+    tokenId: weldingId,
+    name: "DESCRIBES"
+  }, {
+    tokenId: graphTheoryId,
+    name: "DESCRIBES"
+  }], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const weldingSubgraphId = transferEvent.args.tokenId;
 
   // Seed Intro Doc
-  tx = await contract.mintNode('document', INTRO_DOC_METADATA, [weldingId, ethId, ipfsId], [weldingSubgraphId]);
+  tx = await contract.mint('document', INTRO_DOC_METADATA, [{
+    tokenId: weldingId,
+    name: "DESCRIBES"
+  }, {
+    tokenId: ethId,
+    name: "DESCRIBES"
+  }, {
+    tokenId: ipfsId,
+    name: "DESCRIBES"
+  }], [{
+    tokenId: weldingSubgraphId,
+    name: "BELONGS_TO"
+  }]);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const documentId = transferEvent.args.tokenId;
 
-  tx = await contract.mintNode('subgraph', HUGH_SUBGRAPH_METADATA, [weldingSubgraphId, weldingId, graphTheoryId], []);
+  tx = await contract.mint('subgraph', HUGH_SUBGRAPH_METADATA, [{
+    tokenId: weldingId,
+    name: "DESCRIBES"
+  }, {
+    tokenId: graphTheoryId,
+    name: "DESCRIBES"
+  }], []);
+
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const hughSubgraphId = transferEvent.args.tokenId;
 };

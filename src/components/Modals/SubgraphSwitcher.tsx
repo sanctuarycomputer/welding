@@ -14,12 +14,12 @@ type Props = {
   onRequestClose: Function
 };
 
-// TODO: Export
-enum Roles {
-  OWNER = "Owner",
-  ADMIN = "Admin",
-  EDITOR = "Editor"
-};
+const labelForRole = (role: null | "0" | "1") => {
+  if (role === null) return "Owner";
+  if (role === "0") return "Admin";
+  if (role === "1") return "Editor";
+  return "?";
+}
 
 const SubgraphSwitcher: FC<Props> = ({
   isOpen,
@@ -27,28 +27,20 @@ const SubgraphSwitcher: FC<Props> = ({
 }) => {
   const { accountData } = useContext(GraphContext);
 
-  const subgraphRolesByTokenId = {};
+  let subgraphRolesByTokenId = {};
   if (accountData) {
-    accountData.ownerOf.forEach((n: BaseNode) => {
-      if (!n.labels.includes("Subgraph")) return;
-      subgraphRolesByTokenId[n.tokenId] =
-        subgraphRolesByTokenId[n.tokenId] || { subgraph: n, roles: [] };
-      subgraphRolesByTokenId[n.tokenId].roles.push(Roles.OWNER);
-    });
-
-    accountData.adminOf.forEach((n: BaseNode) => {
-      if (!n.labels.includes("Subgraph")) return;
-      subgraphRolesByTokenId[n.tokenId] =
-        subgraphRolesByTokenId[n.tokenId] || { subgraph: n, roles: [] };
-      subgraphRolesByTokenId[n.tokenId].roles.push(Roles.ADMIN);
-    });
-
-    accountData.editorOf.forEach((n: BaseNode) => {
-      if (!n.labels.includes("Subgraph")) return;
-      subgraphRolesByTokenId[n.tokenId] =
-        subgraphRolesByTokenId[n.tokenId] || { subgraph: n, roles: [] };
-      subgraphRolesByTokenId[n.tokenId].roles.push(Roles.EDITOR);
-    });
+    subgraphRolesByTokenId =
+      accountData.roles.reduce((acc: object, role: Role) => {
+        const n = accountData.related.find((node: BaseNode) => {
+          return node.tokenId === role.tokenId;
+        });
+        if (!n) return acc;
+        if (!n.labels.includes("Subgraph")) return acc;
+        acc[n.tokenId] =
+          acc[n.tokenId] || { subgraph: n, roles: [] };
+        acc[n.tokenId].roles.push(labelForRole(role.role));
+        return acc;
+      }, subgraphRolesByTokenId);
   }
 
   return (
@@ -93,7 +85,7 @@ const SubgraphSwitcher: FC<Props> = ({
         </div>
 
         <div className="p-4 flex flex-row-reverse">
-          <Link href="/subgraphs/mint">
+          <Link href="/mint">
             <a className="Button text-xs font-semibold">+ Mint Subgraph</a>
           </Link>
         </div>

@@ -73,7 +73,12 @@ export default async function handler(
 
     let coverImage = image;
     if (coverImage) {
-      if (!image.startsWith("ipfs://")) {
+      if (image.startsWith("ipfs://")) {
+        // If it's an emoji, remake it to ensure it's the correct emoji
+        if (image.endsWith("emoji.jpg")) {
+          coverImage = await makeImageFileForEmoji(emoji);
+        }
+      } else {
         coverImage = await base64ImageToFile(image)
       }
     } else {

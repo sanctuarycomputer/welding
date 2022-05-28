@@ -17,12 +17,12 @@ describe("Behavior: Delegatable", function () {
   });
 
   it("should ensure the delegator has ADMIN permissions for that node", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr2).mintNode('document', '123', [], []);
+    tx = await contract.connect(addr2).mint('document', '123', [], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const doc1 = transferEvent.args.tokenId;
@@ -36,7 +36,7 @@ describe("Behavior: Delegatable", function () {
 
   // TODO: Only admins of both can do this
   it("should not allow recursive delegation", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraph1Id = transferEvent.args.tokenId;
@@ -46,12 +46,12 @@ describe("Behavior: Delegatable", function () {
       contract.connect(addr1).delegatePermissions(subgraph1Id, subgraph1Id)
     ).to.be.revertedWith("recursive_delegation");
 
-    tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const document1Id = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const document2Id = transferEvent.args.tokenId;
@@ -74,7 +74,7 @@ describe("Behavior: Delegatable", function () {
     await contract.connect(addr1).delegatePermissions(document2Id, subgraph1Id);
 
     // ...And the documents can delegate to a second subgraph!
-    tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraph2Id = transferEvent.args.tokenId;
@@ -84,7 +84,7 @@ describe("Behavior: Delegatable", function () {
   });
 
   it("hasRole respects delegations", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
@@ -92,7 +92,10 @@ describe("Behavior: Delegatable", function () {
     // Give addr2 Subgraph EDITOR
     await contract.connect(addr1).grantRole(subgraphId, EDITOR_ROLE, addr2.address);
 
-    tx = await contract.connect(addr1).mintNode('document', '123', [subgraphId], []);
+    tx = await contract.connect(addr1).mint('document', '123', [], [{
+      tokenId: subgraphId,
+      name: "BELONGS_TO"
+    }]);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;

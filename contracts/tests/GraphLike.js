@@ -21,208 +21,176 @@ describe("Behavior: GraphLike", function () {
     expect(await contract.symbol()).to.equal("NODE");
   });
 
-  it("should be able to mint a Node and enumerate by label", async function () {
+  it("should be able to mint a Node", async function () {
     expect(await contract.exists(0)).to.equal(false);
-    expect(await contract.labelFor(0)).to.equal('');
 
-    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const nodeId = transferEvent.args.tokenId;
     expect(await contract.exists(nodeId)).to.equal(true);
-
-    expect(await contract.labelFor(nodeId)).to.equal("document");
-    expect(await contract.getNodeCountForLabel("document")).to.equal(1);
-    expect(await contract.getNodeForLabelAtIndex("document", 0)).to.equal(0);
-
-    await (await contract.connect(addr1).mintNode('subgraph', '123', [], [])).wait();
-    await (await contract.connect(addr1).mintNode('subgraph', '123', [], [])).wait();
-    expect(await contract.getNodeCountForLabel('subgraph')).to.equal(2);
-    expect(await contract.getNodeForLabelAtIndex('subgraph', 1)).to.equal(2);
   });
 
   it("should be able to make initial connections when minting", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topic1Id = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topic2Id = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('document', '123', [topic1Id, topic2Id], [subgraphId]);
-    transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+    tx = await contract.connect(addr1).mint('document', '123', [{
+      tokenId: topic1Id,
+      name: "DESCRIBES"
+    }, {
+      tokenId: topic2Id,
+      name: "DESCRIBES"
+    }], [{
+      tokenId: subgraphId,
+      name: "BELONGS_TO"
+    }]);
+    tx = await tx.wait();
+    transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
-
-    const topicCountForDoc =
-      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(docId, 'topic');
-    expect(topicCountForDoc).to.equal(2);
-
-    const topicId1ForDoc =
-      await contract.connect(addr1).getConnectedNodeForNodeByLabelAndIndex(docId, 'topic', 0);
-    expect(topicId1ForDoc).to.equal(topic1Id);
-    const topicId2ForDoc =
-      await contract.connect(addr1).getConnectedNodeForNodeByLabelAndIndex(docId, 'topic', 1);
-    expect(topicId2ForDoc).to.equal(topic2Id);
-
-    const backlinkedGraphCountForDoc =
-      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(docId, 'subgraph');
-    expect(backlinkedGraphCountForDoc).to.equal(1);
-
-    const subgraphBacklinkIdForDoc =
-      await contract.connect(addr1).getBacklinkedNodeForNodeByLabelAndIndex(docId, 'subgraph', 0);
-    expect(subgraphBacklinkIdForDoc).to.equal(subgraphId);
   });
 
   it("should disallow connections when the caller cant edit the destination node", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
     await expect(
-      contract.connect(addr2).connectNodes(topicId, subgraphId)
+      contract.connect(addr2).merge(topicId, '123', [], [{
+        tokenId: subgraphId,
+        name: "DESCRIBES"
+      }])
     ).to.be.revertedWith("insufficient_permissions");
 
     await expect(
-      contract.connect(addr1).connectNodes(topicId, subgraphId)
+      contract.connect(addr1).merge(topicId, '123', [], [{
+        tokenId: subgraphId,
+        name: "DESCRIBES"
+      }])
     ).to.not.be.reverted;
   });
 
   it("should not be able to mint a node with an empty label", async function() {
     await expect(
-      contract.connect(addr1).mintNode('', '123', [], [])
+      contract.connect(addr1).mint('', '123', [], [])
     ).to.be.revertedWith("invalid_string")
   });
 
   it("should not be able to mint a node with an empty hash", async function() {
     await expect(
-      contract.connect(addr1).mintNode('subgraph', '', [], [])
+      contract.connect(addr1).mint('subgraph', '', [], [])
     ).to.be.revertedWith("invalid_string");
   });
 
   it("should not be able to connect nonexistent nodes", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
     await expect(
-      contract.connect(addr1).connectNodes(56, subgraphId)
+      contract.connect(addr1).merge(subgraphId, '123', [{
+        tokenId: 56,
+        name: "DESCRIBES"
+      }], [])
+    ).to.be.revertedWith("node_nonexistent");
+    await expect(
+      contract.connect(addr1).merge(56, '123', [{
+        tokenId: subgraphId,
+        name: "DESCRIBES"
+      }], [])
     ).to.be.revertedWith("node_nonexistent");
   });
 
   it("should not be able to connect to a node it cant edit", async function () {
     // Addr1 makes a subgraph
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
     // Addr2 makes a topic
-    tx = await contract.connect(addr2).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr2).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
     // Addr2 attempts to connect their topic to a subgraph they can't edit
     await expect(
-      contract.connect(addr2).connectNodes(topicId, subgraphId)
+      contract.connect(addr2).merge(subgraphId, '123', [{
+        tokenId: topicId,
+        name: "DESCRIBES"
+      }], [])
+    ).to.be.revertedWith("insufficient_permissions");
+
+    await expect(
+      contract.connect(addr2).merge(topicId, '123', [], [{
+        tokenId: subgraphId,
+        name: "DESCRIBES"
+      }])
     ).to.be.revertedWith("insufficient_permissions");
 
     await contract.connect(addr1).grantRole(subgraphId, EDITOR_ROLE, addr2.address);
 
     await expect(
-      contract.connect(addr2).connectNodes(topicId, subgraphId)
+      contract.connect(addr2).merge(subgraphId, '123', [{
+        tokenId: topicId,
+        name: "DESCRIBES"
+      }], [])
+    ).to.not.be.revertedWith("insufficient_permissions");
+
+    await expect(
+      contract.connect(addr2).merge(topicId, '123', [], [{
+        tokenId: subgraphId,
+        name: "DESCRIBES"
+      }])
     ).to.not.be.revertedWith("insufficient_permissions");
   });
 
   it("should be able to mint a subgraph and add a topic", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
-    await contract.connect(addr1).connectNodes(topicId, subgraphId);
-
-    const topicCountForSubgraph =
-      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
-    expect(topicCountForSubgraph).to.equal(1);
-
-    const topicIdForSubgraph =
-      await contract.connect(addr1).getConnectedNodeForNodeByLabelAndIndex(subgraphId, 'topic', 0);
-    expect(topicIdForSubgraph).to.equal(topicId);
-
-    const subgraphBacklinksCountForTopic =
-      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
-    expect(subgraphBacklinksCountForTopic).to.equal(1);
-
-    const subgraphBacklinkIdForTopic =
-      await contract.connect(addr1).getBacklinkedNodeForNodeByLabelAndIndex(topicId, 'subgraph', 0);
-    expect(subgraphBacklinkIdForTopic).to.equal(subgraphId);
+    await contract.connect(addr1).merge(subgraphId, '123', [{
+      tokenId: topicId,
+      name: "DESCRIBES"
+    }], []);
   });
 
   it("should be able to disconnect nodes", async function () {
-    let tx = await contract.connect(addr1).mintNode('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mintNode('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
-    await contract.connect(addr1).connectNodes(topicId, subgraphId);
-
-    let topicCountForSubgraph =
-      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
-    expect(topicCountForSubgraph).to.equal(1);
-
-    let subgraphBacklinksCountForTopic =
-      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
-    expect(subgraphBacklinksCountForTopic).to.equal(1);
-
-    await expect(
-      contract.connect(addr1).disconnectNodes(56, subgraphId)
-    ).to.be.revertedWith("node_nonexistent");
-
-    // These nodes aren't forward connected, so it doesn't do anything
-    contract.connect(addr1).disconnectNodes(subgraphId, topicId);
-
-    topicCountForSubgraph =
-      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
-    expect(topicCountForSubgraph).to.equal(1);
-
-    subgraphBacklinksCountForTopic =
-      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
-    expect(subgraphBacklinksCountForTopic).to.equal(1);
+    await contract.connect(addr1).merge(subgraphId, '123', [{
+      tokenId: topicId,
+      name: "DESCRIBES"
+    }], []);
 
     // Can only disconnect from an editable node
     await expect(
-      contract.connect(addr2).disconnectNodes(topicId, subgraphId)
+      contract.connect(addr2).merge(subgraphId, '123', [], [])
     ).to.be.revertedWith('insufficient_permissions');
 
     // Now it works
-    await contract.connect(addr1).disconnectNodes(topicId, subgraphId)
-
-    topicCountForSubgraph =
-      await contract.connect(addr1).getConnectedNodeCountForNodeByLabel(subgraphId, 'topic');
-    expect(topicCountForSubgraph).to.equal(0);
-
-    subgraphBacklinksCountForTopic =
-      await contract.connect(addr1).getBacklinkedNodeCountForNodeByLabel(topicId, 'subgraph');
-    expect(subgraphBacklinksCountForTopic).to.equal(0);
-  });
-
-  it("should be able to load things for an address", async function () {
-    // Nodes I'm an admin for
-    // Nodes I'm an editor for
-    // Nodes I own as an NFT
-    // Nodes I've commented on?
+    await contract.connect(addr1).merge(subgraphId, '123', [], [])
   });
 });

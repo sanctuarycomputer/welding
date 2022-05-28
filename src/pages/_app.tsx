@@ -5,18 +5,24 @@ import 'src/styles/editor.css';
 import 'src/styles/react-tags.css';
 import 'src/styles/nprogress.css';
 
-import Head from 'next/head';
+import { useCallback, useEffect, useState } from 'react';
 import type { AppProps } from 'next/app';
 import Modal from 'react-modal';
 import dynamic from 'next/dynamic';
 import NProgress from 'nprogress';
 import Router from 'next/router';
 
+import Client from 'src/lib/Client';
+import { ExchangeRateProvider } from 'src/hooks/useExchangeRates';
 import { GraphProvider } from 'src/hooks/useGraphData';
 import { ModalProvider, ModalType } from 'src/hooks/useModal';
 import { Toaster } from 'react-hot-toast';
+import { ApolloProvider } from '@apollo/client';
 
-import { Provider, chain, createClient } from 'wagmi';
+import { WagmiConfig, chain, createClient, configureChains, defaultChains } from 'wagmi';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { publicProvider } from 'wagmi/providers/public';
+import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
@@ -35,87 +41,52 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 Modal.setAppElement('#__next');
 
-const chains = [chain.polygon, chain.polygonMumbai];
-const defaultChain = chains[0];
+const alchemyId = process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID;
+const { chains, provider, webSocketProvider } = configureChains(
+  [chain.polygonMumbai],
+  [alchemyProvider({ alchemyId }), publicProvider()],
+);
 
 const client = createClient({
   autoConnect: true,
-  connectors({ chainId }) {
-    const chain = chains.find((x) => x.id === chainId) ?? defaultChain;
-    const rpcUrl = chain.rpcUrls.alchemy
-      ? `${chain.rpcUrls.alchemy}/${process.env.NEXT_PUBLIc_ALCHEMY_PROJECT_ID}`
-      : chain.rpcUrls.default
-    return [
-      new InjectedConnector({ chains }),
-      new CoinbaseWalletConnector({
-        chains,
-        options: {
-          appName: 'welding.app',
-          chainId: chain.id,
-          jsonRpcUrl: rpcUrl,
-        },
-      }),
-      new WalletConnectConnector({
-        chains,
-        options: {
-          qrcode: true,
-          rpc: {
-            [chain.id]: rpcUrl,
-          },
-        },
-      }),
-    ]
-  },
-  //provider({ chainId }) {
-  //  return new providers.InfuraProvider(chainId, infuraId);
-  //},
-  //webSocketProvider({ chainId }) {
-  //  return new providers.AlchemyWebSocketProvider(
-  //    isChainSupported(chainId) ? chainId : defaultChain.id,
-  //    alchemyId,
-  //  )
-  //},
-})
-
-const title = `welding • knowledge is valuable`;
-const description = `
-There was only one problem. What was now identified as the most valuable aspect of a commodity was also – technically, at least – capable of infinite replication at near zero cost: once the cost of creating a new set of instructions has been incurred the instructions can be used over and over again at no additional cost. Developing new and better instructions is equivalent to incurring a fixed cost.’ Romer made no mention of the hacker movement, but this was starting to sound remarkably similar to Stewart Brand’s conclusion that ‘information wants to be free’ some six years earlier. — Aaron Bastini
-`;
-const image = `https://welding.vercel.app/share.jpg`;
+  connectors: [
+    new MetaMaskConnector({ chains }),
+    new CoinbaseWalletConnector({
+      chains,
+      options: {
+        appName: 'welding.app',
+      },
+    }),
+    new WalletConnectConnector({
+      chains,
+      options: {
+        qrcode: true,
+      },
+    }),
+    new InjectedConnector({
+      chains,
+      options: { name: 'Injected' },
+    }),
+  ],
+  provider,
+  webSocketProvider,
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <Provider client={client}>
-      <Head>
-        <title>{title}</title>
-        <link rel="shortcut icon" href="/favicon.png" />
-        <meta name="description" content={description} />
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={title} key="title" />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={image} />
-        <meta property="og:site_name" content={title} />
-        <meta property="og:locale" content="en_US" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={image} />
-        <meta name="twitter:site" content="@welding_app" />
-        <meta name="twitter:creator" content="@welding_app" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Head>
-
-      <GraphProvider>
-        <ModalProvider>
-          <div className="absolute right-0 top-0 pr-4 py-4">
-            <Wallet />
-          </div>
-          <Component {...pageProps} />
-          <Toaster />
-        </ModalProvider>
-      </GraphProvider>
-
-    </Provider>
+    <WagmiConfig client={client}>
+      <ExchangeRateProvider>
+        <GraphProvider>
+          <ModalProvider>
+            <div className="absolute right-0 top-0 pr-4 py-4">
+              <Wallet />
+            </div>
+            <Component {...pageProps} />
+            <Toaster />
+          </ModalProvider>
+        </GraphProvider>
+      </ExchangeRateProvider>
+    </WagmiConfig>
   );
 };
 

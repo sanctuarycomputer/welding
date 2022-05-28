@@ -14,26 +14,39 @@ const driver = neo4j.driver(
 const typeDefs = gql`
   type BaseNode {
     tokenId: String!
+    fee: String!
     labels: [String!] @cypher(statement:"MATCH (this) RETURN distinct labels(this)")
-    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[:REVISES]-(rev:Revision) RETURN rev ORDER BY rev.timestamp DESC LIMIT 1")
+
+    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[:REVISES]-(rev:Revision) RETURN rev ORDER BY rev.block DESC LIMIT 1")
     revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
-    connections: [BaseNode!]! @relationship(type: "TO", direction: OUT)
-    backlinks: [BaseNode!]! @relationship(type: "TO", direction: IN)
     owner: Account! @cypher(statement:"MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
     admins: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a")
     editors: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a")
+
+    related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
+    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId }")
+    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId }")
+  }
+
+  type Edge {
+    name: String!
+    tokenId: String!
   }
 
   type Account {
     address: String!
-    adminOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:CAN {role: '0'}]->(n:BaseNode) RETURN n")
-    editorOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:CAN {role: '1'}]->(n:BaseNode) RETURN n")
-    ownerOf: [BaseNode!]! @cypher(statement:"MATCH (this)-[:OWNS]->(n:BaseNode) RETURN n")
+    roles: [Role!]! @cypher(statement:"MATCH (this)-[r:CAN|OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }")
+    related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
+  }
+
+  type Role {
+    role: String
+    tokenId: String!
   }
 
   type Revision {
     hash: String!
-    timestamp: Int
+    block: Int!
     content: String
     contentType: String
   }

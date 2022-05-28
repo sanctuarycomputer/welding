@@ -20,23 +20,18 @@ describe("Behavior: Revisable", function () {
 
   // TODO test permissions
   it("should be revisable", async function () {
-    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
     expect(await contract.tokenURI(docId)).to.equal('ipfs://123/metadata.json');
-    expect(await contract.getRevisionCount(docId)).to.equal(1);
 
-    await contract.connect(addr1).makeRevision(docId, '456');
+    await contract.connect(addr1).merge(docId, '456', [], []);
     expect(await contract.tokenURI(docId)).to.equal('ipfs://456/metadata.json');
-
-    expect(await contract.getRevisionCount(docId)).to.equal(2);
-    const currentRevision = await contract.getRevision(docId, ethers.BigNumber.from(1));
-    expect(currentRevision.hash).to.equal('456');
   });
 
   it("should not be able to revise a burnt node", async function () {
-    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -45,20 +40,19 @@ describe("Behavior: Revisable", function () {
     tx = await tx.wait();
 
     expect(
-      contract.connect(addr1).makeRevision(docId, '456')
+      contract.connect(addr1).merge(docId, '456', [], [])
     ).to.be.revertedWith("node_nonexistent");
   });
 
   it("should require a non-empty hash string", async function () {
-    let tx = await contract.connect(addr1).mintNode('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
     expect(await contract.tokenURI(docId)).to.equal('ipfs://123/metadata.json');
-    expect(await contract.getRevisionCount(docId)).to.equal(1);
 
     await expect(
-      contract.connect(addr1).makeRevision(docId, '')
+      contract.connect(addr1).merge(docId, '', [], [])
     ).to.be.revertedWith("invalid_string");
   });
 });

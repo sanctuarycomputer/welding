@@ -10,9 +10,9 @@ import Document from 'src/components/Icons/Document';
 import Graph from 'src/components/Icons/Graph';
 import Hashtag from 'src/components/Icons/Hashtag';
 import dynamic from 'next/dynamic';
-import Rail from 'src/components/Rail';
 import Card from 'src/components/Card';
 import TopicTile from 'src/components/TopicTile';
+import getRelatedNodes from 'src/utils/getRelatedNodes';
 
 const Address = dynamic(() => import('src/components/Address'), {
   ssr: false
@@ -26,45 +26,30 @@ type Props = {
   address: string;
 };
 
-// TODO: Export
-enum Roles {
-  OWNER = "Owner",
-  ADMIN = "Admin",
-  EDITOR = "Editor"
-};
-
 const AccountsShow: FC<Props> = ({ accountData, address }) => {
   const router = useRouter();
   let { collection } = router.query;
   if (!collection) collection = "subgraphs";
 
-  const nodesByCollectionType = {
+  let nodesByCollectionType = {
     subgraphs: {},
     documents: {},
     topics: {},
   };
 
   if (accountData) {
-    accountData.ownerOf.forEach((n: BaseNode) => {
-      const collectionType = `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
-      nodesByCollectionType[collectionType][n.tokenId] =
-        nodesByCollectionType[collectionType][n.tokenId] || { n:n, roles: [] };
-      nodesByCollectionType[collectionType][n.tokenId].roles.push(Roles.OWNER);
-    });
-
-    accountData.adminOf.forEach((n: BaseNode) => {
-      const collectionType = `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
-      nodesByCollectionType[collectionType][n.tokenId] =
-        nodesByCollectionType[collectionType][n.tokenId] || { n:n, roles: [] };
-      nodesByCollectionType[collectionType][n.tokenId].roles.push(Roles.ADMIN);
-    });
-
-    accountData.editorOf.forEach((n: BaseNode) => {
-      const collectionType = `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
-      nodesByCollectionType[collectionType][n.tokenId] =
-        nodesByCollectionType[collectionType][n.tokenId] || { n:n, roles: [] };
-      nodesByCollectionType[collectionType][n.tokenId].roles.push(Roles.EDITOR);
-    });
+    nodesByCollectionType =
+      accountData.roles.reduce((acc: object, role: Role) => {
+        const n = accountData.related.find((node: BaseNode) => {
+          return node.tokenId === role.tokenId;
+        });
+        if (!n) return acc;
+        const collectionType =
+          `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
+        acc[collectionType][n.tokenId] =
+          acc[collectionType][n.tokenId] || { n:n };
+        return acc;
+      }, nodesByCollectionType);
   }
 
   const nodes: BaseNode[] =
@@ -115,15 +100,31 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
       )}
 
       {nodes.length !== 0 && collection === "subgraphs" && (
-        <div className="pt-4 px-4 sm:px-0">
+        <div className="">
           {nodes.map(node => {
             return (
               <Link
                 key={node.n.tokenId}
                 href={`/${Welding.slugifyNode(node.n)}`}>
-                <a>
-                  <Rail key={node.n.tokenId} node={node.n} />
-                </a>
+
+              <a
+                className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color"
+              >
+                <div className="flex flex-row items-center py-1 flex-grow">
+                  <p className="pr-2 font-semibold w-32 truncate">
+                    {node.n.currentRevision.metadata.properties.emoji.native} {node.n.currentRevision.metadata.name}
+                  </p>
+                </div>
+                <div className="flex">
+                  <p className="pr-4">
+                    ↙ {node.n.incoming.length} Backlinks
+                  </p>
+                  <p>
+                    {node.n.outgoing.length} Connections ↗
+                  </p>
+                </div>
+              </a>
+
               </Link>
             );
           })}
@@ -150,7 +151,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
           {nodes.map(node => {
             const subgraphs =
-              node.n.connections.filter(n => n.labels.includes("Subgraph"));
+              getRelatedNodes(node.n, 'outgoing', 'Subgraph');
 
             let link = `/${Welding.slugifyNode(node.n)}`;
             if (subgraphs.length === 1) {

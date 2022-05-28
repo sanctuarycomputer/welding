@@ -1,10 +1,7 @@
-import slugify from 'slugify';
+import slugify from 'src/utils/slugify';
 
 const slugifyNode = (node: BaseNode) => {
-  return slugify(
-    `${node.tokenId} ${node.currentRevision.metadata.name}`,
-    { lower: true }
-  );
+  return slugify(`${node.tokenId} ${node.currentRevision.metadata.name}`);
 }
 
 export default slugifyNode;

@@ -3,6 +3,7 @@ import Document from 'src/renderers/Document';
 import Subgraph from 'src/renderers/Subgraph';
 import Topic from 'src/renderers/Topic';
 import slugifyNode from 'src/utils/slugifyNode';
+import getRelatedNodes from 'src/utils/getRelatedNodes';
 
 type Props = {
   node: BaseNode;
@@ -29,23 +30,43 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const nodeType =
     node.labels.filter(l => l !== "BaseNode")[0];
 
-  if (nodeType === 'Subgraph') {
-    const subgraphDocuments = node.backlinks.filter(n =>
-      n.labels.includes('Document')
-    );
-    if (subgraphDocuments.length) return {
+  // Ensure slug is correct
+  let { nid: givenNidSlug } = context.query;
+  givenNidSlug = ((Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || '');
+  if (givenNidSlug !== slugifyNode(node)) {
+    return {
       redirect: {
         permanent: false,
-        destination:
-          `/${slugifyNode(node)}/${slugifyNode(subgraphDocuments[0])}`
+        destination: `/${slugifyNode(node)}`
       }
+    };
+  }
+
+  if (nodeType === 'Subgraph') {
+    const subgraphDocuments =
+      getRelatedNodes(node, 'incoming', 'Document');
+    if (subgraphDocuments.length) {
+      return {
+        redirect: {
+          permanent: false,
+          destination:
+            `/${slugifyNode(node)}/${slugifyNode(subgraphDocuments[0])}`
+        }
+      };
+    } else {
+      return {
+        redirect: {
+          permanent: false,
+          destination: `/${slugifyNode(node)}/mint`
+        }
+      };
     };
   };
 
   if (nodeType === 'Document') {
-    const documentSubgraphs = node.connections.filter(n =>
-      n.labels.includes('Subgraph')
-    );
+    const documentSubgraphs =
+      getRelatedNodes(node, 'outgoing', 'Subgraph');
+    // TODO: Reference the "Belongs To" Subgraph
     if (documentSubgraphs.length === 1) return {
       redirect: {
         permanent: false,

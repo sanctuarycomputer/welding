@@ -110,11 +110,12 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
       <tbody>
         {Object.values(roles).map(v => {
           return (
-            <tr key={v.account.address} className="border-t border-b border-color">
-              <td className="p-4">
+            <tr key={v.account.address} className="border-b border-color border-dashed">
+              <td className="px-2 py-3">
                 <Address address={v.account.address} />
               </td>
-              <td className="p-4 text-right">
+              <td className="pr-2 text-right">
+
                 {v.roles.map(r =>
                   <Tile
                     key={r}

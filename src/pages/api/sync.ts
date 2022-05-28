@@ -17,19 +17,124 @@ function capitalizeFirstLetter(string) {
 const merge = async (e, session) => {
   const { blockNumber, event, args } = e;
   switch (event) {
-    case 'NodeLabeled': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $tokenId})
-         SET n :${capitalizeFirstLetter(args.label)}`;
+    case 'Mint': {
+      let q =
+         `MERGE (n:BaseNode {tokenId: $tokenId})
+          ON CREATE
+            SET n.fee = '0'
+          SET n :${capitalizeFirstLetter(args.label)}
+          MERGE (rev:Revision {hash: $hash})
+          ON CREATE
+            SET rev.block = $block
+          MERGE (sender:Account {address: $sender})
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          `;
+
+      q = args.incomingEdges.reduce((acc, edge) => {
+        const index = args.incomingEdges.indexOf(edge);
+        acc +=
+          `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+           ON CREATE
+             SET i${index}.fee = '0'
+           MERGE (i${index})-[:${edge.name}]->(n)
+           `;
+        return acc;
+      }, q);
+
+      q = args.outgoingEdges.reduce((acc, edge) => {
+        const index = args.outgoingEdges.indexOf(edge);
+        acc +=
+          `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+           ON CREATE
+             SET o${index}.fee = '0'
+           MERGE (n)-[:${edge.name}]->(o${index})
+           `;
+        return acc;
+      }, q);
+
       await session.writeTransaction(tx => tx.run(q, {
-        tokenId: args.tokenId.toString()
+        tokenId: args.tokenId.toString(),
+        hash: args.hash,
+        block: e.blockNumber,
+        sender: args.sender
       }));
+
+      break;
+    }
+
+    case 'Revise': {
+      let q =
+         `MERGE (n:BaseNode {tokenId: $tokenId})
+          ON CREATE
+            SET n.fee = '0'
+          MERGE (rev:Revision {hash: $hash})
+          ON CREATE
+            SET rev.block = $block
+          MERGE (sender:Account {address: $sender})
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          `;
+
+      await session.writeTransaction(tx => tx.run(q, {
+        tokenId: args.tokenId.toString(),
+        hash: args.hash,
+        block: e.blockNumber,
+        sender: args.sender
+      }));
+
+      break;
+    }
+
+    case 'Merge': {
+      let q =
+         `MERGE (n:BaseNode {tokenId: $tokenId})
+          ON CREATE
+            SET n.fee = '0'
+          MERGE (rev:Revision {hash: $hash})
+          ON CREATE
+            SET rev.block = $block
+          MERGE (sender:Account {address: $sender})
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          WITH n
+          MATCH (n)-[ro:DESCRIBES|BELONGS_TO]->()
+          MATCH (n)<-[ri:DESCRIBES|BELONGS_TO]-()
+          DELETE ri, ro
+          `;
+
+      q = args.incomingEdges.reduce((acc, edge) => {
+        const index = args.incomingEdges.indexOf(edge);
+        acc +=
+          `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+           MERGE (i${index})-[:${edge.name}]->(n)
+           `;
+        return acc;
+      }, q);
+
+      q = args.outgoingEdges.reduce((acc, edge) => {
+        const index = args.outgoingEdges.indexOf(edge);
+        acc +=
+          `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+           ON CREATE
+             SET o${index}.fee = '0'
+           MERGE (n)-[:${edge.name}]->(o${index})
+           `;
+        return acc;
+      }, q);
+
+      await session.writeTransaction(tx => tx.run(q, {
+        tokenId: args.tokenId.toString(),
+        hash: args.hash,
+        block: e.blockNumber,
+        sender: args.sender
+      }));
+
       break;
     }
 
     case 'Transfer': {
       const q =
          `MERGE (n:BaseNode {tokenId: $tokenId})
+          ON CREATE
+            SET n.fee = '0'
           MERGE (from:Account {address: $fromAddress})
           MERGE (to:Account {address: $toAddress})
           MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
@@ -45,46 +150,13 @@ const merge = async (e, session) => {
       break;
     }
 
-    case 'RevisionMade': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $tokenId})
-         MERGE (rev:Revision {hash: $hash})
-         SET rev.timestamp = $timestamp
-         MERGE (sender:Account {address: $senderAddress})
-         MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)`;
-      await session.writeTransaction(tx => {
-        tx.run(q, {
-          tokenId: args.tokenId.toString(),
-          timestamp: parseInt(args.timestamp.toString()),
-          hash: args.hash,
-          senderAddress: args.sender
-        });
-      });
-      break;
-    }
-
-    case 'NodesConnected': {
-      const q =
-        `MERGE (n1:BaseNode {tokenId: $fromTokenId})
-         MERGE (n2:BaseNode {tokenId: $toTokenId})
-         MERGE (sender:Account {address: $senderAddress})
-         MERGE (sender)-[:CONNECTS]->(n1)-[:TO]->(n2)`;
-      await session.writeTransaction(tx => {
-        tx.run(q, {
-          fromTokenId: args.from.toString(),
-          toTokenId: args.to.toString(),
-          senderAddress: args.sender
-        });
-      });
-      break;
-    }
-
     case 'RoleGranted': {
       const q =
         `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         MERGE (recipient)-[:CAN {role: $role}]->(n)`;
+         MERGE (recipient)-[:CAN {role: $role}]->(n)
+         `;
       await session.writeTransaction(tx => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -101,7 +173,8 @@ const merge = async (e, session) => {
         `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         WITH recipient, n MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r`;
+         WITH recipient, n MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r
+         `;
       await session.writeTransaction(tx => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -113,14 +186,26 @@ const merge = async (e, session) => {
       break;
     }
 
-
     case 'Approval':
     case 'ApprovalForAll':
     case 'PermissionsDelegated':
     case 'DelegatePermissionsRenounced':
     case 'PermissionsBypassSet':
-    case 'NodesDisconnected':
-    case 'ConnectionFeeSet':
+
+    case 'ConnectionFeeSet': {
+      const q =
+        `MERGE (n:BaseNode {tokenId: $tokenId})
+         SET n.fee = $fee
+         `;
+      await session.writeTransaction(tx => {
+        tx.run(q, {
+          tokenId: args.tokenId.toString(),
+          fee: args.connectionFee.toString(),
+        });
+      });
+      break;
+    }
+
     default:
       console.log(`Implement Me: ${event}`);
   }
@@ -133,16 +218,27 @@ export default async function handler(
   try {
     const session = driver.session();
 
-    if (false) {
+    if (true) {
       const flushQ1 = `MATCH (a)-[r]->() DELETE a, r`
       const flushQ2 = `MATCH (a) DELETE a`;
       await session.writeTransaction(tx => tx.run(flushQ1));
       await session.writeTransaction(tx => tx.run(flushQ2));
-      try {
-        await session.readTransaction(tx =>
-          tx.run(`CREATE FULLTEXT INDEX revisionContent FOR (n:Revision) ON EACH [n.content]`)
-        );
-      } catch(e) {}
+
+      await session.writeTransaction(tx =>
+        tx.run(
+          `CREATE FULLTEXT INDEX revisionContent IF NOT EXISTS FOR (n:Revision) ON EACH [n.content]`
+        )
+      );
+      await session.writeTransaction(tx =>
+        tx.run(
+          `CREATE CONSTRAINT tokenId IF NOT EXISTS FOR (n:BaseNode) REQUIRE n.tokenId IS UNIQUE`
+        )
+      );
+      await session.writeTransaction(tx =>
+        tx.run(
+          `CREATE CONSTRAINT hash IF NOT EXISTS FOR (r:Revision) REQUIRE r.hash IS UNIQUE`
+        )
+      );
     }
 
     // Load our cursor
@@ -174,6 +270,9 @@ export default async function handler(
 
     const { endAt, events } =
       await Welding.queryEvents(null, cursor + 1, ensure);
+    events.sort(function(a, b) {
+      return a.blockNumber - b.blockNumber;
+    });
     for (const event of events) await merge(event, session);
 
     // Store our cursor

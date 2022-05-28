@@ -1,14 +1,25 @@
-import { FC, useContext } from 'react';
+import { FC, useContext, useState, useEffect } from 'react';
+import type { GetServerSideProps } from 'next';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import NodeMeta from 'src/components/NodeMeta';
+
 import { GraphContext } from 'src/hooks/useGraphData';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
 import useEditableImage from 'src/hooks/useEditableImage';
 import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
-import type { GetServerSideProps } from 'next';
-import type { BaseNodeFormValues, MintState, BaseNode, Account } from 'src/types';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import slugify from 'src/utils/slugify';
+import slugifyNode from 'src/utils/slugifyNode';
+import getRelatedNodes from 'src/utils/getRelatedNodes';
+
+import type {
+  BaseNodeFormValues,
+  MintState,
+  BaseNode,
+  Account
+} from 'src/types';
+
 import { useSigner, useConnect, useAccount } from 'wagmi';
 import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
@@ -21,95 +32,92 @@ import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
 import TopicManager from 'src/components/TopicManager';
 import SubgraphSwitcher from 'src/components/Modals/SubgraphSwitcher';
-import DocumentShow from 'src/pages/documents/[did]';
+import Document from 'src/renderers/Document';
+import Graph from 'src/components/Icons/Graph';
 
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
-import dynamic from 'next/dynamic';
-
-const Editor = dynamic(() => import('src/components/Editor'), {
-  ssr: false
-});
 
 type Props = {
   subgraph: BaseNode,
   document?: BaseNode,
-  mintMode?: boolean
 };
 
-const GraphsDocumentMint: FC<Props> = ({
+const Subgraph: FC<Props> = ({
   subgraph,
   document,
-  mintMode
 }) => {
-  const subject = document || subgraph;
   const router = useRouter();
-
   const { isConnecting } = useConnect();
   const { data: signer } = useSigner();
   const { data: account } = useAccount();
-  const { accountData } = useContext(GraphContext);
+  const { accountData, loadAccountData } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
 
-  let canEditSubgraph = false;
-  if (accountData && (
-    accountData.adminOf.find(n => n.tokenId === subgraph.tokenId) ||
-    accountData.editorOf.find(n => n.tokenId === subgraph.tokenId)
-  )) canEditSubgraph = true;
+  const canEditSubgraph =
+    subgraph.tokenId.startsWith('-') ||
+    accountData?.roles.find(r => r.tokenId === subgraph.tokenId);
 
-  let canEditDocument = false;
-  if (document) {
-    if (accountData && (
-      accountData.adminOf.find(n => n.tokenId === document.tokenId) ||
-      accountData.editorOf.find(n => n.tokenId === document.tokenId)
-    )) canEditDocument = true;
-  } else {
-    canEditDocument = canEditSubgraph;
-  }
+  const canEditDocument = document
+    ? accountData?.roles.find(r => r.tokenId === document.tokenId)
+    : canEditSubgraph;
 
-  const subgraphDocuments = subgraph.backlinks.filter(n =>
-    n.labels.includes('Document')
+  const subgraphTopics =
+    getRelatedNodes(subgraph, 'incoming', 'Topic');
+
+  const documentTopics = document
+    ? getRelatedNodes(document, 'incoming', 'Topic')
+    : [];
+
+  const subgraphFormik = makeFormikForBaseNode(
+    "Subgraph",
+    subgraph,
+    async (tx) => {
+      await loadAccountData(account?.address);
+
+      const transferEvent =
+        tx.events.find(e => e.event === "Transfer");
+      if (transferEvent) {
+        const slug =
+          slugify(`${transferEvent.args.tokenId} ${subgraphFormik.values.name}`);
+        router.push(`/${slug}`);
+      } else {
+        if (router.pathname === "/[nid]/[did]") {
+          router.push(`/${subgraph.tokenId}/${router.query.did}`);
+        } else {
+          router.push(`/${slugifyNode(subgraph)}`);
+        }
+      }
+    }
   );
-  const subgraphTopics = subgraph.backlinks.filter(n =>
-    n.labels.includes('Topic')
-  );
-  const documentTopics = (document?.backlinks || []).filter(n =>
-    n.labels.includes('Topic')
-  );
 
-  const [topics, setTopics] =
-    useState<BaseNode[]>(documentTopics);
-
-  const hasTopicChanges = (
-    JSON.stringify(topics.map(t => t.tokenId)) !==
-    JSON.stringify(documentTopics.map(t => t.tokenId))
-  );
-
-  const formik = makeFormikForBaseNode(document);
-  const [documentImagePreview, documentImageDidChange] =
-    useEditableImage(formik);
-
-  const subgraphFormik = makeFormikForBaseNode(subgraph);
-
-  const unsavedChanges = formik.dirty || hasTopicChanges;
-  useConfirmRouteChange(unsavedChanges, () => {
+  useConfirmRouteChange(subgraphFormik.dirty, () => {
     return confirm("You have unsaved changes. Discard them?");
   });
 
   return (
     <>
+      {!document && <NodeMeta formik={subgraphFormik} />}
+
       <SubgraphSidebar
         subgraphFormik={subgraphFormik}
         canEdit={canEditSubgraph}
-        documents={subgraphDocuments}
         currentDocument={document}
       />
 
-      <div className="ml-64 pl-4 pt-12">
-        {document && <DocumentShow document={document} />}
-      </div>
+      {document ? (
+        <div className="pl-4 ml-64 pt-14">
+          <Document document={document} />
+        </div>
+      ) : (
+        <div className="pl-4 ml-64 pt-14 text-right">
+          <div className="p-4 border border-dashed border-color rounded inline-block mr-4">
+            <p className="font-semibold">Connect a wallet to get started ↑</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
-export default GraphsDocumentMint;
+export default Subgraph;
