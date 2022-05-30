@@ -20,6 +20,7 @@ import Upload from 'src/components/Icons/Upload';
 import Card from 'src/components/Card';
 import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
+import { useSigner } from 'wagmi';
 
 type Props = {
   topic: BaseNode
@@ -31,6 +32,7 @@ const TopicsShow: FC<Props> = ({
   const router = useRouter();
   let { collection } = router.query;
   if (!collection) collection = "subgraphs";
+  const { data: signer } = useSigner();
   const { accountData } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
 
@@ -40,6 +42,8 @@ const TopicsShow: FC<Props> = ({
   const [publishStep, setPublishStep] = useState(null);
   const [publishError, setPublishError] = useState(null);
   const formik = makeFormikForBaseNode(
+    signer,
+    accountData,
     "Topic",
     topic,
     router.reload,

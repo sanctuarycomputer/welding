@@ -46,10 +46,12 @@ related {
 incoming {
   name
   tokenId
+  active
 }
 outgoing {
   name
   tokenId
+  active
 }
 admins {
   address

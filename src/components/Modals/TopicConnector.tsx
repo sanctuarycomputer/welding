@@ -34,31 +34,16 @@ type Props = {
   meta: TopicConnectorMeta;
 };
 
-const suggestions = [{
-  tokenId: '999',
-  labels: ['BaseNode', 'Topic'],
-  related: [],
-  outgoing: [],
-  incoming: [],
-  currentRevision: {
-    hash: '',
-    block: 0,
-    metadata: {
-      name: 'Thailand',
-      description: "A country in the world",
-      properties: {
-        emoji: DEFAULT_EMOJI
-      }
-    }
-  }
-}];
-
 const TopicConnector: FC<Props> = ({
   isOpen,
   onRequestClose,
   meta
 }) => {
-  const { shallowNodes, shallowNodesLoading, loadShallowNodes } = useContext(GraphContext);
+  const {
+    shallowNodes,
+    shallowNodesLoading,
+    loadShallowNodes
+  } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
@@ -87,11 +72,13 @@ const TopicConnector: FC<Props> = ({
       return setTopics([...topics, tag]);
 
     const newTopic: BaseNode = {
+      __typename: 'BaseNode',
       tokenId: `-${newTopics.length + 1}`,
       labels: ['BaseNode', 'Topic'],
       related: [],
       outgoing: [],
       incoming: [],
+      fee: "0",
       currentRevision: {
         hash: '',
         block: 0,

@@ -69,7 +69,12 @@ const Subgraph: FC<Props> = ({
     ? getRelatedNodes(document, 'incoming', 'Topic')
     : [];
 
+  const [publishStep, setPublishStep] = useState(null);
+  const [publishError, setPublishError] = useState(null);
+
   const subgraphFormik = makeFormikForBaseNode(
+    signer,
+    accountData,
     "Subgraph",
     subgraph,
     async (tx) => {
@@ -88,11 +93,33 @@ const Subgraph: FC<Props> = ({
           router.push(`/${slugifyNode(subgraph)}`);
         }
       }
-    }
+    },
+    setPublishError,
+    setPublishStep
   );
 
+  const triggerPublish = () => {
+    if (publishError !== null) setPublishError(null);
+    setPublishStep("FEES");
+  };
+
+  useEffect(() => {
+    if (!publishStep) return;
+    openModal({
+      type: ModalType.PUBLISHER,
+      meta: {
+        publishStep,
+        setPublishStep,
+        publishError,
+        formik: subgraphFormik
+      }
+    });
+  }, [publishStep, publishError])
+
   useConfirmRouteChange(subgraphFormik.dirty, () => {
-    return confirm("You have unsaved changes. Discard them?");
+    return confirm(
+      "You have unsaved changes. Discard them?"
+    );
   });
 
   return (
@@ -100,6 +127,7 @@ const Subgraph: FC<Props> = ({
       {!document && <NodeMeta formik={subgraphFormik} />}
 
       <SubgraphSidebar
+        triggerPublish={triggerPublish}
         subgraphFormik={subgraphFormik}
         canEdit={canEditSubgraph}
         currentDocument={document}

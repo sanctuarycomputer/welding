@@ -10,8 +10,6 @@ const IPFS_TOPIC_METADATA =
   'bafyreiejobhfsq7ysnwny2kxq7enoak6n66pjzcnv6jr2pq46abrhh2dfm';
 const WELDING_TOPIC_METADATA =
   'bafyreihss6dihabqagwi2vgevgkndxmt2tjjayj7rtwatmhdsbctzoqgeu';
-const GRAPH_THEORY_TOPIC_METADATA =
-  'bafyreiaopqvufupxtbl722ay4tzc3odf6ic3akcwgexh7rxtoslzqify5e';
 
 async function seed(contract) {
   let tx, transferEvent;
@@ -29,16 +27,9 @@ async function seed(contract) {
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const weldingId = transferEvent.args.tokenId;
 
-  tx = await contract.mint('topic', GRAPH_THEORY_TOPIC_METADATA, [], []);
-  transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
-  const graphTheoryId = transferEvent.args.tokenId;
-
   // Seed Subgraph
   tx = await contract.mint('subgraph', WELDING_SUBGRAPH_METADATA, [{
     tokenId: weldingId,
-    name: "DESCRIBES"
-  }, {
-    tokenId: graphTheoryId,
     name: "DESCRIBES"
   }], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
@@ -63,9 +54,6 @@ async function seed(contract) {
 
   tx = await contract.mint('subgraph', HUGH_SUBGRAPH_METADATA, [{
     tokenId: weldingId,
-    name: "DESCRIBES"
-  }, {
-    tokenId: graphTheoryId,
     name: "DESCRIBES"
   }], []);
 

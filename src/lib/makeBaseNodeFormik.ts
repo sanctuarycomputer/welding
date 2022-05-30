@@ -6,8 +6,9 @@ import Welding from 'src/lib/Welding';
 import toast from 'react-hot-toast';
 import Client from 'src/lib/Client';
 import { emojiIndex, BaseEmoji } from 'emoji-mart';
-import { useSigner } from 'wagmi';
 import { Label } from 'src/types';
+import { detailedDiff } from 'deep-object-diff';
+import { BigNumber } from '@ethersproject/bignumber';
 
 enum PublishStep {
   INIT = "INIT",
@@ -17,15 +18,40 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
 };
 
+const feesRequired = (
+  formik,
+  accountData
+) => {
+  const node = formik.values.__node__;
+  const incomingDiff =
+    detailedDiff(node.incoming, formik.values.incoming);
+
+  return Object.keys(incomingDiff.added).reduce((acc, key) => {
+    if (!incomingDiff.added[key].active) return acc;
+    const edge = formik.values.incoming[key];
+    if (!edge || !edge.active) return acc;
+    const n = formik.values.related.find((n: BaseNode) =>
+      edge.tokenId === n.tokenId
+    );
+    if (!n) return acc;
+    if (n.fee === "0") return acc;
+    const owned = accountData && !!accountData.related.find(r => {
+      return r.tokenId === n.tokenId;
+    });
+    if (owned) return acc;
+    return acc.add(BigNumber.from(n.fee));
+  }, BigNumber.from(0));
+};
+
 const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
+  signer,
+  accountData,
   label: Label,
   node: BaseNode,
   onComplete: Function,
   onError?: Function,
   onProgress?: Function,
 ) => {
-  const { data: signer } = useSigner();
-
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
     initialValues: {
@@ -40,6 +66,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       __node__: node
     },
     onSubmit: async (values) => {
+      console.log(feesRequired(formik, accountData).toString());
       let toastId;
 
       try {
@@ -52,6 +79,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
           className: 'toast'
         });
 
+        // TODO: Deep diff
         const hash =
           await Welding.publishMetadataToIPFS(values);
 
@@ -69,8 +97,9 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
           tx = await Welding.Nodes.connect(signer).mint(
             label,
             hash,
-            values.incoming,
-            values.outgoing
+            values.incoming.filter(e => e.active),
+            values.outgoing.filter(e => e.active),
+            { value: feesRequired(formik, accountData) }
           );
         } else {
           const connectionsDidChange =
@@ -78,12 +107,15 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
             JSON.stringify(values.outgoing) !== JSON.stringify(node.outgoing);
           const hashDidChange =
             hash !== node.currentRevision.hash;
+
           if (connectionsDidChange) {
+            console.log(values.incoming, values.outgoing);
             tx = await Welding.Nodes.connect(signer).merge(
               node.tokenId,
               hash,
-              values.incoming,
-              values.outgoing
+              values.incoming.filter(e => e.active),
+              values.outgoing.filter(e => e.active),
+              { value: feesRequired(formik, accountData) }
             );
           } else if (hashDidChange) {
             tx = await Welding.Nodes.connect(signer).revise(
@@ -132,6 +164,22 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
   });
 
   return formik;
+};
+
+export const getRelatedNodes = (
+  formik: BaseNode,
+  relation: 'incoming' | 'outgoing',
+  label: string,
+  name: string
+) => {
+  return formik.values[relation].map((e: Edge) => {
+    if (e.active === false) return null;
+    if (e.name !== name) return null;
+    const n = formik.values.related.find((node: BaseNode) => node.tokenId === e.tokenId);
+    if (!n) return null;
+    if (!n.labels.includes(label)) return null;
+    return n;
+  }).filter(r => r !== null);
 };
 
 export default makeFormikForBaseNode;

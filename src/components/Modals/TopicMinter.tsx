@@ -1,4 +1,5 @@
 import { FC, useContext, useState, useRef } from 'react';
+import { GraphContext } from 'src/hooks/useGraphData';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import Modal from 'react-modal';
 import ModalHeader from 'src/components/Modals/ModalHeader';
@@ -33,6 +34,9 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
   openEmojiPicker,
   currentlyMinting
 }) => {
+  const {
+    loadShallowNodes
+  } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { data: signer } = useSigner();
   const [mintState, setMintState] = useState<MintState>({
@@ -106,6 +110,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       toast.success('Success!', {
         id: toastId
       });
+      loadShallowNodes();
       setTopicId(topic, topicId.toString());
     } catch(e) {
       console.log(e);

@@ -12,7 +12,7 @@ import TopicTile from 'src/components/TopicTile';
 import { BaseNode } from 'src/types';
 import { useSigner } from 'wagmi';
 import slugifyNode from 'src/utils/slugifyNode';
-import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { getRelatedNodes } from 'src/lib/makeBaseNodeFormik';
 import Tooltip from 'src/components/Tooltip';
 
 type Props = {
@@ -28,42 +28,51 @@ const TopicManager: FC<Props> = ({
   const setTopics = (topics) => {
     // get related nodes without incoming topics
     // get incoming edges without incoming topics
-    //
     const node = formik.values.__node__;
-
     const topicIds = topics.map(t => t.tokenId);
-    const otherRelatedNodes = node.related.filter((n: BaseNode) => {
-      return !topicIds.includes(n.tokenId);
-    });
 
-    const nonTopicIncomingEdges =
-      node.incoming.filter((e: Edge) => {
+    const incomingEdges =
+      node.incoming.reduce((acc, e) => {
         const n = node.related.find((r: BaseNode) => r.tokenId === e.tokenId);
-        if (!n) return false;
-        return !n.labels.includes("Topic") && (e.name !== "DESCRIBES");
-      });
+        if (!n) return acc;
+        if (!n.labels.includes("Topic")) return [...acc, e];
+        if (e.name !== "DESCRIBES") return [...acc, e];
+        if (topicIds.includes(n.tokenId)) {
+          return [...acc, { ...e, active: true }];
+        }
+        return [...acc, { ...e, active: false }];
+      }, []);
 
-    const topicIncomingEdges = topics.map((n: BaseNode) => {
+    const missingIncomingEdges = topics.map(n => {
+      const existingEdge =
+        incomingEdges.find(e => {
+          return e.name === "DESCRIBES" && e.tokenId === n.tokenId;
+        });
+      if (!!existingEdge) return null;
       return {
         __typename: "Edge",
         name: "DESCRIBES",
-        tokenId: n.tokenId
+        tokenId: n.tokenId,
+        active: true
       };
-    });
+    }).filter(e => e !== null);
 
     formik.setFieldValue('incoming', [
-      ...nonTopicIncomingEdges,
-      ...topicIncomingEdges
+      ...incomingEdges,
+      ...missingIncomingEdges
     ]);
 
+    const otherRelatedNodes = node.related.filter((n: BaseNode) => {
+      return !topicIds.includes(n.tokenId);
+    });
     formik.setFieldValue('related', [
       ...otherRelatedNodes,
       ...topics
     ]);
   };
 
-  const node = formik.values.__node__;
-  const topics = getRelatedNodes(node, 'incoming', 'Topic');
+  const topics =
+    getRelatedNodes(formik, 'incoming', 'Topic', 'DESCRIBES');
 
   return (
     <div className="mb-4">

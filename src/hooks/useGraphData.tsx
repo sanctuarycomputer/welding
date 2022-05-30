@@ -66,6 +66,8 @@ function GraphProvider({ children }) {
     Topic: {},
   };
 
+  let accountNodesByTokenId = {};
+
   if (accountData) {
     accountNodesByCollectionType =
       accountData.roles.reduce((acc: object, role: Role) => {

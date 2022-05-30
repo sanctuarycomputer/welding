@@ -31,6 +31,10 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         require(bytes(str).length > 0, "invalid_string");
     }
 
+    function stringsAreEqual(string memory a, string memory b) public pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
+
     function _baseURI() internal pure override returns (string memory) {
         return "ipfs://";
     }
@@ -103,6 +107,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     );
 
     mapping(uint256 => EnumerableSet.UintSet) private _connections;
+    mapping(uint256 => Edge[]) private _currentOutgoingEdges;
 
     function mint(
       string memory label,
@@ -137,7 +142,6 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
 
         /* Handle edges */
         _handleEdges(tokenId, incomingEdges, outgoingEdges);
-
     }
 
     function revise(
@@ -179,30 +183,85 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
       Edge[] memory incomingEdges,
       Edge[] memory outgoingEdges
     ) private {
+        // Handle Incoming Edges
+        //   Incoming Edges can reference anything in the system
+        //   (but must pay a one-time fee if !canEdit). Once user
+        //   has paid that one-time fee, they can use that node as many
+        //   times as they'd like in as many different edges as they'd
+        //   like.
         for (uint256 i; i < incomingEdges.length; i++) {
-            // Incoming Edges can reference anything in the system
-            // (but must pay a fee if not editable). I should not
-            // need to pay a fee if I have already paid it
             Edge memory edge = incomingEdges[i];
             require(_exists(edge.tokenId), ERR_NODE_NONEXISTENT);
             uint256 connectionFee = getConnectionFee(edge.tokenId);
             if (
-              !_isApprovedOrOwner(_msgSender(), edge.tokenId) &&
-              !canEdit(edge.tokenId, _msgSender()) &&
-              connectionFee > 0 &&
-              !_connections[tokenId].contains(edge.tokenId)
+                !_isApprovedOrOwner(_msgSender(), edge.tokenId) &&
+                !canEdit(edge.tokenId, _msgSender()) &&
+                connectionFee > 0 &&
+                !_connections[tokenId].contains(edge.tokenId)
             ) {
                 _escrow.deposit{value: connectionFee}(ownerOf(edge.tokenId));
-                _connections[tokenId].add(edge.tokenId);
             }
+            _connections[tokenId].add(edge.tokenId);
         }
+
+        // Handle Outgoing Edges
+        //   Outgoing Edges must be added or removed by a user
+        //   who currently canEdit the subject node. If a node
+        //   is currently connected, a user who !canEdit may submit
+        //   it in their merge() call, as they're effectively not
+        //   changing that edge.
+        Edge[] memory currentOutgoingEdges = _currentOutgoingEdges[tokenId];
+        delete _currentOutgoingEdges[tokenId];
+
         for (uint256 i; i < outgoingEdges.length; i++) {
-            // Outgoing Edges can only reference things that are
-            // also editable by this sender.
-            Edge memory edge = outgoingEdges[i];
-            require(_exists(edge.tokenId), ERR_NODE_NONEXISTENT);
-            if (!hasPermissionsBypass(edge.tokenId)) {
-                require(canEdit(edge.tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+            Edge memory newEdge = outgoingEdges[i];
+            require(_exists(newEdge.tokenId), ERR_NODE_NONEXISTENT);
+
+            bool found = false;
+            for (uint256 n; n < currentOutgoingEdges.length; n++) {
+                Edge memory connectedEdge = currentOutgoingEdges[n];
+                if (
+                    connectedEdge.tokenId == newEdge.tokenId &&
+                    stringsAreEqual(connectedEdge.name, newEdge.name)
+                ) {
+                    found = true;
+                }
+            }
+
+            // Not found in the current set, so this was added
+            // test to see the sender can actually remove this edge
+            if (
+                !found &&
+                !hasPermissionsBypass(newEdge.tokenId)
+            ) {
+                require(canEdit(newEdge.tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+            }
+
+            _currentOutgoingEdges[tokenId].push(newEdge);
+        }
+
+        // Test for Removed Edges
+        for (uint256 i; i < currentOutgoingEdges.length; i++) {
+            Edge memory connectedEdge = currentOutgoingEdges[i];
+
+            bool found = false;
+            for (uint256 n; n < outgoingEdges.length; n++) {
+                Edge memory newEdge = outgoingEdges[n];
+                if (
+                    connectedEdge.tokenId == newEdge.tokenId &&
+                    stringsAreEqual(connectedEdge.name, newEdge.name)
+                ) {
+                    found = true;
+                }
+            }
+
+            // Connected edge not found in the new set, so this was removed
+            // test to see the sender can actually remove this edge
+            if (
+                !found &&
+                !hasPermissionsBypass(connectedEdge.tokenId)
+            ) {
+                require(canEdit(connectedEdge.tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
             }
         }
     }

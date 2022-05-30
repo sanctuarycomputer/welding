@@ -17,6 +17,7 @@ import getRelatedNodes from 'src/utils/getRelatedNodes';
 type Props = {
   subgraphFormik: FormikProps<BaseNodeFormValues>;
   canEdit: boolean;
+  triggerPublish: Function;
 
   currentDocument?: BaseNode;
   newDocument?: FormikProps<BaseNodeFormValues>;
@@ -25,6 +26,7 @@ type Props = {
 const SubgraphSidebar: FC<Props> = ({
   subgraphFormik,
   canEdit,
+  triggerPublish,
 
   currentDocument,
   newDocument,
@@ -165,8 +167,11 @@ const SubgraphSidebar: FC<Props> = ({
                 </div>
                 <Button
                   className="basis-0 flex-grow"
-                  disabled={subgraphFormik.isSubmitting || !(subgraphFormik.isValid && unsavedChanges)}
-                  onClick={() => subgraphFormik.handleSubmit()}
+                  disabled={
+                    subgraphFormik.isSubmitting ||
+                    !(subgraphFormik.isValid && unsavedChanges)
+                  }
+                  onClick={triggerPublish}
                   label={"Publish"}
                 />
               </div>

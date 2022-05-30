@@ -2,7 +2,7 @@ import { FC, useContext, useState, useEffect } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 
-import { useAccount } from 'wagmi';
+import { useAccount, useSigner } from 'wagmi';
 import { GraphContext } from 'src/hooks/useGraphData';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import useEditableImage from 'src/hooks/useEditableImage';
@@ -34,6 +34,7 @@ const Document: FC<Props> = ({
   const router = useRouter();
 
   const { data: account } = useAccount();
+  const { data: signer } = useSigner();
   const { accountData, loadAccountData } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
 
@@ -50,7 +51,10 @@ const Document: FC<Props> = ({
 
   const [publishStep, setPublishStep] = useState(null);
   const [publishError, setPublishError] = useState(null);
+
   const formik = makeFormikForBaseNode(
+    signer,
+    accountData,
     'Document',
     document,
     async (tx) => {

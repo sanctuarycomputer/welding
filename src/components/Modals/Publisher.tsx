@@ -1,13 +1,14 @@
-import { FC, useEffect, useContext, useState } from 'react';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
+import { FC, useEffect, useContext } from 'react';
+import { GraphContext } from 'src/hooks/useGraphData';
+import { detailedDiff } from 'deep-object-diff';
+import { formatUnits } from 'ethers/lib/utils';
+import { useNetwork } from 'wagmi';
 import Modal from 'react-modal';
-import ModalHeader from 'src/components/Modals/ModalHeader';
+
 import Button from 'src/components/Button';
-import { useAccount, useNetwork } from 'wagmi';
+import ModalHeader from 'src/components/Modals/ModalHeader';
 import Spinner from 'src/components/Icons/Spinner';
 import Warning from 'src/components/Icons/Warning';
-import { detailedDiff } from 'deep-object-diff';
-import { formatUnits, parseUnits } from 'ethers/lib/utils';
 
 export type PublisherMeta = {
   formik: BaseNode;
@@ -101,84 +102,121 @@ const EdgeTile = ({
   );
 };
 
-const ConnectionDiff = ({
-  formik
+const ConnectionTile = ({
+  to,
+  from,
+  edge,
+  prevConnected,
+  owned
 }) => {
   const { activeChain } = useNetwork();
   const symbol = activeChain?.nativeCurrency.symbol || '';
+  return (
+    <tr>
+      <td><NodeTile node={from} /></td>
+      <td className="text-center">—</td>
+      <td className="text-center">
+        <EdgeTile edge={edge} />
+      </td>
+      <td className="text-center">→</td>
+      <td><NodeTile node={to} /></td>
+      <td className="text-right" style={{ width: '99%'}}>
+        {prevConnected ? (
+          <p>Previously Connected ✓</p>
+        ) : (
+          (from.fee === "0" || owned) ? (
+            <p>No Fee ✓</p>
+          ) : (
+            <p>{formatUnits(from.fee, "ether")} {symbol}</p>
+          )
+        )}
+      </td>
+    </tr>
+  );
+};
 
+const ConnectionDiff = ({
+  formik,
+  incomingDiff,
+}) => {
+  const { accountData } = useContext(GraphContext);
   const node = formik.values.__node__;
-  const incomingDiff =
-    detailedDiff(node.incoming, formik.values.incoming);
-  const outgoingDiff =
-    detailedDiff(node.outgoing, formik.values.outgoing);
 
-  const hasAddedConnections =
-    Object.values(incomingDiff.added).length > 0 ||
-    Object.values(outgoingDiff.added).length > 0;
-
-  const hasRemovedConnections =
-    Object.values(incomingDiff.deleted).length > 0 ||
-    Object.values(outgoingDiff.deleted).length > 0;
-
-  // TODO: check if incoming connection is owned by address,
-  // because then it's free
+  const addedConnections = Object.values(incomingDiff.added);
+  const toggledOnConnections =
+    Object.values(incomingDiff.updated).filter(d => d.active)
+  const removedConnections = [
+    ...Object.values(incomingDiff.deleted),
+    ...Object.values(incomingDiff.updated).filter(d => !d.active)
+  ];
 
   return (
     <div className="w-full">
-      {hasAddedConnections ? (
+      {(addedConnections.length > 0 || toggledOnConnections.length > 0) ? (
         <table className="w-full mb-2">
           <tbody>
-          {Object.values(incomingDiff.added).map((edge: Edge) => {
-            const n = formik.values.related.find((n: BaseNode) => {
-              return edge.tokenId === n.tokenId;
-            });
+          {Object.keys(incomingDiff.added).map(key => {
+            if (!incomingDiff.added[key].active) return null;
+            const edge = formik.values.incoming[key];
+            if (!edge || !edge.active) return null;
+            const n = formik.values.related.find((n: BaseNode) =>
+              edge.tokenId === n.tokenId
+            );
             if (!n) return null;
+            const owned = accountData && !!accountData.related.find(r => {
+              return r.tokenId === n.tokenId;
+            });
+
             return (
-              <tr key={`in-${edge.tokenId}-${edge.name}`}>
-                <td><NodeTile node={n} /></td>
-                <td className="text-center">—</td>
-                <td className="text-center">
-                  <EdgeTile edge={edge} />
-                </td>
-                <td className="text-center">→</td>
-                <td><NodeTile node={node} /></td>
-                <td className="text-right" style={{ width: '99%'}}>
-                  <p>{formatUnits(n.fee, "ether")} {symbol}</p>
-                </td>
-              </tr>
+              <ConnectionTile
+                key={`in-${edge.tokenId}-${edge.name}`}
+                to={node}
+                from={n}
+                edge={edge}
+                prevConnected={false}
+                owned={owned}
+              />
             );
           })}
 
-          {Object.values(outgoingDiff.added).map((edge: Edge) => {
-            const n = formik.values.related.find((n: BaseNode) => {
-              return edge.tokenId === n.tokenId;
-            });
+          {Object.keys(incomingDiff.updated).map((key) => {
+            if (!incomingDiff.updated[key].active) return null;
+            const edge = formik.values.incoming[key];
+            if (!edge || !edge.active) return null;
+            const n = formik.values.related.find((n: BaseNode) =>
+              edge.tokenId === n.tokenId
+            );
             if (!n) return null;
+            const owned = accountData && !!accountData.related.find(r => {
+              return r.tokenId === n.tokenId;
+            });
+
             return (
-              <tr key={`out-${edge.tokenId}-${edge.name}`}>
-                <td><NodeTile node={node} /></td>
-                <td className="text-center">—</td>
-                <td className="text-center">
-                  <EdgeTile edge={edge} />
-                </td>
-                <td className="text-center">→</td>
-                <td><NodeTile node={n} /></td>
-                <td className="text-right" style={{ width: '99%'}}>
-                  <p>{formatUnits(node.fee, "ether")} {symbol}</p>
-                </td>
-              </tr>
+              <ConnectionTile
+                key={`in-${edge.tokenId}-${edge.name}`}
+                to={node}
+                from={n}
+                edge={edge}
+                prevConnected
+                owned={owned}
+              />
             );
           })}
           </tbody>
         </table>
       ) : (
-        <div className="text-center pb-3">
-          <p>No new connections</p>
+        <div className="text-center pb-4">
+          <p>No connections added</p>
         </div>
       )}
 
-      <div className="border-t border-color pt-3 text-right">
+      <div className="border-t border-color pt-3 text-right flex justify-between items-center">
+        {removedConnections.length > 0 ? (
+          <p className="text-error-color">
+            {removedConnections.length}x connection{removedConnections.length > 1 ? 's' : ''} removed
+          </p>
+        ) : (<p>No connections removed</p>)}
+
         <Button
           label="Confirm"
           onClick={formik.handleSubmit}
@@ -217,17 +255,12 @@ const Publisher: FC<Props> = ({
   const node = formik.values.__node__;
   const incomingDiff =
     detailedDiff(node.incoming, formik.values.incoming);
-  const outgoingDiff =
-    detailedDiff(node.outgoing, formik.values.outgoing);
-  const hasAddedConnections =
-    Object.values(incomingDiff.added).length > 0 ||
-    Object.values(outgoingDiff.added).length > 0;
-  const hasRemovedConnections =
-    Object.values(incomingDiff.deleted).length > 0 ||
-    Object.values(outgoingDiff.deleted).length > 0;
   const hasConnectionChanges =
-    hasAddedConnections ||
-    hasRemovedConnections;
+    Object.values(incomingDiff.added).length > 0 ||
+    Object.values(incomingDiff.updated).length > 0 ||
+    Object.values(incomingDiff.deleted).length > 0;
+
+  // TODO Only show publish step if metadata has changed (diff)
 
   useEffect(() => {
     if (
@@ -256,7 +289,10 @@ const Publisher: FC<Props> = ({
               active={publishStep === PublishStep.FEES}
               error={publishError}
             >
-              <ConnectionDiff formik={formik} />
+              <ConnectionDiff
+                formik={formik}
+                incomingDiff={incomingDiff}
+              />
             </PublisherStep>
           )}
 

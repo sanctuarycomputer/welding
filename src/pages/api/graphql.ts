@@ -19,18 +19,20 @@ const typeDefs = gql`
 
     currentRevision: Revision! @cypher(statement:"MATCH (this)<-[:REVISES]-(rev:Revision) RETURN rev ORDER BY rev.block DESC LIMIT 1")
     revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
+
     owner: Account! @cypher(statement:"MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
     admins: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a")
     editors: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a")
 
     related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
-    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId }")
-    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId }")
+    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active }")
+    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active }")
   }
 
   type Edge {
     name: String!
     tokenId: String!
+    active: Boolean
   }
 
   type Account {
