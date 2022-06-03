@@ -16,10 +16,17 @@ import Client from 'src/lib/Client';
 import { ExchangeRateProvider } from 'src/hooks/useExchangeRates';
 import { GraphProvider } from 'src/hooks/useGraphData';
 import { ModalProvider, ModalType } from 'src/hooks/useModal';
+import { NavProvider } from 'src/hooks/useNav';
 import { Toaster } from 'react-hot-toast';
 import { ApolloProvider } from '@apollo/client';
 
-import { WagmiConfig, chain, createClient, configureChains, defaultChains } from 'wagmi';
+import {
+  WagmiConfig,
+  chain,
+  createClient,
+  configureChains,
+  defaultChains,
+} from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
@@ -63,10 +70,6 @@ const client = createClient({
         qrcode: true,
       },
     }),
-    new InjectedConnector({
-      chains,
-      options: { name: 'Injected' },
-    }),
   ],
   provider,
   webSocketProvider,
@@ -78,11 +81,13 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ExchangeRateProvider>
         <GraphProvider>
           <ModalProvider>
-            <div className="absolute right-0 top-0 pr-4 py-4">
-              <Wallet />
-            </div>
-            <Component {...pageProps} />
-            <Toaster />
+            <NavProvider>
+              <div className="absolute right-0 top-0 pr-4 py-4 flex">
+                <Wallet />
+              </div>
+              <Component {...pageProps} />
+              <Toaster />
+            </NavProvider>
           </ModalProvider>
         </GraphProvider>
       </ExchangeRateProvider>

@@ -222,7 +222,7 @@ export default async function handler(
   try {
     const session = driver.session();
 
-    if (true) {
+    if (false) {
       const flushQ1 = `MATCH (a)-[r]->() DELETE a, r`
       const flushQ2 = `MATCH (a) DELETE a`;
       await session.writeTransaction(tx => tx.run(flushQ1));

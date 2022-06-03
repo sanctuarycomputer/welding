@@ -17,7 +17,9 @@ const SubgraphConnector: FC<Props> = ({
   isOpen,
   onRequestClose
 }) => {
-  const { closeModal } = useContext(ModalContext);
+  const {
+    closeModal
+  } = useContext(ModalContext);
   const {
     accountData,
     accountNodesByCollectionType
@@ -34,7 +36,6 @@ const SubgraphConnector: FC<Props> = ({
 
   const initConnection = (subgraph: BaseNode) => {
     // check that subgraph doesn't already have this backlink
-
   };
 
   return (

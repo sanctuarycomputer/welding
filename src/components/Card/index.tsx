@@ -14,7 +14,7 @@ const Card: FC<Props> = ({ node }) => {
     `${Welding.ipfsGateways[0]}${node.currentRevision.metadata.image.replace('ipfs://', '/ipfs/')}`;
 
   return (
-    <div className="rounded shadow-lg border border-color h-full">
+    <div className="rounded border border-color h-full">
       <div
         style={{ backgroundImage: `url(${imageSrc})` }}
         className="aspect-sharecard bg-cover bg-center text-right p-2">

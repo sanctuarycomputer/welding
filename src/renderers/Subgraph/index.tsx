@@ -63,10 +63,10 @@ const Subgraph: FC<Props> = ({
     : canEditSubgraph;
 
   const subgraphTopics =
-    getRelatedNodes(subgraph, 'incoming', 'Topic');
+    getRelatedNodes(subgraph, 'incoming', 'Topic', 'DESCRIBES');
 
   const documentTopics = document
-    ? getRelatedNodes(document, 'incoming', 'Topic')
+    ? getRelatedNodes(document, 'incoming', 'Topic', 'DESCRIBES')
     : [];
 
   const [publishStep, setPublishStep] = useState(null);
@@ -122,25 +122,60 @@ const Subgraph: FC<Props> = ({
     );
   });
 
+  //useEffect(() => {
+  //  if (account?.address) {
+  //    window.document.body.style.backgroundImage = null;
+  //  } else {
+  //    window.document.body.style.backgroundImage =
+  //      'url(https://media.giphy.com/media/XrnJ3ofl5DCtG/giphy.gif)';
+  //  }
+  //}, [account]);
+
+  const showSubgraph = subgraph.tokenId.startsWith('-')
+    ? !!account?.address
+    : true;
+
+  const showDocument = document?.tokenId.startsWith('-')
+    ? canEditSubgraph
+    : true;
+
   return (
     <>
       {!document && <NodeMeta formik={subgraphFormik} />}
 
-      <SubgraphSidebar
-        triggerPublish={triggerPublish}
-        subgraphFormik={subgraphFormik}
-        canEdit={canEditSubgraph}
-        currentDocument={document}
-      />
+      {showSubgraph && (
+        <SubgraphSidebar
+          triggerPublish={triggerPublish}
+          subgraphFormik={subgraphFormik}
+          canEdit={canEditSubgraph}
+          currentDocument={document}
+        />
+      )}
 
-      {document ? (
+      {document && showDocument && (
         <div className="pl-4 ml-64 pt-14">
           <Document document={document} />
         </div>
-      ) : (
-        <div className="pl-4 ml-64 pt-14 text-right">
-          <div className="p-4 border border-dashed border-color rounded inline-block mr-4">
-            <p className="font-semibold">Connect a wallet to get started ↑</p>
+      )}
+
+      {!(account?.address) && (
+        <div
+          className="pt-14 absolute right-0 top-0 pointer-events-none">
+          <div className="p-4 border border-dashed border-color rounded inline-block mr-4 background-color">
+            <p className="font-semibold">
+              Connect a wallet to get started ↑
+            </p>
+          </div>
+        </div>
+      )}
+
+      {account?.address && subgraph.tokenId.startsWith('-') && (
+        <div
+          className="pl-4 ml-64 pt-14 pointer-events-none">
+          <div className="ml-4 p-4 border border-dashed border-color rounded inline-block mr-4 background-color">
+            <p className="font-semibold">
+              ← Mint a subgraph to publish docs
+            </p>
           </div>
         </div>
       )}

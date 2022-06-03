@@ -2,6 +2,7 @@ import { FC, useContext, useState, useEffect } from 'react';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import type { GetServerSideProps } from 'next';
 import { GraphContext } from 'src/hooks/useGraphData';
+import { NavContext } from 'src/hooks/useNav';
 import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
 import useEditableImage from 'src/hooks/useEditableImage';
 import slugifyNode from 'src/utils/slugifyNode';
@@ -17,9 +18,11 @@ import Document from 'src/components/Icons/Document';
 import Graph from 'src/components/Icons/Graph';
 import VerticalDots from 'src/components/Icons/VerticalDots';
 import Upload from 'src/components/Icons/Upload';
+import Connect from 'src/components/Icons/Connect';
 import Card from 'src/components/Card';
 import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
+import Actions from 'src/components/Actions';
 import { useSigner } from 'wagmi';
 
 type Props = {
@@ -35,6 +38,7 @@ const TopicsShow: FC<Props> = ({
   const { data: signer } = useSigner();
   const { accountData } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
+  const { setContent } = useContext(NavContext);
 
   const canEdit =
     accountData?.roles.find(r => r.tokenId === topic.tokenId);
@@ -58,6 +62,19 @@ const TopicsShow: FC<Props> = ({
   };
 
   useEffect(() => {
+    if (!canEdit || !formik.dirty) return setContent(null);
+    setContent(
+      <EditNav
+        formik={formik}
+        buttonLabel={formik.isSubmitting
+          ? "Loading..."
+          : "Publish"}
+        onClick={triggerPublish}
+      />
+    );
+  }, [canEdit, formik]);
+
+  useEffect(() => {
     if (!publishStep) return;
     openModal({
       type: ModalType.PUBLISHER,
@@ -65,7 +82,11 @@ const TopicsShow: FC<Props> = ({
     });
   }, [publishStep, publishError])
 
-  const [imagePreview, imageDidChange] = useEditableImage(formik);
+  const [
+    imagePreview,
+    imageDidChange,
+    clearImage
+  ] = useEditableImage(formik);
 
   const nodesByCollectionType = {
     subgraphs: {},
@@ -84,40 +105,25 @@ const TopicsShow: FC<Props> = ({
   return (
     <>
       <NodeMeta formik={formik} />
-      <div className="pt-8">
 
-        {canEdit && (
-          <EditNav
-            unsavedChanges={formik.dirty}
-            coverImageFileDidChange={imageDidChange}
-            formik={formik}
-            onClick={triggerPublish}
-            buttonLabel={formik.isSubmitting
-              ? "Loading..."
-              : "+ Publish"}
-          />
-        )}
-
+      <div className="pt-20">
         <div className="content py-4 mx-auto">
+          <div className="flex justify-end pb-2">
+            <Actions
+              imageDidChange={imageDidChange}
+              node={topic}
+              canEdit={canEdit}
+              allowConnect={false}
+              allowSettings
+            />
+          </div>
+
           <NodeImage
             showDefault
             imagePreview={imagePreview}
             imageDidChange={imageDidChange}
-          >
-            <Tile label="Topic NFT" tracked />
-            <div
-              style={{ transform: 'translate(0, -50%)' }}
-              onClick={() => openModal({
-                type: ModalType.NODE_SETTINGS,
-                meta: {
-                  canEdit,
-                  node: topic
-                }
-              })}
-              className="cursor-pointer top-0 right-2 absolute background-color border-2 border-color shadow-lg p-1 rounded-full z-10">
-              <VerticalDots />
-            </div>
-          </NodeImage>
+            clearImage={clearImage}
+          />
 
           <div
             className="inline-block"
@@ -181,10 +187,42 @@ const TopicsShow: FC<Props> = ({
             </div>
           )}
 
+          {nodes.length !== 0 && collection === "subgraphs" && (
+            <div className="">
+              {nodes.map(node => {
+                return (
+                  <Link
+                    key={node.tokenId}
+                    href={`/${Welding.slugifyNode(node)}`}>
+
+                  <a
+                    className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color"
+                  >
+                    <div className="flex flex-row items-center py-1 flex-grow">
+                      <p className="pr-2 font-semibold w-32 truncate">
+                        {node.currentRevision.metadata.properties.emoji.native} {node.currentRevision.metadata.name}
+                      </p>
+                    </div>
+                  </a>
+
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
           {nodes.length !== 0 && collection === "documents" && (
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
               {nodes.map(node => {
-                return <Card key={node.tokenId} node={node} />;
+                return (
+                  <Link
+                    key={node.tokenId}
+                    href={`/${Welding.slugifyNode(node)}`}>
+                    <a>
+                      <Card key={node.tokenId} node={node} />
+                    </a>
+                  </Link>
+                );
               })}
             </div>
           )}

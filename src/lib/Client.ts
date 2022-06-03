@@ -22,19 +22,27 @@ const DEFAULT_EMOJI: BaseEmoji =
 
 const ERROR_METADATA: Metadata = {
   name: "IPFS downtime",
-  description: "This metadata couldn't be loaded, likely due to IPFS downtime.",
+  description:
+    "This metadata couldn't be loaded, likely due to IPFS downtime.",
   image: "",
   properties: {
     emoji: DEFAULT_EMOJI // TODO: Warning Emoji
   }
 };
 
+const revisionShape = `
+hash,
+block,
+content,
+contentType
+`;
+
 const baseNodeShape = `
 tokenId
 labels
 fee
 currentRevision {
-  hash, block, content, contentType
+  ${revisionShape}
 }
 related {
   tokenId
@@ -66,9 +74,9 @@ owner {
 
 const Client = {
   _client: null,
+
   getClient: async function() {
     if (Client._client) return Client._client;
-
     const cache = new InMemoryCache();
     if (typeof window !== 'undefined') {
       await persistCache({
@@ -82,29 +90,39 @@ const Client = {
       cache,
       uri: "http://localhost:3000/api/graphql",
     });
-
     return Client._client;
   },
 
-  processRevision: async function(revision: Revision): Promise<void> {
+  processRevision: async function(
+    revision: Revision
+  ): Promise<void> {
     if (!revision.content) {
-      revision.metadata = await Client.fetchMetadataForHash(revision.hash);
+      revision.metadata =
+        await Client.fetchMetadataForHash(revision.hash);
     }
-
     if (revision.contentType === 'application/json') {
       revision.metadata = JSON.parse(revision.content);
     }
   },
 
-  fetchMetadataForHash: async function(hash: string): Promise<Metadata> {
-    const response = await fetch(`http://localhost:3000/api/metadata/${hash}`);
+  fetchMetadataForHash: async function(
+    hash: string
+  ): Promise<Metadata> {
+    const response =
+      await fetch(`http://localhost:3000/api/metadata/${hash}`);
     if (!response.ok) return Promise.resolve(ERROR_METADATA);
     return await response.json();
   },
 
-  fastForward: async function(blockNumber: number): Promise<void> {
-    const response = await fetch(`http://localhost:3000/api/sync?ensure=${blockNumber}`);
-    if (!response.ok) throw new Error("could_not_fastforward");
+  fastForward: async function(
+    blockNumber: number
+  ): Promise<void> {
+    const response =
+      await fetch(
+        `http://localhost:3000/api/sync?ensure=${blockNumber}`
+      );
+    if (!response.ok)
+      throw new Error("could_not_fastforward");
   },
 
   makeShallowNodesSubscription: async function() {
@@ -118,7 +136,7 @@ const Client = {
             labels
             fee
             currentRevision {
-              hash, block, content, contentType
+              ${revisionShape}
             }
           }
         }
@@ -126,7 +144,9 @@ const Client = {
     });
   },
 
-  fetchAccount: async function(accountAddress: string): Promise<Account | null> {
+  fetchAccount: async function(
+    accountAddress: string
+  ): Promise<Account | null> {
     const client = await Client.getClient();
     const { data: { accounts }} = await client.query({
       fetchPolicy: 'network-only',
@@ -159,7 +179,9 @@ const Client = {
     return account;
   },
 
-  fetchBaseNodeByTokenId: async function(tokenId: string): Promise<BaseNode | null> {
+  fetchBaseNodeByTokenId: async function(
+    tokenId: string
+  ): Promise<BaseNode | null> {
     const client = await Client.getClient();
     const { data: { baseNodes }} = await client.query({
       fetchPolicy: 'network-only',
@@ -180,6 +202,50 @@ const Client = {
       await Client.processRevision(connection.currentRevision);
 
     return baseNode;
+  },
+
+  fetchRevisionByHash: async function(
+    hash: string
+  ): Promise<Revision | null> {
+    const client = await Client.getClient();
+    const { data: { revisions }} = await client.query({
+      fetchPolicy: 'network-only',
+      variables: { hash },
+      query: gql`
+        query Revision($hash: String) {
+          revisions(
+            where: { hash: $hash }
+          ) {
+            ${revisionShape}
+          }}`,
+    });
+
+    let revision: Revision = revisions[0];
+    if (!revision) return null;
+    revision = JSON.parse(JSON.stringify(revision));
+    await Client.processRevision(revision);
+    return revision;
+  },
+
+  fetchRevisionsForBaseNode: async function(
+    tokenId: string
+  ): Promise<Revision[]> {
+    const client = await Client.getClient();
+    const { data: { revisions }} = await client.query({
+      fetchPolicy: 'network-only',
+      variables: { tokenId },
+      query: gql`
+        query Revisions($tokenId: String) {
+          revisions(
+            where: {baseNodes_SOME: {tokenId: $tokenId}}
+          ) {
+            ${revisionShape}
+          }}`,
+    });
+    revisions = JSON.parse(JSON.stringify(revisions));
+    for (const revision of revisions)
+      await Client.processRevision(revision);
+    return revisions;
   },
 };
 

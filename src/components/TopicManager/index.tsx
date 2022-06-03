@@ -98,7 +98,7 @@ const TopicManager: FC<Props> = ({
               setTopics
             }
           })}>
-          <p className="inline-block border-2 border-color background-color rounded-full text-xs px-2 py-1 font-medium">+ Topic</p>
+          <p className="inline-block border-2 border-color background-color border-dashed rounded-full text-xs px-2 py-1 font-medium">+ Topic</p>
         </div>
       )}
     </div>

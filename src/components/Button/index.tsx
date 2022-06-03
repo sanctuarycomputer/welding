@@ -15,7 +15,7 @@ const Button: FC<Props> = ({
 }) => {
   return (
     <button
-      className={`Button ${className}`}
+      className={`Button ${className} background-color`}
       disabled={disabled}
       onClick={() => onClick()}
     >

@@ -20,6 +20,14 @@ function GraphProvider({ children }) {
   const [shallowNodes, setShallowNodes] = useState(null);
   const shallowNodesSubscription = useRef(null);
 
+  const [revisionData, setRevisionData] =
+    useState<{
+      [tokenId: string]: {
+        status: string,
+        revisions: Revision[]
+      }
+    }>({});
+
   const loadShallowNodes = async () => {
     if (shallowNodesLoading === true) return;
     if (shallowNodesSubscription.current === null) {
@@ -50,6 +58,26 @@ function GraphProvider({ children }) {
     setAccountDataLoading(true);
     setAccountData(await Client.fetchAccount(address));
     setAccountDataLoading(false);
+  };
+
+  const loadRevisionsForBaseNode = async (tokenId) => {
+    setRevisionData({
+      ...revisionData,
+      [tokenId]: {
+        status: "LOADING",
+        revisions: []
+      }
+    });
+    const revisions =
+      await Client.fetchRevisionsForBaseNode(tokenId);
+
+    setRevisionData({
+      ...revisionData,
+      [tokenId]: {
+        status: "FULFILLED",
+        revisions
+      }
+    });
   };
 
   useEffect(() => {
@@ -91,7 +119,9 @@ function GraphProvider({ children }) {
       loadAccountData,
       shallowNodes,
       shallowNodesLoading,
-      loadShallowNodes
+      loadShallowNodes,
+      revisionData,
+      loadRevisionsForBaseNode
     }}>
       {children}
     </Provider>

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 
 import { useAccount, useSigner } from 'wagmi';
 import { GraphContext } from 'src/hooks/useGraphData';
+import { NavContext } from 'src/hooks/useNav';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import useEditableImage from 'src/hooks/useEditableImage';
 import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
@@ -11,10 +12,12 @@ import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
 import EditNav from 'src/components/EditNav';
 import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
+import Actions from 'src/components/Actions';
 import Frontmatter from 'src/components/Frontmatter';
 import TopicManager from 'src/components/TopicManager';
 import Tile from 'src/components/Tile';
 import VerticalDots from 'src/components/Icons/VerticalDots';
+import Connect from 'src/components/Icons/Connect';
 
 import Client from 'src/lib/Client';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
@@ -29,7 +32,7 @@ type Props = {
 };
 
 const Document: FC<Props> = ({
-  document
+  document,
 }) => {
   const router = useRouter();
 
@@ -37,16 +40,19 @@ const Document: FC<Props> = ({
   const { data: signer } = useSigner();
   const { accountData, loadAccountData } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
+  const { setContent } = useContext(NavContext);
 
   const canEdit =
     document.tokenId.startsWith("-") ||
     accountData?.roles.find(r => r.tokenId === document.tokenId);
+
   const canAdd = !!accountData;
 
   const documentTopics = getRelatedNodes(
     document,
     'incoming',
-    'Topic'
+    'Topic',
+    'DESCRIBES'
   );
 
   const [publishStep, setPublishStep] = useState(null);
@@ -77,6 +83,19 @@ const Document: FC<Props> = ({
   };
 
   useEffect(() => {
+    if (!canEdit || !formik.dirty) return setContent(null);
+    setContent(
+      <EditNav
+        formik={formik}
+        buttonLabel={formik.isSubmitting
+          ? "Loading..."
+          : "Publish"}
+        onClick={triggerPublish}
+      />
+    );
+  }, [canEdit, formik]);
+
+  useEffect(() => {
     if (!publishStep) return;
     openModal({
       type: ModalType.PUBLISHER,
@@ -102,31 +121,18 @@ const Document: FC<Props> = ({
   return (
     <>
       <NodeMeta formik={formik} />
-      <div>
-        {canEdit && (
-          <EditNav
-            unsavedChanges={formik.dirty}
-            coverImageFileDidChange={imageDidChange}
-            formik={formik}
-            buttonLabel={formik.isSubmitting
-              ? "Loading..."
-              : "Publish"}
-            onClick={triggerPublish}
-            onClickExtra={() => openModal({
-              type: ModalType.NODE_SETTINGS,
-              meta: {
-                canEdit,
-                node: document
-              }
-            })}
-          />
-        )}
 
+      <div className="pt-8">
         <div className="content pb-4 mx-auto">
-          <button onClick={triggerConnect}>
-            Connect
-          </button>
-
+          <div className="flex justify-end pb-2">
+            <Actions
+              imageDidChange={imageDidChange}
+              node={document}
+              canEdit={canEdit}
+              allowConnect={!document.tokenId.startsWith('-')}
+              allowSettings={!document.tokenId.startsWith('-')}
+            />
+          </div>
           <NodeImage
             imagePreview={imagePreview}
             imageDidChange={imageDidChange}

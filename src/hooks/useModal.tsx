@@ -1,11 +1,11 @@
 import { useState, createContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ConnectModal from 'src/components/Modals/Connect';
+import WrongNetworkModal from 'src/components/Modals/WrongNetwork';
 import SubgraphSwitcherModal from 'src/components/Modals/SubgraphSwitcher';
 import TopicConnectorModal, { TopicConnectorMeta } from 'src/components/Modals/TopicConnector';
 import TopicMinterModal, { TopicMinterMeta } from 'src/components/Modals/TopicMinter';
 import EmojiPickerModal, { EmojiPickerMeta } from 'src/components/Modals/EmojiPicker';
-import AddMemberModal, { AddMemberMeta } from 'src/components/Modals/AddMember';
 import NodeSettingsModal, { NodeSettingsMeta } from 'src/components/Modals/NodeSettings';
 import PublisherModal, { PublisherMeta } from 'src/components/Modals/Publisher';
 import SubgraphConnectorModal, { SubgraphConnectorMeta } from 'src/components/Modals/SubgraphConnector';
@@ -17,11 +17,11 @@ interface IModalContext {
 
 export enum ModalType {
   CONNECT = "CONNECT"
+  WRONG_NETWORK = "WRONG_NETWORK"
   SUBGRAPH_SWITCHER = "SUBGRAPH_SWITCHER"
   TOPIC_CONNECTOR = "TOPIC_CONNECTOR"
   TOPIC_MINTER = "TOPIC_MINTER"
   EMOJI_PICKER = "EMOJI_PICKER"
-  ADD_MEMBER = "ADD_MEMBER"
   NODE_SETTINGS = "NODE_SETTINGS"
   PUBLISHER = "PUBLISHER"
   SUBGRAPH_CONNECTOR = "SUBGRAPH_CONNECTOR"
@@ -29,6 +29,8 @@ export enum ModalType {
 
 type CurrentModal = {
   type: ModalType.CONNECT
+} | {
+  type: ModalType.WRONG_NETWORK
 } | {
   type: ModalType.SUBGRAPH_SWITCHER
 } | {
@@ -40,9 +42,6 @@ type CurrentModal = {
 } | {
   type: ModalType.EMOJI_PICKER,
   meta: EmojiPickerMeta
-} | {
-  type: ModalType.ADD_MEMBER,
-  meta: AddMemberMeta
 } | {
   type: ModalType.NODE_SETTINGS,
   meta: NodeSettingsMeta
@@ -87,6 +86,12 @@ const ModalProvider = ({ children }) => {
           onRequestClose={closeModal}
         />
       )}
+      {currentModal?.type === ModalType.WRONG_NETWORK && (
+        <WrongNetworkModal
+          isOpen
+          onRequestClose={closeModal}
+        />
+      )}
       {currentModal?.type === ModalType.SUBGRAPH_SWITCHER && (
         <SubgraphSwitcherModal
           isOpen
@@ -109,13 +114,6 @@ const ModalProvider = ({ children }) => {
       )}
       {currentModal?.type === ModalType.EMOJI_PICKER && (
         <EmojiPickerModal
-          isOpen
-          onRequestClose={closeModal}
-          meta={currentModal.meta}
-        />
-      )}
-      {currentModal?.type === ModalType.ADD_MEMBER && (
-        <AddMemberModal
           isOpen
           onRequestClose={closeModal}
           meta={currentModal.meta}

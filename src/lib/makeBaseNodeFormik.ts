@@ -66,7 +66,6 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       __node__: node
     },
     onSubmit: async (values) => {
-      console.log(feesRequired(formik, accountData).toString());
       let toastId;
 
       try {
@@ -75,7 +74,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
         if (onProgress) onProgress(PublishStep.PUBLISH);
         NProgress.start();
         toastId = toast.loading('Publishing metadata...', {
-          position: 'bottom-right',
+          //position: 'bottom-right',
           className: 'toast'
         });
 
@@ -144,13 +143,12 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
           id: toastId,
         });
         formik.resetForm({ values });
-        NProgress.done();
         return onComplete(tx);
       } catch(e) {
         NProgress.done();
         toast.error('An error occured.', {
           id: toastId,
-          position: 'bottom-right',
+          //position: 'bottom-right',
           className: 'toast',
         });
         console.log(e);
@@ -175,7 +173,9 @@ export const getRelatedNodes = (
   return formik.values[relation].map((e: Edge) => {
     if (e.active === false) return null;
     if (e.name !== name) return null;
-    const n = formik.values.related.find((node: BaseNode) => node.tokenId === e.tokenId);
+    const n =
+      formik.values.related.find((node: BaseNode) =>
+        node.tokenId === e.tokenId);
     if (!n) return null;
     if (!n.labels.includes(label)) return null;
     return n;

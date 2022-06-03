@@ -1,8 +1,9 @@
-import { FC } from 'react';
+import { FC, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import type { Account } from 'src/types';
+import { NavContext } from 'src/hooks/useNav';
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
 import Button from 'src/components/Button';
@@ -13,6 +14,7 @@ import dynamic from 'next/dynamic';
 import Card from 'src/components/Card';
 import TopicTile from 'src/components/TopicTile';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { useAccount } from 'wagmi';
 
 const Address = dynamic(() => import('src/components/Address'), {
   ssr: false
@@ -37,6 +39,22 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
     topics: {},
   };
 
+  const { data: account } = useAccount();
+  const { setContent } = useContext(NavContext);
+
+  useEffect(() => {
+    if (!account?.address) return setContent(null);
+    setContent(
+      <div className="pr-2 mr-2 border-r border-color flex items-center">
+        <Link href="/mint">
+          <a className="Button text-xs font-semibold">
+            + Mint Subgraph
+          </a>
+        </Link>
+      </div>
+    );
+  }, [account?.address]);
+
   if (accountData) {
     nodesByCollectionType =
       accountData.roles.reduce((acc: object, role: Role) => {
@@ -51,6 +69,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         return acc;
       }, nodesByCollectionType);
   }
+
 
   const nodes: BaseNode[] =
     Object.values(nodesByCollectionType[collection]);
@@ -116,11 +135,8 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
                   </p>
                 </div>
                 <div className="flex">
-                  <p className="pr-4">
-                    ↙ {node.n.incoming.length} Backlinks
-                  </p>
                   <p>
-                    {node.n.outgoing.length} Connections ↗
+                    ↙ {node.n.incoming.length} Backlinks
                   </p>
                 </div>
               </a>
@@ -151,7 +167,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
           {nodes.map(node => {
             const subgraphs =
-              getRelatedNodes(node.n, 'outgoing', 'Subgraph');
+              getRelatedNodes(node.n, 'outgoing', 'Subgraph', 'BELONGS_TO');
 
             let link = `/${Welding.slugifyNode(node.n)}`;
             if (subgraphs.length === 1) {

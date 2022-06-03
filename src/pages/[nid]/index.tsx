@@ -21,6 +21,9 @@ const NodeShow: FC<Props> = ({ node }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const q = context.resolvedUrl.split('?')[1];
+  console.log(q, context.resolvedUrl);
+
   let { nid } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || '').split('-')[0];
   const node =
@@ -37,14 +40,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       redirect: {
         permanent: false,
-        destination: `/${slugifyNode(node)}`
+        destination: q
+          ? `/${slugifyNode(node)}?${q}`
+          : `/${slugifyNode(node)}`
       }
     };
   }
 
   if (nodeType === 'Subgraph') {
     const subgraphDocuments =
-      getRelatedNodes(node, 'incoming', 'Document');
+      getRelatedNodes(node, 'incoming', 'Document', 'BELONGS_TO');
     if (subgraphDocuments.length) {
       return {
         redirect: {
@@ -65,16 +70,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (nodeType === 'Document') {
     const documentSubgraphs =
-      getRelatedNodes(node, 'outgoing', 'Subgraph');
+      getRelatedNodes(node, 'outgoing', 'Subgraph', 'BELONGS_TO');
     // TODO: Reference the "Belongs To" Subgraph
     if (documentSubgraphs.length === 1) return {
       redirect: {
         permanent: false,
-        destination:
-          `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`
+        destination: q
+          ? `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}?${q}`
+          : `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`
       }
     };
   };
+
+  let revision = null;
+  if (context.query.hash) {
+    const rev =
+      await Client.fetchRevisionByHash(context.query.hash);
+    if (rev) node.currentRevision = rev;
+  }
 
   return {
     props: {

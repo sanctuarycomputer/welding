@@ -7,8 +7,16 @@ type Props = {
   document: BaseNode;
 };
 
-const NodeShow: FC<Props> = ({ subgraph, document }) => {
-  return <Subgraph subgraph={subgraph} document={document} />;
+const NodeShow: FC<Props> = ({
+  subgraph,
+  document,
+}) => {
+  return (
+    <Subgraph
+      subgraph={subgraph}
+      document={document}
+    />
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -56,11 +64,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  let revision = null;
+  if (context.query.hash) {
+    const rev =
+      await Client.fetchRevisionByHash(context.query.hash);
+    if (rev) document.currentRevision = rev;
+  }
+
   return {
     props: {
       key: `${subgraph.tokenId}-${document.tokenId}`,
       subgraph,
-      document
+      document,
     }
   };
 };

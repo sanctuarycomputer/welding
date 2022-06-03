@@ -51,6 +51,7 @@ const typeDefs = gql`
     block: Int!
     content: String
     contentType: String
+    baseNodes: [BaseNode!]! @relationship(type: "REVISES", direction: OUT)
   }
 `;
 

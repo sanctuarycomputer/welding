@@ -1,5 +1,6 @@
-import { FC, useEffect, useContext } from 'react';
+import { FC, useEffect, useContext, useState } from 'react';
 import { GraphContext } from 'src/hooks/useGraphData';
+import { ExchangeRateContext } from 'src/hooks/useExchangeRates';
 import { detailedDiff } from 'deep-object-diff';
 import { formatUnits } from 'ethers/lib/utils';
 import { useNetwork } from 'wagmi';
@@ -77,15 +78,25 @@ const PublisherStep = ({
 const NodeTile = ({
   node
 }) => {
-  const collectionType =
-    node.labels.filter(l => l !== "BaseNode")[0] || 'Unknown';
+  let name, emoji;
+
+  if ('__typename' in node) {
+    name = node.currentRevision.metadata.name;
+    emoji = node.currentRevision.metadata.properties.emoji.native;
+  } else if ('dirty' in node) {
+    name = node.values.name;
+    emoji = node.values.emoji.native;
+  }
+
   return (
-    <p className="whitespace-nowrap border rounded-full p-1 border-color mb-1">
+    <p
+      className="whitespace-nowrap border rounded-full p-1 border-color mb-1"
+    >
       <span>
-        {node.currentRevision.metadata.properties.emoji.native}
+        {emoji}
       </span>
       <span className="ml-1">
-        {node.currentRevision.metadata.name}
+        {name}
       </span>
     </p>
   );
@@ -111,23 +122,48 @@ const ConnectionTile = ({
 }) => {
   const { activeChain } = useNetwork();
   const symbol = activeChain?.nativeCurrency.symbol || '';
+
+  const { exchangeRate } = useContext(ExchangeRateContext);
+  const [USDEstimate, setUSDEstimate] = useState(null);
+
+  useEffect(() => {
+    if (from.fee && exchangeRate) {
+      setUSDEstimate(
+        (
+          parseFloat(formatUnits(from.fee, "ether")) *
+          exchangeRate
+        ).toFixed(2)
+      );
+    } else {
+      setUSDEstimate(null);
+    }
+  }, [from.fee, exchangeRate]);
+  console.log(USDEstimate);
+
   return (
     <tr>
-      <td><NodeTile node={from} /></td>
+      <td>
+        <NodeTile node={from} />
+      </td>
       <td className="text-center">—</td>
       <td className="text-center">
         <EdgeTile edge={edge} />
       </td>
       <td className="text-center">→</td>
-      <td><NodeTile node={to} /></td>
+      <td>
+        <NodeTile node={to} />
+      </td>
+
       <td className="text-right" style={{ width: '99%'}}>
         {prevConnected ? (
-          <p>Previously Connected ✓</p>
+          <p>Prev. Connected ✓</p>
         ) : (
           (from.fee === "0" || owned) ? (
             <p>No Fee ✓</p>
           ) : (
-            <p>{formatUnits(from.fee, "ether")} {symbol}</p>
+            <p>
+              {formatUnits(from.fee, "ether")} {symbol} / {USDEstimate || '??'} USD
+            </p>
           )
         )}
       </td>
@@ -170,7 +206,7 @@ const ConnectionDiff = ({
             return (
               <ConnectionTile
                 key={`in-${edge.tokenId}-${edge.name}`}
-                to={node}
+                to={formik}
                 from={n}
                 edge={edge}
                 prevConnected={false}

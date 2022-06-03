@@ -13,7 +13,7 @@ const TopicTile: FC<Props> = ({
   const emoji = topic.currentRevision.metadata.properties.emoji.native;
   const name = topic.currentRevision.metadata.name;
   return (
-    <p className={`whitespace-nowrap mr-1 border-2 border-color background-color flex rounded-full text-${textSize || 'xs'} px-2 py-1 font-medium shadow-lg`}>
+    <p className={`whitespace-nowrap mr-1 border-2 border-color background-color flex rounded-full text-${textSize || 'xs'} px-2 py-1 font-medium`}>
       {emoji} #{name}
     </p>
   );
