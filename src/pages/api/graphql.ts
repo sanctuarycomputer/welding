@@ -25,14 +25,15 @@ const typeDefs = gql`
     editors: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a")
 
     related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
-    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active }")
-    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active }")
+    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }")
+    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }")
   }
 
   type Edge {
     name: String!
     tokenId: String!
-    active: Boolean
+    active: Boolean!
+    pivotTokenId: String!
   }
 
   type Account {

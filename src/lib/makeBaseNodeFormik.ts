@@ -108,12 +108,15 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
             hash !== node.currentRevision.hash;
 
           if (connectionsDidChange) {
-            console.log(values.incoming, values.outgoing);
             tx = await Welding.Nodes.connect(signer).merge(
               node.tokenId,
               hash,
-              values.incoming.filter(e => e.active),
-              values.outgoing.filter(e => e.active),
+              values.incoming
+                .filter(e => e.pivotTokenId === node.tokenId)
+                .filter(e => e.active),
+              values.outgoing
+                .filter(e => e.pivotTokenId === node.tokenId)
+                .filter(e => e.active),
               { value: feesRequired(formik, accountData) }
             );
           } else if (hashDidChange) {
@@ -170,6 +173,7 @@ export const getRelatedNodes = (
   label: string,
   name: string
 ) => {
+  const uniqueTokenIds = new Set();
   return formik.values[relation].map((e: Edge) => {
     if (e.active === false) return null;
     if (e.name !== name) return null;
@@ -179,7 +183,126 @@ export const getRelatedNodes = (
     if (!n) return null;
     if (!n.labels.includes(label)) return null;
     return n;
-  }).filter(r => r !== null);
+  }).filter(n => {
+    if (n === null) return false;
+    const dupe = uniqueTokenIds.has(n.tokenId);
+    uniqueTokenIds.add(n.tokenId);
+    if (!dupe) return true;
+    return false;
+  });
 };
+
+export const hasStagedRelations = (
+  formik,
+  relation: 'incoming' | 'outgoing',
+  nodes: BaseNode[],
+  name: string
+) => {
+  return nodes.every(n => {
+    return !!formik.values[relation].find(e => {
+      return (
+        e.name === name &&
+        e.tokenId === n.tokenId &&
+        e.active
+      );
+    });
+  });
+};
+
+export const stageNodeRelations = (
+  formik,
+  relation: 'incoming' | 'outgoing',
+  nodes: BaseNode[],
+  name: string,
+  disableOthers: boolean
+) => {
+  const pivotTokenId = formik.values.__node__.tokenId;
+  const nodeIds = nodes.map(n => n.tokenId);
+
+  // Activate possible existing edges for this relation
+  const activatedExistingEdges =
+    formik.values[relation].reduce((acc, e) => {
+      const n = formik.values.related.find((r: BaseNode) =>
+        r.tokenId === e.tokenId);
+      if (!n) return acc;
+      if (
+        e.pivotTokenId === pivotTokenId,
+        e.name === name
+      ) {
+        if (disableOthers) {
+          if (nodeIds.includes(n.tokenId)) {
+            return [...acc, { ...e, active: true }];
+          } else {
+            return [...acc, { ...e, active: false}];
+          }
+        } else {
+          return [...acc, { ...e, active: true }];
+        }
+      }
+
+      return [...acc, e];
+    }, []);
+
+  // After activation,
+  const missingEdges = nodes.map(n => {
+    const existingEdge = activatedExistingEdges.find(e => {
+      return (
+        e.name === name &&
+        e.tokenId === n.tokenId &&
+        e.pivotTokenId === pivotTokenId &&
+        e.active
+      );
+    });
+    if (!!existingEdge) return null;
+    return {
+      __typename: "Edge",
+      name: name,
+      tokenId: n.tokenId,
+      pivotTokenId: pivotTokenId,
+      active: true
+    };
+  }).filter(e => e !== null);
+
+  formik.setFieldValue(relation, [
+    ...activatedExistingEdges,
+    ...missingEdges
+  ]);
+
+  const otherRelatedNodes =
+    formik.values.related.filter((n: BaseNode) => {
+      return !nodeIds.includes(n.tokenId);
+    });
+  formik.setFieldValue('related', [
+    ...otherRelatedNodes,
+    ...nodes
+  ]);
+}
+
+export const unstageNodeRelations = (
+  formik,
+  relation: 'incoming' | 'outgoing',
+  nodes: BaseNode[],
+  name: string
+) => {
+  const nodeIds = nodes.map(n => n.tokenId);
+
+  const deactivatedExistingEdges =
+    formik.values[relation].reduce((acc, e) => {
+      const n = formik.values.related.find((r: BaseNode) =>
+        r.tokenId === e.tokenId);
+      if (!n) return acc;
+      if (
+        e.name === name &&
+        nodeIds.includes(n.tokenId)
+      ) {
+        return [...acc, { ...e, active: false }];
+      }
+      return [...acc, e];
+    }, []);
+
+  formik.setFieldValue(relation, [
+    ...deactivatedExistingEdges
+  ]);
+}
 
 export default makeFormikForBaseNode;

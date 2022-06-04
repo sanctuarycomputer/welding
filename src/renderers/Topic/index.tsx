@@ -58,7 +58,6 @@ const TopicsShow: FC<Props> = ({
   const triggerPublish = () => {
     if (publishError !== null) setPublishError(null);
     setPublishStep("FEES");
-    //formik.handleSubmit();
   };
 
   useEffect(() => {

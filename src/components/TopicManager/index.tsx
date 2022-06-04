@@ -12,7 +12,10 @@ import TopicTile from 'src/components/TopicTile';
 import { BaseNode } from 'src/types';
 import { useSigner } from 'wagmi';
 import slugifyNode from 'src/utils/slugifyNode';
-import { getRelatedNodes } from 'src/lib/makeBaseNodeFormik';
+import {
+  getRelatedNodes,
+  stageNodeRelations
+} from 'src/lib/makeBaseNodeFormik';
 import Tooltip from 'src/components/Tooltip';
 
 type Props = {
@@ -26,49 +29,13 @@ const TopicManager: FC<Props> = ({
   const { openModal } = useContext(ModalContext);
 
   const setTopics = (topics) => {
-    // get related nodes without incoming topics
-    // get incoming edges without incoming topics
-    const node = formik.values.__node__;
-    const topicIds = topics.map(t => t.tokenId);
-
-    const incomingEdges =
-      node.incoming.reduce((acc, e) => {
-        const n = node.related.find((r: BaseNode) => r.tokenId === e.tokenId);
-        if (!n) return acc;
-        if (!n.labels.includes("Topic")) return [...acc, e];
-        if (e.name !== "DESCRIBES") return [...acc, e];
-        if (topicIds.includes(n.tokenId)) {
-          return [...acc, { ...e, active: true }];
-        }
-        return [...acc, { ...e, active: false }];
-      }, []);
-
-    const missingIncomingEdges = topics.map(n => {
-      const existingEdge =
-        incomingEdges.find(e => {
-          return e.name === "DESCRIBES" && e.tokenId === n.tokenId;
-        });
-      if (!!existingEdge) return null;
-      return {
-        __typename: "Edge",
-        name: "DESCRIBES",
-        tokenId: n.tokenId,
-        active: true
-      };
-    }).filter(e => e !== null);
-
-    formik.setFieldValue('incoming', [
-      ...incomingEdges,
-      ...missingIncomingEdges
-    ]);
-
-    const otherRelatedNodes = node.related.filter((n: BaseNode) => {
-      return !topicIds.includes(n.tokenId);
-    });
-    formik.setFieldValue('related', [
-      ...otherRelatedNodes,
-      ...topics
-    ]);
+    stageNodeRelations(
+      formik,
+      'incoming',
+      topics,
+      'DESCRIBES',
+      true
+    );
   };
 
   const topics =

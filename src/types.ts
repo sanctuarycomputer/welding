@@ -60,6 +60,7 @@ type Label = SubgraphLabel | DocumentLabel | TopicLabel;
 type Edge = {
   name: string;
   tokenId: string;
+  pivotTokenId: string;
   active: boolean;
 };
 

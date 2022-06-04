@@ -1,6 +1,7 @@
 import { FC, useContext, useState, useEffect } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 import { useAccount, useSigner } from 'wagmi';
 import { GraphContext } from 'src/hooks/useGraphData';
@@ -9,6 +10,7 @@ import { ModalContext, ModalType } from 'src/hooks/useModal';
 import useEditableImage from 'src/hooks/useEditableImage';
 import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
 
+import slugifyNode from 'src/utils/slugifyNode';
 import EditNav from 'src/components/EditNav';
 import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
@@ -29,6 +31,29 @@ const Editor = dynamic(() => import('src/components/Editor'), {
 
 type Props = {
   document: BaseNode;
+};
+
+const DocumentStashInfo = ({
+  subgraph
+}) => {
+  if (subgraph) {
+    const name = subgraph.currentRevision.metadata.name;
+    const emoji = subgraph.currentRevision.metadata.properties.emoji.native;
+    return (
+      <p>
+        <span
+          className="opacity-50"
+        >
+          This document belongs to{' '}
+        </span>
+        <Link href={`/${slugifyNode(subgraph)}`}>
+          <a className="opacity-50 hover:opacity-100">↗ {emoji} {name}</a>
+        </Link>
+      </p>
+    );
+  } else {
+    return <p>This document does not have a parent.</p>
+  }
 };
 
 const Document: FC<Props> = ({
@@ -118,13 +143,28 @@ const Document: FC<Props> = ({
     });
   };
 
+  const subgraphParent = getRelatedNodes(
+    document,
+    'outgoing',
+    'Subgraph',
+    'BELONGS_TO'
+  )[0];
+
+  const showStashInfo = (
+    router.route === "/[nid]/[did]" &&
+    router.query.nid.split('-')[0] !== subgraphParent.tokenId
+  );
+
   return (
     <>
       <NodeMeta formik={formik} />
 
       <div className="pt-8">
         <div className="content pb-4 mx-auto">
-          <div className="flex justify-end pb-2">
+          <div className={`flex justify-${showStashInfo ? 'between' : 'end'} pb-2`}>
+            {showStashInfo &&
+              <DocumentStashInfo subgraph={subgraphParent} />
+            }
             <Actions
               imageDidChange={imageDidChange}
               node={document}

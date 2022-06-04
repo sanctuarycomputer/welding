@@ -36,7 +36,7 @@ const merge = async (e, session) => {
           `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET i${index}.fee = '0'
-           MERGE (i${index})-[ri${index}:${edge.name}]->(n)
+           MERGE (i${index})-[ri${index}:${edge.name} {pivotTokenId: $tokenId}]->(n)
              SET ri${index}.active = true
            `;
         return acc;
@@ -48,7 +48,7 @@ const merge = async (e, session) => {
           `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET o${index}.fee = '0'
-           MERGE (n)-[ro${index}:${edge.name}]->(o${index})
+           MERGE (n)-[ro${index}:${edge.name} {pivotTokenId: $tokenId}]->(o${index})
              SET ro${index}.active = true
            `;
         return acc;
@@ -97,7 +97,7 @@ const merge = async (e, session) => {
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
           WITH n
-          MATCH (n)-[r:BELONGS_TO|DESCRIBES]-(:BaseNode)
+          MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
             SET r.active = false
           `;
 
@@ -105,7 +105,7 @@ const merge = async (e, session) => {
         const index = args.incomingEdges.indexOf(edge);
         acc +=
           `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
-           MERGE (i${index})-[ri${index}:${edge.name}]->(n)
+           MERGE (i${index})-[ri${index}:${edge.name} {pivotTokenId: $tokenId}]->(n)
              SET ri${index}.active = true
            `;
         return acc;
@@ -117,13 +117,12 @@ const merge = async (e, session) => {
           `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET o${index}.fee = '0'
-           MERGE (n)-[ro${index}:${edge.name}]->(o${index})
+           MERGE (n)-[ro${index}:${edge.name} {pivotTokenId: $tokenId}]->(o${index})
              SET ro${index}.active = true
            `;
         return acc;
       }, q);
 
-      console.log(q);
       await session.writeTransaction(tx => tx.run(q, {
         tokenId: args.tokenId.toString(),
         hash: args.hash,

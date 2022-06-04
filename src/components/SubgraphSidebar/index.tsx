@@ -7,6 +7,7 @@ import Button from 'src/components/Button';
 import Upload from 'src/components/Icons/Upload';
 import Welding from 'src/lib/Welding';
 
+import Document from 'src/components/Icons/Document';
 import Actions from 'src/components/Actions';
 import useEditableImage from 'src/hooks/useEditableImage';
 import NodeImage from 'src/components/NodeImage';
@@ -39,6 +40,12 @@ const SubgraphSidebar: FC<Props> = ({
 
   const documents =
     getRelatedNodes(subgraph, 'incoming', 'Document', 'BELONGS_TO');
+
+  const stashedDocuments =
+    getRelatedNodes(subgraph, 'incoming', 'Document', 'STASHED_BY');
+
+  const stashedSubgraphs =
+    getRelatedNodes(subgraph, 'incoming', 'Subgraph', 'STASHED_BY');
 
   const [imagePreview, imageDidChange, clearImage] =
     useEditableImage(subgraphFormik);
@@ -100,7 +107,7 @@ const SubgraphSidebar: FC<Props> = ({
           <div className="border-b border-color">
             <textarea
               readOnly={!canEdit}
-              className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} block pb-4 w-full bg-transparent text-xs px-2 pt-2`}
+              className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} block pb-4 w-full bg-transparent text-xs px-2`}
               type="text"
               name="description"
               placeholder="Add a description"
@@ -130,6 +137,15 @@ const SubgraphSidebar: FC<Props> = ({
               )}
             </div>
 
+            {[...documents, ...stashedDocuments].length === 0 && (
+              <div className="flex flex-col items-center py-8 opacity-50">
+                <Document />
+                <p className="pt-1 whitespace-nowrap">
+                  No documents (yet).
+                </p>
+              </div>
+            )}
+
             {documents.map(d => {
               if (
                 d.tokenId === currentDocument?.tokenId
@@ -150,12 +166,46 @@ const SubgraphSidebar: FC<Props> = ({
               );
             })}
 
+            {stashedDocuments.map(d => {
+              if (
+                d.tokenId === currentDocument?.tokenId
+              ) {
+                return (
+                  <p
+                    key={d.tokenId}
+                    className="text-xs font-semibold pb-1"
+                  >
+                    ↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                  </p>
+                );
+              }
+              return (
+                <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
+                  <a className="block text-xs pb-1">↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
+                </Link>
+              );
+            })}
+
             {newDocument && (
               <p
                 key="_new_"
                 className="text-xs font-semibold">{newDocument.values.emoji.native} {newDocument.values.name}
               </p>
             )}
+
+            {stashedSubgraphs.length > 0 && (
+              <div className="flex justify-between">
+                <p className="py-2 font-semibold tracking-wide text-passive-color uppercase">Subgraphs</p>
+              </div>
+            )}
+
+            {stashedSubgraphs.map(s => {
+              return (
+                <Link key={s.tokenId} href={`/${Welding.slugifyNode(s)}`}>
+                  <a className="block text-xs pb-1">↗ {s.currentRevision.metadata.properties.emoji.native} {s.currentRevision.metadata.name}</a>
+                </Link>
+              );
+            })}
 
           </div>
 

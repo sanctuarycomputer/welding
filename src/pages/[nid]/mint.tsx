@@ -31,8 +31,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const document = makeDummyNode("Document");
   document.outgoing = [{
     name: "BELONGS_TO",
-    tokenId: parseInt(node.tokenId),
-    active: true
+    tokenId: node.tokenId,
+    active: true,
   }];
   document.related = [node];
 

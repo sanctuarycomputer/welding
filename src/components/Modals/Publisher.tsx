@@ -296,6 +296,9 @@ const Publisher: FC<Props> = ({
     Object.values(incomingDiff.updated).length > 0 ||
     Object.values(incomingDiff.deleted).length > 0;
 
+  console.log(incomingDiff);
+  //console.log(node.incoming, formik.values.incoming)
+
   // TODO Only show publish step if metadata has changed (diff)
 
   useEffect(() => {

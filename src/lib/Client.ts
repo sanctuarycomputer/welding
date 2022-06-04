@@ -37,6 +37,13 @@ content,
 contentType
 `;
 
+const edgeShape = `
+name
+tokenId
+active
+pivotTokenId
+`;
+
 const baseNodeShape = `
 tokenId
 labels
@@ -48,18 +55,14 @@ related {
   tokenId
   labels
   currentRevision {
-    hash, block, content, contentType
+    ${revisionShape}
   }
 }
 incoming {
-  name
-  tokenId
-  active
+  ${edgeShape}
 }
 outgoing {
-  name
-  tokenId
-  active
+  ${edgeShape}
 }
 admins {
   address

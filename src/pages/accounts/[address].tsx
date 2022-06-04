@@ -174,9 +174,9 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
               link =
                 `/${Welding.slugifyNode(subgraphs[0])}/${Welding.slugifyNode(node.n)}`;
             } else if (subgraphs.length > 1) {
+              debugger
               const ownedSubgraphs =
-                subgraps.reduce((acc, subgraph) => {
-                  throw new Error("test_me");
+                subgraphs.reduce((acc, subgraph) => {
                   if (nodesByCollectionType.subgraphs[subgraph.tokenId]) {
                     return [...acc, subgraph];
                   }

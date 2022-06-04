@@ -13,15 +13,21 @@ TODO
 - [ ] fallback function
 
 UI
+- [x] Sidebar should show backlinked Subgraphs
+- [x] I should be able to backlink a subgraph/doc I didn't create
+- [x] Can't stash self
+- [ ] Unstash
+- [ ] Stash warning on Document
+- [ ] Stashing publisher reverts to step 1
+
 - [ ] New Document in SubgraphSidebar should work
 - [ ] I should be able to view a revision for subgraph
-- [ ] Sidebar should show backlinked Subgraphs
-- [ ] I should be able to backlink a subgraph/doc I didn't create
 - [ ] Whenever I see a transfer event I should reload
   the entire user's graph data
 - [ ] I should not be able to navigate away from a settings tab when I'm updating fee or adding/removing roles
 - [ ] Changing fee on BaseNode should flush cached Shallow Nodes
 - [ ] After adding a team member, the current node should be reloaded
+- [ ] If I can't edit a Subgraph and it doesn't have a description, don't show the textfield
 
 ---
 - [ ] Move entirely to Tailwind colors
