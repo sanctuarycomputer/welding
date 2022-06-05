@@ -113,7 +113,8 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
       string memory label,
       string memory hash,
       Edge[] memory incomingEdges,
-      Edge[] memory outgoingEdges
+      Edge[] memory outgoingEdges,
+      uint256[] memory delegatePermissionsTokenIds
     ) public payable {
         _ensureStringPresent(label);
         _ensureStringPresent(hash);
@@ -142,6 +143,14 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
 
         /* Handle edges */
         _handleEdges(tokenId, incomingEdges, outgoingEdges);
+
+        /* Deletegate permissions */
+        for (uint256 i; i < delegatePermissionsTokenIds.length; i++) {
+          delegatePermissions(
+            tokenId,
+            delegatePermissionsTokenIds[i]
+          );
+        }
     }
 
     function revise(

@@ -17,7 +17,7 @@ describe("Behavior: Burnable", function () {
   });
 
   it("should be able to burn a Node", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const nodeId = transferEvent.args.tokenId;

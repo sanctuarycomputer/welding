@@ -15,15 +15,15 @@ async function seed(contract) {
   let tx, transferEvent;
 
   // Seed Topics
-  tx = await contract.mint('topic', ETH_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', ETH_TOPIC_METADATA, [], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ethId = transferEvent.args.tokenId;
 
-  tx = await contract.mint('topic', IPFS_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', IPFS_TOPIC_METADATA, [], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ipfsId = transferEvent.args.tokenId;
 
-  tx = await contract.mint('topic', WELDING_TOPIC_METADATA, [], []);
+  tx = await contract.mint('topic', WELDING_TOPIC_METADATA, [], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const weldingId = transferEvent.args.tokenId;
 
@@ -31,7 +31,7 @@ async function seed(contract) {
   tx = await contract.mint('subgraph', WELDING_SUBGRAPH_METADATA, [{
     tokenId: weldingId,
     name: "DESCRIBES"
-  }], []);
+  }], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const weldingSubgraphId = transferEvent.args.tokenId;
 
@@ -48,14 +48,14 @@ async function seed(contract) {
   }], [{
     tokenId: weldingSubgraphId,
     name: "BELONGS_TO"
-  }]);
+  }], [weldingSubgraphId]);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const documentId = transferEvent.args.tokenId;
 
   tx = await contract.mint('subgraph', HUGH_SUBGRAPH_METADATA, [{
     tokenId: weldingId,
     name: "DESCRIBES"
-  }], []);
+  }], [], []);
 
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const hughSubgraphId = transferEvent.args.tokenId;

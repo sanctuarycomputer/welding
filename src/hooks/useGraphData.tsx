@@ -13,12 +13,17 @@ const { Provider } = GraphContext;
 
 function GraphProvider({ children }) {
   const { data: account } = useAccount();
-  const [accountDataLoading, setAccountDataLoading] = useState<boolean>(false);
-  const [accountData, setAccountData] = useState<Account | null>(null);
 
-  const [shallowNodesLoading, setShallowNodesLoading] = useState(null);
-  const [shallowNodes, setShallowNodes] = useState(null);
-  const shallowNodesSubscription = useRef(null);
+  const [accountDataLoading, setAccountDataLoading] =
+    useState<boolean>(false);
+  const [accountData, setAccountData] =
+    useState<Account | null>(null);
+  const [shallowNodesLoading, setShallowNodesLoading] =
+    useState(null);
+  const [shallowNodes, setShallowNodes] =
+    useState(null);
+  const shallowNodesSubscription =
+    useRef(null);
 
   const [revisionData, setRevisionData] =
     useState<{
@@ -47,6 +52,10 @@ function GraphProvider({ children }) {
     } else {
       shallowNodesSubscription.current.refetch();
     }
+  };
+
+  const purgeCache = async () => {
+    await Client.resetStore();
   };
 
   const loadAccountData = async (address) => {
@@ -120,6 +129,7 @@ function GraphProvider({ children }) {
       shallowNodes,
       shallowNodesLoading,
       loadShallowNodes,
+      purgeCache,
       revisionData,
       loadRevisionsForBaseNode
     }}>

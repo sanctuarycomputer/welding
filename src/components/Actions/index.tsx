@@ -87,6 +87,7 @@ const Actions = ({
   );
 
   useEffect(() => {
+    console.log("BING");
     if (
       formik.values.__node__.tokenId ===
       node.tokenId
@@ -126,8 +127,11 @@ const Actions = ({
       );
     }
 
-    if (publishStep === null)
+
+    if (publishStep === null) {
+      console.log("WILL");
       setPublishStep("FEES");
+    }
   }, [formik]);
 
   useEffect(() => {
@@ -139,8 +143,10 @@ const Actions = ({
         publishError,
         formik,
         setPublishStep: (step) => {
-          setPublishStep(step);
-          setFocus({ node, operation: null });
+          if (step === null) {
+            setFocus({ node, operation: null });
+            //setPublishStep(step);
+          }
         }
       }
     });

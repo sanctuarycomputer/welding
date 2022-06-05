@@ -17,8 +17,8 @@ describe("Behavior: Per-token Role Management", function () {
   });
 
   it("can manage roles on a per-token basis", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
-    await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
+    await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -53,7 +53,7 @@ describe("Behavior: Per-token Role Management", function () {
   });
 
   it("asdf", async function () {
-    let tx = await contract.connect(addr1).mint('Subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('Subgraph', '123', [], [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
@@ -61,7 +61,7 @@ describe("Behavior: Per-token Role Management", function () {
     tx = await contract.connect(addr1).mint('Document', '123', [], [{
       tokenId: subgraphId,
       name: "BELONGS_TO"
-    }]);
+    }], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -70,7 +70,7 @@ describe("Behavior: Per-token Role Management", function () {
     await contract.connect(addr1).grantRole(docId, EDITOR_ROLE, addr2.address);
 
     // addr2 adds a topic to the document
-    tx = await contract.connect(addr2).mint('Topic', '123', [], []);
+    tx = await contract.connect(addr2).mint('Topic', '123', [], [], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;

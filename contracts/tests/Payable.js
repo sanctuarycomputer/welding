@@ -21,7 +21,7 @@ describe("Behavior: Payable", function () {
   });
 
   it("can set connection fees", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -37,7 +37,7 @@ describe("Behavior: Payable", function () {
   });
 
   it("should not enforce a fee for NFT owners or editors of the incoming node", async function () {
-    let tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    let tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
@@ -49,12 +49,12 @@ describe("Behavior: Payable", function () {
       contract.connect(addr1).mint('document', '123', [{
         tokenId: topicId,
         name: "DESCRIBES"
-      }], [])
+      }], [], [])
     ).to.not.be.reverted;
   });
 
   it("should enforce a fee when making incoming connections", async function () {
-    let tx = await contract.connect(addr2).mint('topic', '123', [], []);
+    let tx = await contract.connect(addr2).mint('topic', '123', [], [], []);
     tx = await tx.wait();
     let transferEvent = tx.events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
@@ -66,7 +66,7 @@ describe("Behavior: Payable", function () {
       contract.connect(addr1).mint('document', '123', [{
         tokenId: topicId,
         name: "DESCRIBES"
-      }], [], {
+      }], [], [], {
         value: 5 // not enough ether
       })
     ).to.be.revertedWith("function call failed to execute");
@@ -74,7 +74,7 @@ describe("Behavior: Payable", function () {
     tx = await contract.connect(addr1).mint('document', '123', [{
       tokenId: topicId,
       name: "DESCRIBES"
-    }], [], {
+    }], [], [], {
       value: ONE_ETH // enough ether!
     });
     tx = await tx.wait();

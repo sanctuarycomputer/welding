@@ -24,7 +24,7 @@ describe("Behavior: GraphLike", function () {
   it("should be able to mint a Node", async function () {
     expect(await contract.exists(0)).to.equal(false);
 
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const nodeId = transferEvent.args.tokenId;
@@ -32,15 +32,15 @@ describe("Behavior: GraphLike", function () {
   });
 
   it("should be able to make initial connections when minting", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topic1Id = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topic2Id = transferEvent.args.tokenId;
 
@@ -53,18 +53,18 @@ describe("Behavior: GraphLike", function () {
     }], [{
       tokenId: subgraphId,
       name: "BELONGS_TO"
-    }]);
+    }], []);
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
   });
 
   it("should disallow connections when the caller cant edit the destination node", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
@@ -85,18 +85,18 @@ describe("Behavior: GraphLike", function () {
 
   it("should not be able to mint a node with an empty label", async function() {
     await expect(
-      contract.connect(addr1).mint('', '123', [], [])
+      contract.connect(addr1).mint('', '123', [], [], [])
     ).to.be.revertedWith("invalid_string")
   });
 
   it("should not be able to mint a node with an empty hash", async function() {
     await expect(
-      contract.connect(addr1).mint('subgraph', '', [], [])
+      contract.connect(addr1).mint('subgraph', '', [], [], [])
     ).to.be.revertedWith("invalid_string");
   });
 
   it("should not be able to connect nonexistent nodes", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
     await expect(
@@ -115,12 +115,12 @@ describe("Behavior: GraphLike", function () {
 
   it("should not be able to connect to a node it cant edit", async function () {
     // Addr1 makes a subgraph
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
     // Addr2 makes a topic
-    tx = await contract.connect(addr2).mint('topic', '123', [], []);
+    tx = await contract.connect(addr2).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
@@ -157,11 +157,11 @@ describe("Behavior: GraphLike", function () {
   });
 
   it("should be able to mint a subgraph and add a topic", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 
@@ -172,11 +172,11 @@ describe("Behavior: GraphLike", function () {
   });
 
   it("should be able to disconnect nodes", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
 
-    tx = await contract.connect(addr1).mint('topic', '123', [], []);
+    tx = await contract.connect(addr1).mint('topic', '123', [], [], []);
     transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
     const topicId = transferEvent.args.tokenId;
 

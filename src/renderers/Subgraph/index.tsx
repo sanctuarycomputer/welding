@@ -28,7 +28,6 @@ import Tile from 'src/components/Tile';
 import VerticalDots from 'src/components/Icons/VerticalDots';
 import NodeImage from 'src/components/NodeImage';
 import Frontmatter from 'src/components/Frontmatter';
-import SubgraphSidebar from 'src/components/SubgraphSidebar';
 import EditNav from 'src/components/EditNav';
 import TopicManager from 'src/components/TopicManager';
 import SubgraphSwitcher from 'src/components/Modals/SubgraphSwitcher';
@@ -37,6 +36,11 @@ import Graph from 'src/components/Icons/Graph';
 
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
+
+import dynamic from 'next/dynamic';
+const SubgraphSidebar = dynamic(() => import('src/components/SubgraphSidebar'), {
+  ssr: false
+});
 
 type Props = {
   subgraph: BaseNode,
@@ -145,6 +149,7 @@ const Subgraph: FC<Props> = ({
 
       {showSubgraph && (
         <SubgraphSidebar
+          suppressHydrationWarning
           triggerPublish={triggerPublish}
           subgraphFormik={subgraphFormik}
           canEdit={canEditSubgraph}
@@ -158,7 +163,7 @@ const Subgraph: FC<Props> = ({
         </div>
       )}
 
-      {!(account?.address) && (
+      {/*!(account?.address) && (
         <div
           className="pt-14 absolute right-0 top-0 pointer-events-none">
           <div className="p-4 border border-dashed border-color rounded inline-block mr-4 background-color">
@@ -167,9 +172,9 @@ const Subgraph: FC<Props> = ({
             </p>
           </div>
         </div>
-      )}
+      )*/}
 
-      {account?.address && subgraph.tokenId.startsWith('-') && (
+      {/*account?.address && subgraph.tokenId.startsWith('-') && (
         <div
           className="pl-4 ml-64 pt-14 pointer-events-none">
           <div className="ml-4 p-4 border border-dashed border-color rounded inline-block mr-4 background-color">
@@ -178,7 +183,7 @@ const Subgraph: FC<Props> = ({
             </p>
           </div>
         </div>
-      )}
+      )*/}
     </>
   );
 }

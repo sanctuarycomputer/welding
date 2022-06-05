@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useProvider, useSigner, useNetwork } from 'wagmi';
 import { useFormik, FormikProps } from 'formik';
 import { ExchangeRateContext } from 'src/hooks/useExchangeRates';
+import { GraphContext } from 'src/hooks/useGraphData';
 import FeeIcon from 'src/components/Icons/Fee';
 import Button from 'src/components/Button';
 import { formatUnits, parseUnits } from 'ethers/lib/utils';
@@ -18,6 +19,7 @@ const Fee = ({
   const provider = useProvider();
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
+  const { purgeCache } = useContext(GraphContext);
   const [USDEstimate, setUSDEstimate] = useState(null);
 
   const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
@@ -53,6 +55,7 @@ const Fee = ({
         });
         NProgress.done();
         await Client.fastForward(tx.blockNumber);
+        await purgeCache();
         toast.success('Success!', {
           id: toastId
         });

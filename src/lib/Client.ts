@@ -54,8 +54,15 @@ currentRevision {
 related {
   tokenId
   labels
+  fee
   currentRevision {
     ${revisionShape}
+  }
+  admins {
+    address
+  }
+  editors {
+    address
   }
 }
 incoming {
@@ -94,6 +101,12 @@ const Client = {
       uri: "http://localhost:3000/api/graphql",
     });
     return Client._client;
+  },
+
+  resetStore: async function(): Promise<void> {
+    const client = await Client.getClient();
+    await client.resetStore();
+    return;
   },
 
   processRevision: async function(

@@ -14,6 +14,7 @@ import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
 import NProgress from 'nprogress';
 import toast from 'react-hot-toast';
+import getRelatedNodes from 'src/utils/getRelatedNodes';
 
 const Address = dynamic(() => import('src/components/Address'), {
   ssr: false
@@ -52,6 +53,9 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
   const isAdmin =
     roles[currentAddress]?.roles.includes(Roles.ADMIN);
 
+  const permissionDelegates =
+    getRelatedNodes(node, 'outgoing', 'BaseNode', '_DELEGATES_PERMISSIONS_TO');
+
   const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
     initialValues: {
@@ -89,11 +93,12 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
           id: toastId
         });
       } catch(e) {
-        NProgress.done();
         toast.error('An error occured.', {
           id: toastId
         });
         console.log(e);
+      } finally {
+        NProgress.done();
       }
     },
     validationSchema: yup.object({
@@ -108,7 +113,58 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
     }),
   });
 
-  const trigger = async (
+  const delegateFormik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
+    enableReinitialize: true,
+    initialValues: {
+      toTokenId: '',
+    },
+    onSubmit: async (values) => {
+      if (!signer) return;
+
+      let toastId;
+      const { toTokenId } = values;
+
+      try {
+        NProgress.start();
+        toastId = toast.loading('Requesting signature...', {
+          //position: 'bottom-right',
+          className: 'toast'
+        });
+        let tx = await Welding.Nodes.connect(signer).delegatePermissions(
+          node.tokenId,
+          toTokenId
+        );
+
+        toast.loading('Granting delegate permissions...', {
+          id: toastId
+        });
+        tx = await tx.wait();
+
+        toast.loading('Confirming transaction...', {
+          id: toastId
+        });
+        await Client.fastForward(tx.blockNumber);
+        toast.success('Success!', {
+          id: toastId
+        });
+      } catch(e) {
+        toast.error('An error occured.', {
+          id: toastId
+        });
+        console.log(e);
+      } finally {
+        NProgress.done();
+      }
+    },
+    validationSchema: yup.object({
+      toTokenId: yup
+        .number()
+        .integer()
+        .required('A valid Token ID is required')
+    }),
+  });
+
+  const triggerRoleRemoval = async (
     address,
     role,
     method = 'revoke' | 'renounce'
@@ -160,12 +216,59 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
     }
   };
 
+  const triggerRenounceDelegate = async (
+    delegate
+  ) => {
+    if (!signer) return;
+
+    let toastId;
+    try {
+      NProgress.start();
+      toastId = toast.loading('Requesting signature...', {
+        //position: 'bottom-right',
+        className: 'toast'
+      });
+
+      let tx = await Welding.Nodes.connect(signer).renounceDelegatePermissions(
+        node.tokenId,
+        delegate.tokenId
+      );
+
+      toast.loading('Removing role...', {
+        id: toastId
+      });
+      tx = await tx.wait();
+
+      toast.loading('Confirming transaction...', {
+        id: toastId
+      });
+
+      await Client.fastForward(tx.blockNumber);
+      toast.success('Success!', {
+        id: toastId
+      });
+      return router.reload();
+    } catch(e) {
+      NProgress.done();
+      toast.error('An error occured.', {
+        id: toastId
+      });
+      console.log(e);
+    }
+  };
+
+  const onClickHandlerForDelegate = (delegate) => {
+    if (isAdmin)
+      return () => triggerRenounceDelegate(delegate);
+    return null;
+  };
+
   const onClickHandlerForRole = (address, role) => {
     if (role === Roles.OWNER) return null;
     if (address === currentAddress)
-      return () => trigger(address, role, 'renounce');
+      return () => triggerRoleRemoval(address, role, 'renounce');
     if (isAdmin)
-      return () => trigger(address, role, 'revoke');
+      return () => triggerRoleRemoval(address, role, 'revoke');
     return null;
   };
 
@@ -173,6 +276,27 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
     <>
       <table className="table-auto w-full">
         <tbody>
+          {permissionDelegates.length > 0 && (
+            <tr className="border-b border-color border-dashed">
+              <td className="px-2 py-3">
+                <p className="font-semibold py-1">Inherits permissions from →</p>
+              </td>
+              <td className="pr-2 text-right">
+                {permissionDelegates.map(n =>
+                  <Tile
+                    key={n.tokenId}
+                    label={
+                      `${n.currentRevision.metadata.properties.emoji.native} ${n.currentRevision.metadata.name}`
+                    }
+                    onClick={
+                      onClickHandlerForDelegate(n)
+                    }
+                  />
+                )}
+              </td>
+            </tr>
+          )}
+
           {Object.values(roles).map(v => {
             return (
               <tr key={v.account.address} className="border-b border-color border-dashed">
@@ -221,6 +345,31 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
                   label="+ Add Member"
                   disabled={formik.isSubmitting || !(formik.isValid && !formik.isDirty)}
                   onClick={formik.handleSubmit}
+                />
+              </td>
+            </tr>
+          )}
+
+          {isAdmin && (
+            <tr className="border-b border-color border-dashed">
+              <td className="px-2 py-2">
+                <input
+                  name="toTokenId"
+                  value={delegateFormik.values.toTokenId}
+                  onChange={delegateFormik.handleChange}
+                  onBlur={delegateFormik.handleBlur}
+                  className="text-xs py-2 mr-4"
+                  placeholder="Token ID to inherit permissions from"
+                />
+              </td>
+              <td className="text-right pr-2">
+                <Button
+                  label="+ Add Delegate"
+                  disabled={
+                    delegateFormik.isSubmitting ||
+                    !(delegateFormik.isValid && !delegateFormik.isDirty)
+                  }
+                  onClick={delegateFormik.handleSubmit}
                 />
               </td>
             </tr>

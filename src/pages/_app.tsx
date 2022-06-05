@@ -1,3 +1,5 @@
+import 'scripts/wdyr';
+
 import 'emoji-mart/css/emoji-mart.css'
 import 'src/styles/globals.css';
 import 'src/styles/emojimart.css';

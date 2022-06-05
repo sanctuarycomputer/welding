@@ -138,7 +138,6 @@ const ConnectionTile = ({
       setUSDEstimate(null);
     }
   }, [from.fee, exchangeRate]);
-  console.log(USDEstimate);
 
   return (
     <tr>

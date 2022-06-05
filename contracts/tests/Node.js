@@ -14,14 +14,14 @@ describe("Behavior: Basics", function () {
 
   it("can test if a token has been issued yet", async function () {
     expect(await contract.exists(ethers.BigNumber.from(1))).to.equal(false);
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     expect(await contract.exists(ethers.BigNumber.from(1))).to.equal(true);
   });
 
   it("It should be able to mint a new Graph", async function () {
     expect(await contract.balanceOf(addr1.address)).to.equal(0);
-    await contract.connect(addr1).mint('document', '123', [], []);
+    await contract.connect(addr1).mint('document', '123', [], [], []);
     expect(await contract.balanceOf(addr1.address)).to.equal(1);
   });
 });

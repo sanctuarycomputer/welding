@@ -6,7 +6,6 @@ import Welding from 'src/lib/Welding';
 import toast from 'react-hot-toast';
 import Client from 'src/lib/Client';
 import { emojiIndex, BaseEmoji } from 'emoji-mart';
-import { Label } from 'src/types';
 import { detailedDiff } from 'deep-object-diff';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -112,9 +111,11 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
               node.tokenId,
               hash,
               values.incoming
+                .filter(e => !e.name.startsWith('_'))
                 .filter(e => e.pivotTokenId === node.tokenId)
                 .filter(e => e.active),
               values.outgoing
+                .filter(e => !e.name.startsWith('_'))
                 .filter(e => e.pivotTokenId === node.tokenId)
                 .filter(e => e.active),
               { value: feesRequired(formik, accountData) }

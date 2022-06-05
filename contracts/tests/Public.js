@@ -19,7 +19,7 @@ describe("Behavior: Public", function () {
   });
 
   it("should allow outgoing connections to a permission bypassed node", async function () {
-    let tx = await contract.connect(addr1).mint('subgraph', '123', [], []);
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const subgraphId = transferEvent.args.tokenId;
@@ -28,7 +28,7 @@ describe("Behavior: Public", function () {
       contract.connect(addr2).mint('document', '123', [], [{
         tokenId: subgraphId,
         name: "BELONGS_TO"
-      }])
+      }], [])
     ).to.be.revertedWith("insufficient_permissions");
 
     await contract.connect(addr1).setPermissionsBypass(subgraphId, true);
@@ -37,12 +37,12 @@ describe("Behavior: Public", function () {
       contract.connect(addr2).mint('document', '123', [], [{
         tokenId: subgraphId,
         name: "BELONGS_TO"
-      }])
+      }], [])
     ).to.not.be.reverted;
   });
 
   it("should be able to toggle permissions bypass", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;

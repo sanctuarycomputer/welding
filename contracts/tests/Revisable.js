@@ -20,7 +20,7 @@ describe("Behavior: Revisable", function () {
 
   // TODO test permissions
   it("should be revisable", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -31,7 +31,7 @@ describe("Behavior: Revisable", function () {
   });
 
   it("should not be able to revise a burnt node", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;
@@ -45,7 +45,7 @@ describe("Behavior: Revisable", function () {
   });
 
   it("should require a non-empty hash string", async function () {
-    let tx = await contract.connect(addr1).mint('document', '123', [], []);
+    let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
     const docId = transferEvent.args.tokenId;

@@ -38,6 +38,9 @@ const SubgraphSidebar: FC<Props> = ({
   const name = subgraphFormik.values.name;
   const subgraph = subgraphFormik.values.__node__;
 
+  const subgraphTopics =
+    getRelatedNodes(subgraph, 'incoming', 'Topic', 'DESCRIBES');
+
   const documents =
     getRelatedNodes(subgraph, 'incoming', 'Document', 'BELONGS_TO');
 
@@ -50,9 +53,10 @@ const SubgraphSidebar: FC<Props> = ({
   const [imagePreview, imageDidChange, clearImage] =
     useEditableImage(subgraphFormik);
 
-  const imageIsDefault =
-    (imagePreview || "").endsWith("emoji.jpg") ||
-    imagePreview === null;
+  const descriptionPresent = (
+    !!subgraphFormik.values.description &&
+    subgraphFormik.values.description.length > 0
+  );
 
   return (
     <nav
@@ -96,14 +100,15 @@ const SubgraphSidebar: FC<Props> = ({
       </div>
 
       <div className="background-color flex flex-col">
-          <NodeImage
-            showDefault={false}
-            readOnly={!canEdit}
-            imagePreview={imagePreview}
-            imageDidChange={imageDidChange}
-            clearImage={clearImage}
-          />
+        <NodeImage
+          showDefault={false}
+          readOnly={!canEdit}
+          imagePreview={imagePreview}
+          imageDidChange={imageDidChange}
+          clearImage={clearImage}
+        />
 
+        {(descriptionPresent || canEdit) && (
           <div className="border-b border-color">
             <textarea
               readOnly={!canEdit}
@@ -116,96 +121,99 @@ const SubgraphSidebar: FC<Props> = ({
               onBlur={subgraphFormik.handleBlur}
             />
           </div>
+        )}
 
+        {(subgraphTopics.length || canEdit) && (
           <div className="px-2 pt-2">
             <TopicManager
               readOnly={!canEdit}
               formik={subgraphFormik}
             />
           </div>
+        )}
 
-          <div className="pb-2 px-2 pt-2">
-            <div className="flex justify-between">
-              <p className="pb-2 font-semibold tracking-wide text-passive-color uppercase">Documents</p>
+        <div className="pb-2 px-2 pt-2">
+          <div className="flex justify-between">
+            <p className="pb-2 font-semibold tracking-wide text-passive-color uppercase">Documents</p>
 
-              {canEdit && !subgraph.tokenId.startsWith('-') && (
-                <Link
-                  href={`/${Welding.slugifyNode(subgraph)}/mint`}
-                >
-                  <a className="pb-2 text-xs opacity-50 hover:opacity-100">+ New</a>
-                </Link>
-              )}
-            </div>
-
-            {[...documents, ...stashedDocuments].length === 0 && (
-              <div className="flex flex-col items-center py-8 opacity-50">
-                <Document />
-                <p className="pt-1 whitespace-nowrap">
-                  No documents (yet).
-                </p>
-              </div>
+            {canEdit && !subgraph.tokenId.startsWith('-') && (
+              <Link
+                href={`/${Welding.slugifyNode(subgraph)}/mint`}
+              >
+                <a className="pb-2 text-xs opacity-50 hover:opacity-100">+ New</a>
+              </Link>
             )}
+          </div>
 
-            {documents.map(d => {
-              if (
-                d.tokenId === currentDocument?.tokenId
-              ) {
-                return (
-                  <p
-                    key={d.tokenId}
-                    className="text-xs font-semibold pb-1"
-                  >
-                    {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
-                  </p>
-                );
-              }
-              return (
-                <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
-                  <a className="block text-xs pb-1">{d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
-                </Link>
-              );
-            })}
-
-            {stashedDocuments.map(d => {
-              if (
-                d.tokenId === currentDocument?.tokenId
-              ) {
-                return (
-                  <p
-                    key={d.tokenId}
-                    className="text-xs font-semibold pb-1"
-                  >
-                    ↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
-                  </p>
-                );
-              }
-              return (
-                <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
-                  <a className="block text-xs pb-1">↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
-                </Link>
-              );
-            })}
-
-            {newDocument && (
-              <p
-                key="_new_"
-                className="text-xs font-semibold">{newDocument.values.emoji.native} {newDocument.values.name}
+          {[...documents, ...stashedDocuments].length === 0 && (
+            <div className="flex flex-col items-center py-8 opacity-50">
+              <Document />
+              <p className="pt-1 whitespace-nowrap">
+                No documents (yet).
               </p>
-            )}
+            </div>
+          )}
 
-            {stashedSubgraphs.length > 0 && (
-              <div className="flex justify-between">
-                <p className="py-2 font-semibold tracking-wide text-passive-color uppercase">Subgraphs</p>
-              </div>
-            )}
-
-            {stashedSubgraphs.map(s => {
+          {documents.map(d => {
+            if (
+              d.tokenId === currentDocument?.tokenId
+            ) {
               return (
-                <Link key={s.tokenId} href={`/${Welding.slugifyNode(s)}`}>
-                  <a className="block text-xs pb-1">↗ {s.currentRevision.metadata.properties.emoji.native} {s.currentRevision.metadata.name}</a>
-                </Link>
+                <p
+                  key={d.tokenId}
+                  className="text-xs font-semibold pb-1"
+                >
+                  {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                </p>
               );
-            })}
+            }
+            return (
+              <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
+                <a className="block text-xs pb-1">{d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
+              </Link>
+            );
+          })}
+
+          {stashedDocuments.map(d => {
+            if (
+              d.tokenId === currentDocument?.tokenId
+            ) {
+              return (
+                <p
+                  key={d.tokenId}
+                  className="text-xs font-semibold pb-1"
+                >
+                  ↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                </p>
+              );
+            }
+            return (
+              <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
+                <a className="block text-xs pb-1">↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
+              </Link>
+            );
+          })}
+
+          {newDocument && (
+            <p
+              key="_new_"
+              className="text-xs font-semibold">{newDocument.values.emoji.native} {newDocument.values.name}
+            </p>
+          )}
+
+          {stashedSubgraphs.length > 0 && (
+            <div className="flex justify-between">
+              <p className="py-2 font-semibold tracking-wide text-passive-color uppercase">Subgraphs</p>
+            </div>
+          )}
+
+          {stashedSubgraphs.map(s => {
+            return (
+              <Link key={s.tokenId} href={`/${Welding.slugifyNode(s)}`}>
+                <a className="block text-xs pb-1">↗ {s.currentRevision.metadata.properties.emoji.native} {s.currentRevision.metadata.name}</a>
+              </Link>
+            );
+          })}
 
           </div>
 

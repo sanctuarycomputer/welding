@@ -5,7 +5,6 @@ import makeDummyNode from 'src/lib/makeDummyNode';
 
 const Mint: FC<{}> = () => {
   const { setContent } = useContext(NavContext);
-
   useEffect(() => {
     setContent(null);
   }, []);

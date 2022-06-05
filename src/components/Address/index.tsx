@@ -32,7 +32,10 @@ const Address: FC<Props> = ({
   showAvatar,
   copyToClipboard
 }) => {
-  const { data: ensName } = useEnsName({ address: address });
+  const { data: ensName } = useEnsName({
+    address: address,
+    chainId: 1
+  });
 
   return (
     <div className="flex items-center">

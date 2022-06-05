@@ -44,7 +44,7 @@ const DocumentStashInfo = ({
         <span
           className="opacity-50"
         >
-          This document belongs to{' '}
+          Stashed from{' '}
         </span>
         <Link href={`/${slugifyNode(subgraph)}`}>
           <a className="opacity-50 hover:opacity-100">↗ {emoji} {name}</a>
@@ -52,7 +52,7 @@ const DocumentStashInfo = ({
       </p>
     );
   } else {
-    return <p>This document does not have a parent.</p>
+    return <p className="opacity-50">This document does not have a subgraph.</p>
   }
 };
 
@@ -151,8 +151,7 @@ const Document: FC<Props> = ({
   )[0];
 
   const showStashInfo = (
-    router.route === "/[nid]/[did]" &&
-    router.query.nid.split('-')[0] !== subgraphParent.tokenId
+    router.query.nid.split('-')[0] !== subgraphParent?.tokenId
   );
 
   return (

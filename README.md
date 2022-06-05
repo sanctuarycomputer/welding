@@ -2,34 +2,26 @@
 
 TODO
 
+- [ ] Royalties!
 - [ ] Who gets paid when the token is burnt? (post UI)
 - [ ] Validation audit (security)
 - [ ] Rentrent guards? Buffer Overflows? (security)
 - [ ] If you own the first NFT, you can add fees and get paid, (and pause the system)
-- [ ] I should be able to pass delegate access when minting
-- [ ] ...orrr, does `BELONGS_TO` automatically delegate access?
 - [ ] Support Donations
 - [ ] The last admin should not be able to renounce their role
 - [ ] fallback function
 
-UI
-- [x] Sidebar should show backlinked Subgraphs
-- [x] I should be able to backlink a subgraph/doc I didn't create
-- [x] Can't stash self
-- [ ] Unstash
-- [ ] Stash warning on Document
-- [ ] Stashing publisher reverts to step 1
-
-- [ ] New Document in SubgraphSidebar should work
-- [ ] I should be able to view a revision for subgraph
+Veggies
 - [ ] Whenever I see a transfer event I should reload
   the entire user's graph data
 - [ ] I should not be able to navigate away from a settings tab when I'm updating fee or adding/removing roles
 - [ ] Changing fee on BaseNode should flush cached Shallow Nodes
 - [ ] After adding a team member, the current node should be reloaded
-- [ ] If I can't edit a Subgraph and it doesn't have a description, don't show the textfield
+- [ ] Should not be able to edit fee
+- [ ] I should be able to edit a document if I have permissions via delegation
+- [ ] Publisher probably needs a refactor
 
----
+Candy
 - [ ] Move entirely to Tailwind colors
 - [ ] Mobile UI
 - [ ] Editor!
@@ -38,12 +30,23 @@ UI
 - [ ] UI should be big and friendly
 
 N2H
+- [ ] Topics should be less chunky
+- [ ] I should be able to view a revision for subgraph
+- [ ] New Document in SubgraphSidebar should work
+- [ ] Action bar & Title Bar in modals should not be scrollable
+- [ ] Links to welding docs & github
 - [ ] Add Rainbow Provider
 - [ ] Test on the FE wether publishing to IPFS is necessary
 - [ ] Add provider icons?
 - [ ] Handle corrupt data cases on the UI
+- [ ] Better approach to SSR on /mint pages
+- [ ] Popdown menu for account
 
 Before Deploy:
+- [ ] Cleanup env
+- [ ] Cleanup unused packages
+- [ ] Test for unnecessary rerenders
+- [ ] Cache accounts
 - [ ] 404 & 500 pages
 - [ ] Select the correct chain
 - [ ] Page Caching & purges

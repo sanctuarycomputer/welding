@@ -97,7 +97,8 @@ const merge = async (e, session) => {
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
           WITH n
-          MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
+          OPTIONAL MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
+            WHERE NOT r(type) STARTS WITH '_'
             SET r.active = false
           `;
 
@@ -142,7 +143,7 @@ const merge = async (e, session) => {
           MERGE (to:Account {address: $toAddress})
           MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
           MERGE (to)-[:OWNS]->(n)
-          WITH from, n MATCH (from)-[r:OWNS]->(n) DELETE r`;
+          WITH from, n OPTIONAL MATCH (from)-[r:OWNS]->(n) DELETE r`;
       await session.writeTransaction(tx => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -176,7 +177,7 @@ const merge = async (e, session) => {
         `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         WITH recipient, n MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r
+         WITH recipient, n OPTIONAL MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r
          `;
       await session.writeTransaction(tx => {
         tx.run(q, {
@@ -188,12 +189,6 @@ const merge = async (e, session) => {
       });
       break;
     }
-
-    case 'Approval':
-    case 'ApprovalForAll':
-    case 'PermissionsDelegated':
-    case 'DelegatePermissionsRenounced':
-    case 'PermissionsBypassSet':
 
     case 'ConnectionFeeSet': {
       const q =
@@ -209,6 +204,42 @@ const merge = async (e, session) => {
       break;
     }
 
+    case 'PermissionsDelegated': {
+      const q =
+        `MERGE (n:BaseNode {tokenId: $forTokenId})
+         MERGE (o:BaseNode {tokenId: $toTokenId})
+         MERGE (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
+           SET r.active = true
+        `;
+      await session.writeTransaction(tx => {
+        tx.run(q, {
+          forTokenId: args.forTokenId.toString(),
+          toTokenId: args.toTokenId.toString(),
+        });
+      });
+      break;
+    }
+
+    case 'DelegatePermissionsRenounced': {
+      const q =
+        `MERGE (n:BaseNode {tokenId: $forTokenId})
+         MERGE (o:BaseNode {tokenId: $toTokenId})
+         WITH n, o
+         OPTIONAL MATCH (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
+           SET r.active = false
+        `;
+      await session.writeTransaction(tx => {
+        tx.run(q, {
+          forTokenId: args.forTokenId.toString(),
+          toTokenId: args.toTokenId.toString(),
+        });
+      });
+      break;
+    }
+
+    case 'Approval':
+    case 'ApprovalForAll':
+    case 'PermissionsBypassSet':
     default:
       console.log(`Implement Me: ${event}`);
   }
@@ -221,9 +252,9 @@ export default async function handler(
   try {
     const session = driver.session();
 
-    if (false) {
-      const flushQ1 = `MATCH (a)-[r]->() DELETE a, r`
-      const flushQ2 = `MATCH (a) DELETE a`;
+    if (true) {
+      const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`
+      const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
       await session.writeTransaction(tx => tx.run(flushQ1));
       await session.writeTransaction(tx => tx.run(flushQ2));
 
