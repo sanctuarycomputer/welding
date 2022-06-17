@@ -19,11 +19,19 @@ const EditNav: FC<Props> = ({
 }) => {
   return (
     <div className="flex pr-2 items-center border-r border-color mr-2">
-      <div
-        className="background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2"
-      >
-        Unsaved
-      </div>
+      {formik.dirty ? (
+        <div
+          className="background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2"
+        >
+          Unsaved
+        </div>
+      ) : (
+        <div
+          className="text-passive-color text-xs px-2 py-1 rounded-full mr-2"
+        >
+          No Changes
+        </div>
+      )}
       <Button
         disabled={
           formik.isSubmitting ||

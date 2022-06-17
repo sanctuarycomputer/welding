@@ -21,12 +21,13 @@ type Props = {
 };
 
 enum PublishStep {
-  INIT = "INIT",
   FEES = "FEES",
   PUBLISH = "PUBLISH",
   REQUEST_SIG = "REQUEST_SIG",
   TRANSACT = "TRANSACT",
   CONFIRM = "CONFIRM",
+  COMPLETE = "COMPLETE",
+  ERROR = "ERROR",
 };
 
 const PublisherStep = ({
@@ -269,22 +270,21 @@ const ConnectionDiff = ({
 const Publisher: FC<Props> = ({
   onRequestClose,
   meta: {
-    publishStep,
-    setPublishStep,
-    publishError,
     formik
   }
 }) => {
+  const { status, error } = formik.status || {};
+
   const attemptClose = () => {
-    if (publishStep === PublishStep.FEES) {
-      setPublishStep(null);
+    if (
+      error ||
+      status === PublishStep.FEES
+    ) {
+      formik.setStatus(null);
       return onRequestClose();
-    }
-    if (!!publishStep && !publishError) {
-      return alert("Currently publishing, please wait.");
-    }
-    setPublishStep(null);
-    onRequestClose();
+    };
+
+    return alert("Currently publishing, please wait.");
   };
 
   const node = formik.values.__node__;
@@ -294,18 +294,6 @@ const Publisher: FC<Props> = ({
     Object.values(incomingDiff.added).length > 0 ||
     Object.values(incomingDiff.updated).length > 0 ||
     Object.values(incomingDiff.deleted).length > 0;
-
-  console.log(incomingDiff);
-  //console.log(node.incoming, formik.values.incoming)
-
-  // TODO Only show publish step if metadata has changed (diff)
-
-  useEffect(() => {
-    if (
-      !hasConnectionChanges &&
-      !formik.isSubmitting
-    ) formik.handleSubmit();
-  }, []);
 
   return (
     <Modal
@@ -319,13 +307,14 @@ const Publisher: FC<Props> = ({
           onClickClose={attemptClose}
         />
         <div className="p-4">
+
           {hasConnectionChanges && (
             <PublisherStep
               icon="①"
               title="Confirm New Connections"
               description="Your node’s data is being published on the permanent internet."
-              active={publishStep === PublishStep.FEES}
-              error={publishError}
+              active={status === PublishStep.FEES}
+              error={error}
             >
               <ConnectionDiff
                 formik={formik}
@@ -338,29 +327,32 @@ const Publisher: FC<Props> = ({
             icon={hasConnectionChanges ? "②" : "①"}
             title="Publishing NFT Metadata to IPFS"
             description="Your node’s data is being published on the permanent internet."
-            active={publishStep === PublishStep.PUBLISH}
-            error={publishError}
+            active={status === PublishStep.PUBLISH}
+            error={error}
           />
+
           <PublisherStep
             icon={hasConnectionChanges ? "③" : "②"}
             title="Confirm Transaction with your Wallet Provider"
             description="Please confirm the transaction to publish."
-            active={publishStep === PublishStep.REQUEST_SIG}
-            error={publishError}
+            active={status === PublishStep.REQUEST_SIG}
+            error={error}
           />
+
           <PublisherStep
             icon={hasConnectionChanges ? "④" : "③" }
             title="Processing Transaction on the Blockchain"
             description="Transaction processing. This usually takes ~30 seconds or so."
-            active={publishStep === PublishStep.TRANSACT}
-            error={publishError}
+            active={status === PublishStep.TRANSACT}
+            error={error}
           />
+
           <PublisherStep
             icon={hasConnectionChanges ? "⑤" : "④" }
             title="Confirming & Caching Transaction"
             description="We're caching your new NFT metadata for fast access."
-            active={publishStep === PublishStep.CONFIRM}
-            error={publishError}
+            active={status === PublishStep.CONFIRM}
+            error={error}
           />
         </div>
       </div>

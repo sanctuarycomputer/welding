@@ -55,7 +55,7 @@ const Revisions = ({
     loadRevisionsForBaseNode
   } = useContext(GraphContext);
 
-  const status = "LOADING";
+  let status = "LOADING";
   if (revisionData[node.tokenId]) {
     status = revisionData[node.tokenId].status;
   } else {

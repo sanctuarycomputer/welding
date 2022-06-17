@@ -30,6 +30,8 @@ Candy
 - [ ] UI should be big and friendly
 
 N2H
+- [ ] The sync? command could return the associated node
+- [ ] I should be able to use ENS when navigating accounts
 - [ ] Topics should be less chunky
 - [ ] I should be able to view a revision for subgraph
 - [ ] New Document in SubgraphSidebar should work
@@ -43,6 +45,7 @@ N2H
 - [ ] Popdown menu for account
 
 Before Deploy:
+- [ ] Why Did You Render
 - [ ] Cleanup env
 - [ ] Cleanup unused packages
 - [ ] Test for unnecessary rerenders

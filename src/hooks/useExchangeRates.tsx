@@ -23,8 +23,8 @@ function ExchangeRateProvider({ children }) {
   ] = useState<number | null>(null);
 
   const loadExchangeRate = async () => {
-    if (!activeChain) return;
-    const symbol = activeChain.nativeCurrency.symbol;
+    if (!activeChain?.nativeCurrency?.symbol) return;
+    const { symbol } = activeChain.nativeCurrency;
     setExchangeRateLoading(true);
     try {
       const response = await fetch(

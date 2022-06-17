@@ -8,7 +8,7 @@ import TopicMinterModal, { TopicMinterMeta } from 'src/components/Modals/TopicMi
 import EmojiPickerModal, { EmojiPickerMeta } from 'src/components/Modals/EmojiPicker';
 import NodeSettingsModal, { NodeSettingsMeta } from 'src/components/Modals/NodeSettings';
 import PublisherModal, { PublisherMeta } from 'src/components/Modals/Publisher';
-import SubgraphConnectorModal, { SubgraphConnectorMeta } from 'src/components/Modals/SubgraphConnector';
+//import SubgraphConnectorModal, { SubgraphConnectorMeta } from 'src/components/Modals/SubgraphConnector';
 
 interface IModalContext {
   openModal: (type: ModalType) => void;
@@ -133,13 +133,13 @@ const ModalProvider = ({ children }) => {
           meta={currentModal.meta}
         />
       )}
-      {currentModal?.type === ModalType.SUBGRAPH_CONNECTOR && (
+      {/*currentModal?.type === ModalType.SUBGRAPH_CONNECTOR && (
         <SubgraphConnectorModal
           isOpen
           onRequestClose={closeModal}
           meta={currentModal.meta}
         />
-      )}
+      )*/}
       {children}
     </Provider>
   );

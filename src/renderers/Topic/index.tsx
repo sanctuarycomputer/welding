@@ -24,80 +24,58 @@ import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
 import Actions from 'src/components/Actions';
 import { useSigner } from 'wagmi';
+import NProgress from 'nprogress';
 
-type Props = {
-  topic: BaseNode
+import withPublisher from 'src/hoc/withPublisher';
+
+interface Props extends WithPublisherProps {
+  node: BaseNode
 };
 
 const TopicsShow: FC<Props> = ({
-  topic
+  node,
+  formik,
+  imageDidChange,
+  imagePreview,
+  clearImage
 }) => {
+  const { canEditNode } = useContext(GraphContext);
+  const { openModal, closeModal } = useContext(ModalContext);
+  const { content, setContent } = useContext(NavContext);
+
   const router = useRouter();
   let { collection } = router.query;
   if (!collection) collection = "subgraphs";
-  const { data: signer } = useSigner();
-  const { accountData } = useContext(GraphContext);
-  const { openModal, closeModal } = useContext(ModalContext);
-  const { setContent } = useContext(NavContext);
 
   const canEdit =
-    accountData?.roles.find(r => r.tokenId === topic.tokenId);
+    canEditNode(node.tokenId);
 
-  const [publishStep, setPublishStep] = useState(null);
-  const [publishError, setPublishError] = useState(null);
-  const formik = makeFormikForBaseNode(
-    signer,
-    accountData,
-    "Topic",
-    topic,
-    router.reload,
-    setPublishError,
-    setPublishStep
-  );
-
-  const triggerPublish = () => {
-    if (publishError !== null) setPublishError(null);
-    setPublishStep("FEES");
-  };
-
+  /* Content */
   useEffect(() => {
-    if (!canEdit || !formik.dirty) return setContent(null);
     setContent(
       <EditNav
         formik={formik}
         buttonLabel={formik.isSubmitting
           ? "Loading..."
           : "Publish"}
-        onClick={triggerPublish}
       />
-    );
-  }, [canEdit, formik]);
-
-  useEffect(() => {
-    if (!publishStep) return;
-    openModal({
-      type: ModalType.PUBLISHER,
-      meta: { publishStep, publishError, formik, setPublishStep }
-    });
-  }, [publishStep, publishError])
-
-  const [
-    imagePreview,
-    imageDidChange,
-    clearImage
-  ] = useEditableImage(formik);
+    )
+  }, [formik.isSubmitting, formik.isValid, formik.dirty]);
 
   const nodesByCollectionType = {
     subgraphs: {},
     documents: {},
   };
-  topic.outgoing.forEach((e: Edge) => {
-    const n = topic.related.find((node: BaseNode) => node.tokenId === e.tokenId);
+  node.outgoing.forEach((e: Edge) => {
+    const n = node.related.find((node: BaseNode) =>
+      node.tokenId === e.tokenId);
     if (!n) return;
-    const collectionType = `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
+    const collectionType =
+      `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
     if (!["subgraphs", "documents"].includes(collectionType)) return;
     nodesByCollectionType[collectionType][n.tokenId] = n;
   });
+
   const nodes: BaseNode[] =
     Object.values(nodesByCollectionType[collection]);
 
@@ -110,7 +88,7 @@ const TopicsShow: FC<Props> = ({
           <div className="flex justify-end pb-2">
             <Actions
               imageDidChange={imageDidChange}
-              node={topic}
+              node={node}
               canEdit={canEdit}
               allowConnect={false}
               allowSettings
@@ -144,7 +122,7 @@ const TopicsShow: FC<Props> = ({
                 >{formik.values.emoji.native}</span> #{formik.values.name}
               </p>
             ) : (
-              <TopicTile topic={topic} textSize="2xl" />
+              <TopicTile topic={node} textSize="2xl" />
             )}
           </div>
 
@@ -165,13 +143,13 @@ const TopicsShow: FC<Props> = ({
           </div>
 
           <div className="border-b border-color flex justify-between">
-            <Link href={`/${slugifyNode(topic)}?collection=subgraphs`}>
+            <Link href={`/${slugifyNode(node)}?collection=subgraphs`}>
               <a className={`p-4 flex-grow basis-0 text-center ${collection === "subgraphs" ? "border-b" : ""}`}>
                 <p>Subgraphs • {Object.values(nodesByCollectionType["subgraphs"]).length}</p>
               </a>
             </Link>
 
-            <Link href={`/${slugifyNode(topic)}?collection=documents`}>
+            <Link href={`/${slugifyNode(node)}?collection=documents`}>
               <a className={`p-4 flex-grow basis-0 text-center ${collection === "documents" ? "border-b" : ""}`}>
                 <p>Documents • {Object.values(nodesByCollectionType["documents"]).length}</p>
               </a>
@@ -235,16 +213,15 @@ const TopicsShow: FC<Props> = ({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { tid } = context.query;
   tid = ((Array.isArray(tid) ? tid[0] : tid) || '').split('-')[0];
-  const topic =
+  const node =
     await Client.fetchBaseNodeByTokenId(tid);
-  if (!topic || !topic.labels.includes('Topic')) return {
+  if (!node || !node.labels.includes('Topic')) return {
     redirect: { permanent: false, destination: `/` },
     props: {},
   };
 
-  return {
-    props: { topic },
-  };
+  return { props: { node } };
 }
 
-export default TopicsShow;
+TopicsShow.whyDidYouRender = true;
+export default withPublisher("Topic", TopicsShow);

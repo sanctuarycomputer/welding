@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import { GraphContext } from 'src/hooks/useGraphData';
 import VerticalDots from 'src/components/Icons/VerticalDots';
@@ -86,53 +86,53 @@ const Actions = ({
     setPublishStep
   );
 
-  useEffect(() => {
-    console.log("BING");
-    if (
-      formik.values.__node__.tokenId ===
-      node.tokenId
-    ) return;
+  //useEffect(() => {
+  //  console.log("BING");
+  //  if (
+  //    formik.values.__node__.tokenId ===
+  //    node.tokenId
+  //  ) return;
 
-    if (
-      focus?.shouldStash &&
-      !hasStagedRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY'
-      )
-    ) {
-      stageNodeRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY'
-      );
-    }
+  //  if (
+  //    focus?.shouldStash &&
+  //    !hasStagedRelations(
+  //      formik,
+  //      'incoming',
+  //      [node],
+  //      'STASHED_BY'
+  //    )
+  //  ) {
+  //    stageNodeRelations(
+  //      formik,
+  //      'incoming',
+  //      [node],
+  //      'STASHED_BY'
+  //    );
+  //  }
 
-    if (
-      !focus?.shouldStash &&
-      hasStagedRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY'
-      )
-    ) {
-      unstageNodeRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY'
-      );
-    }
+  //  if (
+  //    !focus?.shouldStash &&
+  //    hasStagedRelations(
+  //      formik,
+  //      'incoming',
+  //      [node],
+  //      'STASHED_BY'
+  //    )
+  //  ) {
+  //    unstageNodeRelations(
+  //      formik,
+  //      'incoming',
+  //      [node],
+  //      'STASHED_BY'
+  //    );
+  //  }
 
 
-    if (publishStep === null) {
-      console.log("WILL");
-      setPublishStep("FEES");
-    }
-  }, [formik]);
+  //  if (publishStep === null) {
+  //    console.log("WILL");
+  //    setPublishStep("FEES");
+  //  }
+  //}, [formik]);
 
   useEffect(() => {
     if (!publishStep) return;

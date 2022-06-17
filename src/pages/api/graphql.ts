@@ -17,7 +17,7 @@ const typeDefs = gql`
     fee: String!
     labels: [String!] @cypher(statement:"MATCH (this) RETURN distinct labels(this)")
 
-    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[:REVISES]-(rev:Revision) RETURN rev ORDER BY rev.block DESC LIMIT 1")
+    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[r:REVISES]-(rev:Revision) RETURN rev ORDER BY r.block DESC LIMIT 1")
     revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
 
     owner: Account! @cypher(statement:"MATCH (this)<-[:OWNS]-(a:Account) RETURN a")

@@ -34,6 +34,8 @@ import SubgraphSwitcher from 'src/components/Modals/SubgraphSwitcher';
 import Document from 'src/renderers/Document';
 import Graph from 'src/components/Icons/Graph';
 
+import withPublisher from 'src/hoc/withPublisher';
+
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
 
@@ -42,14 +44,19 @@ const SubgraphSidebar = dynamic(() => import('src/components/SubgraphSidebar'), 
   ssr: false
 });
 
-type Props = {
-  subgraph: BaseNode,
+interface Props extends WithPublisherProps {
+  node: BaseNode
   document?: BaseNode,
 };
 
 const Subgraph: FC<Props> = ({
-  subgraph,
+  node,
   document,
+
+  formik,
+  imageDidChange,
+  imagePreview,
+  clearImage
 }) => {
   const router = useRouter();
   const { isConnecting } = useConnect();
@@ -59,68 +66,21 @@ const Subgraph: FC<Props> = ({
   const { openModal } = useContext(ModalContext);
 
   const canEditSubgraph =
-    subgraph.tokenId.startsWith('-') ||
-    accountData?.roles.find(r => r.tokenId === subgraph.tokenId);
+    node.tokenId.startsWith('-') ||
+    accountData?.roles.find(r => r.tokenId === node.tokenId);
 
   const canEditDocument = document
     ? accountData?.roles.find(r => r.tokenId === document.tokenId)
     : canEditSubgraph;
 
   const subgraphTopics =
-    getRelatedNodes(subgraph, 'incoming', 'Topic', 'DESCRIBES');
+    getRelatedNodes(node, 'incoming', 'Topic', 'DESCRIBES');
 
   const documentTopics = document
     ? getRelatedNodes(document, 'incoming', 'Topic', 'DESCRIBES')
     : [];
 
-  const [publishStep, setPublishStep] = useState(null);
-  const [publishError, setPublishError] = useState(null);
-
-  const subgraphFormik = makeFormikForBaseNode(
-    signer,
-    accountData,
-    "Subgraph",
-    subgraph,
-    async (tx) => {
-      await loadAccountData(account?.address);
-
-      const transferEvent =
-        tx.events.find(e => e.event === "Transfer");
-      if (transferEvent) {
-        const slug =
-          slugify(`${transferEvent.args.tokenId} ${subgraphFormik.values.name}`);
-        router.push(`/${slug}`);
-      } else {
-        if (router.pathname === "/[nid]/[did]") {
-          router.push(`/${subgraph.tokenId}/${router.query.did}`);
-        } else {
-          router.push(`/${slugifyNode(subgraph)}`);
-        }
-      }
-    },
-    setPublishError,
-    setPublishStep
-  );
-
-  const triggerPublish = () => {
-    if (publishError !== null) setPublishError(null);
-    setPublishStep("FEES");
-  };
-
-  useEffect(() => {
-    if (!publishStep) return;
-    openModal({
-      type: ModalType.PUBLISHER,
-      meta: {
-        publishStep,
-        setPublishStep,
-        publishError,
-        formik: subgraphFormik
-      }
-    });
-  }, [publishStep, publishError])
-
-  useConfirmRouteChange(subgraphFormik.dirty, () => {
+  useConfirmRouteChange(formik.dirty, () => {
     return confirm(
       "You have unsaved changes. Discard them?"
     );
@@ -135,7 +95,7 @@ const Subgraph: FC<Props> = ({
   //  }
   //}, [account]);
 
-  const showSubgraph = subgraph.tokenId.startsWith('-')
+  const showSubgraph = node.tokenId.startsWith('-')
     ? !!account?.address
     : true;
 
@@ -145,13 +105,11 @@ const Subgraph: FC<Props> = ({
 
   return (
     <>
-      {!document && <NodeMeta formik={subgraphFormik} />}
+      {!document && <NodeMeta formik={formik} />}
 
       {showSubgraph && (
         <SubgraphSidebar
-          suppressHydrationWarning
-          triggerPublish={triggerPublish}
-          subgraphFormik={subgraphFormik}
+          formik={formik}
           canEdit={canEditSubgraph}
           currentDocument={document}
         />
@@ -159,7 +117,7 @@ const Subgraph: FC<Props> = ({
 
       {document && showDocument && (
         <div className="pl-4 ml-64 pt-14">
-          <Document document={document} />
+          <Document node={document} />
         </div>
       )}
 
@@ -188,4 +146,4 @@ const Subgraph: FC<Props> = ({
   );
 }
 
-export default Subgraph;
+export default withPublisher("Subgraph", Subgraph);

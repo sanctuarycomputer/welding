@@ -13,9 +13,9 @@ const NodeShow: FC<Props> = ({ node }) => {
   const nodeType =
     node.labels.filter(l => l !== "BaseNode")[0];
   switch (nodeType) {
-    case 'Subgraph': return <Subgraph subgraph={node} />;
-    case 'Document': return <Document document={node} />;
-    case 'Topic':    return <Topic topic={node} />;
+    case 'Subgraph': return <Subgraph node={node} />;
+    case 'Document': return <Document node={node} />;
+    case 'Topic':    return <Topic node={node} />;
   }
   return null;
 };

@@ -10,7 +10,11 @@ const Avatar: FC<Props> = ({
   address,
   width,
 }) => {
-  const { data: ensAvatar } = useEnsAvatar({ addressOrName: address });
+  const { data: ensAvatar } =
+    useEnsAvatar({
+      addressOrName: address,
+      chainId: 1
+    });
   return (ensAvatar
     ? <img className={`aspect-square w-${width || 4} background-passive-color rounded-full inline-block`} src={ensAvatar} alt="ENS Avatar" />
     : (width > 4 ? <div className={`aspect-square w-${width || 4} background-passive-color rounded-full inline-block flex items-center justify-center`}><UnknownUser /></div> : null)

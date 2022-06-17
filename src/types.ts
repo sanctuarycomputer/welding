@@ -55,7 +55,7 @@ type BaseNodeLabel = "BaseNode";
 type SubgraphLabel = "Subgraph";
 type DocumentLabel = "Document";
 type TopicLabel = "Topic";
-type Label = SubgraphLabel | DocumentLabel | TopicLabel;
+type NodeLabel = SubgraphLabel | DocumentLabel | TopicLabel;
 
 type Edge = {
   name: string;
@@ -68,7 +68,7 @@ type BaseNode = {
   tokenId: string;
   fee: string;
   currentRevision: Revision;
-  labels: Array<BaseNodeLabel | Label>;
+  labels: Array<BaseNodeLabel | NodeLabel>;
   revisions?: Revision[];
   related: BaseNode[];
   incoming: Edge[];

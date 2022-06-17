@@ -120,6 +120,12 @@ function GraphProvider({ children }) {
       }, accountNodesByCollectionType);
   }
 
+  const canEditNode = tokenId => {
+    return accountData?.roles.find(r => {
+      return r.tokenId === tokenId && r.role !== null;
+    });
+  };
+
   return (
     <Provider value={{
       accountData,
@@ -131,7 +137,8 @@ function GraphProvider({ children }) {
       loadShallowNodes,
       purgeCache,
       revisionData,
-      loadRevisionsForBaseNode
+      loadRevisionsForBaseNode,
+      canEditNode
     }}>
       {children}
     </Provider>

@@ -9,7 +9,7 @@ const Mint: FC<{}> = () => {
     setContent(null);
   }, []);
 
-  return <Subgraph subgraph={makeDummyNode('Subgraph')} />;
+  return <Subgraph node={makeDummyNode('Subgraph')} />;
 };
 
 export default Mint;

@@ -5,8 +5,8 @@ import makeDummyNode from 'src/lib/makeDummyNode';
 
 type Props = {};
 
-const NodeShow: FC<Props> = ({ subgraph, document }) => {
-  return <Subgraph subgraph={subgraph} document={document} />;
+const NodeShow: FC<Props> = ({ node, document }) => {
+  return <Subgraph node={node} document={document} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   document.related = [node];
 
   return {
-    props: { subgraph: node, document }
+    props: { node, document }
   };
 };
 

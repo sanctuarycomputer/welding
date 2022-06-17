@@ -1,5 +1,5 @@
-import 'scripts/wdyr';
 
+import 'scripts/wdyr';
 import 'emoji-mart/css/emoji-mart.css'
 import 'src/styles/globals.css';
 import 'src/styles/emojimart.css';
@@ -52,7 +52,7 @@ Modal.setAppElement('#__next');
 
 const alchemyId = process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID;
 const { chains, provider, webSocketProvider } = configureChains(
-  [chain.polygonMumbai],
+  [chain.polygonMumbai, chain.mainnet],
   [alchemyProvider({ alchemyId }), publicProvider()],
 );
 
@@ -84,7 +84,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <GraphProvider>
           <ModalProvider>
             <NavProvider>
-              <div className="absolute right-0 top-0 pr-4 py-4 flex">
+              <div
+                className="absolute right-0 top-0 pr-4 py-4 flex">
                 <Wallet />
               </div>
               <Component {...pageProps} />

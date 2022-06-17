@@ -23,14 +23,15 @@ import Connect from 'src/components/Icons/Connect';
 
 import Client from 'src/lib/Client';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+import withPublisher from 'src/hoc/withPublisher';
 
 import dynamic from 'next/dynamic';
 const Editor = dynamic(() => import('src/components/Editor'), {
   ssr: false
 });
 
-type Props = {
-  document: BaseNode;
+interface Props extends WithPublisherProps {
+  node: BaseNode;
 };
 
 const DocumentStashInfo = ({
@@ -57,7 +58,12 @@ const DocumentStashInfo = ({
 };
 
 const Document: FC<Props> = ({
-  document,
+  node,
+
+  formik,
+  imageDidChange,
+  imagePreview,
+  clearImage
 }) => {
   const router = useRouter();
 
@@ -68,44 +74,17 @@ const Document: FC<Props> = ({
   const { setContent } = useContext(NavContext);
 
   const canEdit =
-    document.tokenId.startsWith("-") ||
-    accountData?.roles.find(r => r.tokenId === document.tokenId);
+    node.tokenId.startsWith("-") ||
+    accountData?.roles.find(r => r.tokenId === node.tokenId);
 
   const canAdd = !!accountData;
 
   const documentTopics = getRelatedNodes(
-    document,
+    node,
     'incoming',
     'Topic',
     'DESCRIBES'
   );
-
-  const [publishStep, setPublishStep] = useState(null);
-  const [publishError, setPublishError] = useState(null);
-
-  const formik = makeFormikForBaseNode(
-    signer,
-    accountData,
-    'Document',
-    document,
-    async (tx) => {
-      await loadAccountData(account?.address);
-      if (
-        tx.events.find(e => e.event === "Revise") ||
-        tx.events.find(e => e.event === "Merge")
-      ) return router.reload();
-      const mintEvent = tx.events.find(e => e.event === "Mint");
-      if (mintEvent)
-        return router.push(`/${mintEvent.args.tokenId.toString()}`);
-    },
-    setPublishError,
-    setPublishStep
-  );
-
-  const triggerPublish = () => {
-    if (publishError !== null) setPublishError(null);
-    setPublishStep("FEES");
-  };
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -115,36 +94,19 @@ const Document: FC<Props> = ({
         buttonLabel={formik.isSubmitting
           ? "Loading..."
           : "Publish"}
-        onClick={triggerPublish}
       />
     );
   }, [canEdit, formik]);
 
-  useEffect(() => {
-    if (!publishStep) return;
-    openModal({
-      type: ModalType.PUBLISHER,
-      meta: {
-        publishStep,
-        setPublishStep,
-        publishError,
-        formik
-      }
-    });
-  }, [publishStep, publishError])
-
-  const [imagePreview, imageDidChange, clearImage] =
-    useEditableImage(formik);
-
   const triggerConnect = () => {
     openModal({
       type: ModalType.SUBGRAPH_CONNECTOR,
-      meta: { node: document }
+      meta: { node }
     });
   };
 
   const subgraphParent = getRelatedNodes(
-    document,
+    node,
     'outgoing',
     'Subgraph',
     'BELONGS_TO'
@@ -166,10 +128,10 @@ const Document: FC<Props> = ({
             }
             <Actions
               imageDidChange={imageDidChange}
-              node={document}
+              node={node}
               canEdit={canEdit}
-              allowConnect={!document.tokenId.startsWith('-')}
-              allowSettings={!document.tokenId.startsWith('-')}
+              allowConnect={!node.tokenId.startsWith('-')}
+              allowSettings={!node.tokenId.startsWith('-')}
             />
           </div>
           <NodeImage
@@ -199,4 +161,4 @@ const Document: FC<Props> = ({
   );
 };
 
-export default Document;
+export default withPublisher("Document", Document);

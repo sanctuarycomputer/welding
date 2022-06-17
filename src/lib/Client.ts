@@ -247,7 +247,7 @@ const Client = {
     tokenId: string
   ): Promise<Revision[]> {
     const client = await Client.getClient();
-    const { data: { revisions }} = await client.query({
+    let { data: { revisions }} = await client.query({
       fetchPolicy: 'network-only',
       variables: { tokenId },
       query: gql`

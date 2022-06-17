@@ -10,11 +10,13 @@ import { detailedDiff } from 'deep-object-diff';
 import { BigNumber } from '@ethersproject/bignumber';
 
 enum PublishStep {
-  INIT = "INIT",
+  FEES = "FEES",
   PUBLISH = "PUBLISH",
   REQUEST_SIG = "REQUEST_SIG",
   TRANSACT = "TRANSACT",
   CONFIRM = "CONFIRM",
+  COMPLETE = "COMPLETE",
+  ERROR = "ERROR",
 };
 
 const feesRequired = (
@@ -62,41 +64,42 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       related: node.related,
       outgoing: node.outgoing,
       incoming: node.incoming,
-      __node__: node
+      __node__: node,
     },
     onSubmit: async (values) => {
-      let toastId;
+      let status;
+      let id = toast.loading('Publishing metadata...', {
+        className: 'toast'
+      });
 
       try {
         if (!signer) throw new Error("no_signer_present");
 
-        if (onProgress) onProgress(PublishStep.PUBLISH);
+        /* Publish */
+        status = PublishStep.PUBLISH;
+        formik.setStatus({ status });
         NProgress.start();
-        toastId = toast.loading('Publishing metadata...', {
-          //position: 'bottom-right',
-          className: 'toast'
-        });
 
         // TODO: Deep diff
         const hash =
           await Welding.publishMetadataToIPFS(values);
-
         NProgress.done();
 
-        if (onProgress) onProgress(PublishStep.REQUEST_SIG);
-        toast.loading('Requesting signature...', {
-          id: toastId
-        });
-
+        /* Request Signature */
+        status = PublishStep.REQUEST_SIG;
+        formik.setStatus({ status });
+        toast.loading('Requesting signature...', { id });
         if (!signer) throw new Error("no_signer_present");
 
         let tx;
         if (node.tokenId.startsWith('-')) {
+          // TODO: If it's a Document, add the Subgraph Delegate Permission ID
           tx = await Welding.Nodes.connect(signer).mint(
             label,
             hash,
             values.incoming.filter(e => e.active),
             values.outgoing.filter(e => e.active),
+            [],
             { value: feesRequired(formik, accountData) }
           );
         } else {
@@ -129,34 +132,37 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
         }
 
         if (!tx) {
-          formik.resetForm({ values });
-          NProgress.done();
-          return onComplete(null);
+          status = PublishStep.COMPLETE;
+          formik.setStatus({ status });
         }
 
-        if (onProgress) onProgress(PublishStep.TRANSACT);
+        /* Transact */
+        status = PublishStep.TRANSACT;
+        formik.setStatus({ status });
         NProgress.start();
-        toast.loading('Processing...', { id: toastId });
+        toast.loading('Processing...', { id });
         tx = await tx.wait();
 
-        if (onProgress) onProgress(PublishStep.CONFIRM);
-        toast.loading('Confirming...', { id: toastId });
+        /* Confirm */
+        status = PublishStep.CONFIRM;
+        formik.setStatus({ status });
+        toast.loading('Confirming...', { id });
         await Client.fastForward(tx.blockNumber);
 
-        toast.success('Success!', {
-          id: toastId,
-        });
-        formik.resetForm({ values });
-        return onComplete(tx);
+        /* Success */
+        status = PublishStep.COMPLETE;
+        formik.setStatus({ status, tx });
+        toast.success('Success!', { id });
+        return;
       } catch(e) {
+        console.log(e);
         NProgress.done();
         toast.error('An error occured.', {
-          id: toastId,
-          //position: 'bottom-right',
+          id,
           className: 'toast',
         });
-        console.log(e);
-        if (onError) return onError(e);
+        formik.setStatus({ status, error: e });
+        throw e;
       }
     },
     validationSchema: yup.object({

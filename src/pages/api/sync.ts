@@ -27,7 +27,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
           `;
 
       q = args.incomingEdges.reduce((acc, edge) => {
@@ -73,7 +73,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
           `;
 
       await session.writeTransaction(tx => tx.run(q, {
@@ -95,7 +95,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES]->(n)
+          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
           WITH n
           OPTIONAL MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
             WHERE NOT r(type) STARTS WITH '_'
@@ -252,7 +252,7 @@ export default async function handler(
   try {
     const session = driver.session();
 
-    if (true) {
+    if (false) {
       const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`
       const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
       await session.writeTransaction(tx => tx.run(flushQ1));

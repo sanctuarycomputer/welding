@@ -17,45 +17,39 @@ import Connect from 'src/components/Icons/Connect';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
 
 type Props = {
-  subgraphFormik: FormikProps<BaseNodeFormValues>;
+  formik: FormikProps<BaseNodeFormValues>;
   canEdit: boolean;
-  triggerPublish: Function;
   currentDocument?: BaseNode;
   newDocument?: FormikProps<BaseNodeFormValues>;
 };
 
 const SubgraphSidebar: FC<Props> = ({
-  subgraphFormik,
+  formik,
   canEdit,
-  triggerPublish,
-
   currentDocument,
   newDocument,
 }) => {
   const { openModal, closeModal } = useContext(ModalContext);
 
-  const emoji = subgraphFormik.values.emoji.native;
-  const name = subgraphFormik.values.name;
-  const subgraph = subgraphFormik.values.__node__;
+  const emoji = formik.values.emoji.native;
+  const name = formik.values.name;
+  const subgraph = formik.values.__node__;
 
-  const subgraphTopics =
+  const topics =
     getRelatedNodes(subgraph, 'incoming', 'Topic', 'DESCRIBES');
-
   const documents =
     getRelatedNodes(subgraph, 'incoming', 'Document', 'BELONGS_TO');
-
   const stashedDocuments =
     getRelatedNodes(subgraph, 'incoming', 'Document', 'STASHED_BY');
-
   const stashedSubgraphs =
     getRelatedNodes(subgraph, 'incoming', 'Subgraph', 'STASHED_BY');
 
   const [imagePreview, imageDidChange, clearImage] =
-    useEditableImage(subgraphFormik);
+    useEditableImage(formik);
 
   const descriptionPresent = (
-    !!subgraphFormik.values.description &&
-    subgraphFormik.values.description.length > 0
+    !!formik.values.description &&
+    formik.values.description.length > 0
   );
 
   return (
@@ -73,7 +67,7 @@ const SubgraphSidebar: FC<Props> = ({
             type: ModalType.EMOJI_PICKER,
             meta: {
               didPickEmoji: (emoji: BaseEmoji) => {
-                subgraphFormik.setFieldValue('emoji', emoji);
+                formik.setFieldValue('emoji', emoji);
                 closeModal();
               }
             }
@@ -85,9 +79,9 @@ const SubgraphSidebar: FC<Props> = ({
           name="name"
           className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} font-semibold`}
           placeholder={`Subgraph name`}
-          value={subgraphFormik.values.name}
-          onChange={subgraphFormik.handleChange}
-          onBlur={subgraphFormik.handleBlur}
+          value={formik.values.name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
         />
 
         <Actions
@@ -116,18 +110,18 @@ const SubgraphSidebar: FC<Props> = ({
               type="text"
               name="description"
               placeholder="Add a description"
-              value={subgraphFormik.values.description}
-              onChange={subgraphFormik.handleChange}
-              onBlur={subgraphFormik.handleBlur}
+              value={formik.values.description}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
             />
           </div>
         )}
 
-        {(subgraphTopics.length || canEdit) && (
+        {(topics.length || canEdit) && (
           <div className="px-2 pt-2">
             <TopicManager
               readOnly={!canEdit}
-              formik={subgraphFormik}
+              formik={formik}
             />
           </div>
         )}
@@ -214,11 +208,10 @@ const SubgraphSidebar: FC<Props> = ({
               </Link>
             );
           })}
-
           </div>
 
           <div className="absolute w-full bottom-0 text-center border-t border-color">
-            {subgraphFormik?.dirty ? (
+            {formik.dirty && (
               <div className="flex px-2 py-4 justify-between">
                 <div
                   className="basis-0 flex-grow background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2 text-center"
@@ -228,23 +221,14 @@ const SubgraphSidebar: FC<Props> = ({
                 <Button
                   className="basis-0 flex-grow"
                   disabled={
-                    subgraphFormik.isSubmitting ||
-                    !(subgraphFormik.isValid &&
-                    subgraphFormik?.dirty)
+                    formik.isSubmitting ||
+                    !(formik.isValid && formik.dirty)
                   }
-                  onClick={triggerPublish}
+                  onClick={formik.handleSubmit}
                   label={"Publish"}
                 />
               </div>
-            ) : (
-              <p
-                onClick={() => openModal({ type: ModalType.SUBGRAPH_SWITCHER })}
-                className="font-semibold py-5 w-100 cursor-pointer"
-              >
-                Switch Subgraph ↗
-              </p>
             )}
-
           </div>
        </div>
     </nav>
