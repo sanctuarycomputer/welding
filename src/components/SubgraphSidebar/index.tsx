@@ -1,5 +1,12 @@
-import update from 'immutability-helper';
-import { FC, useRef, useEffect, useContext, useState, useCallback } from "react";
+import update from "immutability-helper";
+import {
+  FC,
+  useRef,
+  useEffect,
+  useContext,
+  useState,
+  useCallback,
+} from "react";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
 import type { BaseNodeFormValues, BaseNode } from "src/types";
@@ -7,7 +14,7 @@ import type { FormikProps } from "formik";
 import Button from "src/components/Button";
 import slugifyNode from "src/utils/slugifyNode";
 
-import DraggableDocumentLink from './DraggableDocumentLink';
+import DraggableDocumentLink from "./DraggableDocumentLink";
 import Document from "src/components/Icons/Document";
 import Actions from "src/components/Actions";
 import useEditableImage from "src/hooks/useEditableImage";
@@ -65,32 +72,35 @@ const SubgraphSidebar: FC<Props> = ({
     !!formik.values.description && formik.values.description.length > 0;
 
   const sortOrder =
-    subgraph.currentRevision.metadata.properties.ui?.subgraphSidebarDocumentSortOrder ||
-    [];
+    subgraph.currentRevision.metadata.properties.ui
+      ?.subgraphSidebarDocumentSortOrder || [];
   const [documentNodes, setDocumentNodes] = useState(
     allDocumentNodes.sort(function (a, b) {
       return sortOrder.indexOf(a.tokenId) - sortOrder.indexOf(b.tokenId);
     })
   );
 
-  const moveDocumentNode = useCallback((dragIndex: number, hoverIndex: number) => {
-    setDocumentNodes((prevDocumentNodes: BaseNode[]) =>
-      update(prevDocumentNodes, {
-        $splice: [
-          [dragIndex, 1],
-          [hoverIndex, 0, prevDocumentNodes[dragIndex] as BaseNode],
-        ],
-      }),
-    )
-  }, []);
+  const moveDocumentNode = useCallback(
+    (dragIndex: number, hoverIndex: number) => {
+      setDocumentNodes((prevDocumentNodes: BaseNode[]) =>
+        update(prevDocumentNodes, {
+          $splice: [
+            [dragIndex, 1],
+            [hoverIndex, 0, prevDocumentNodes[dragIndex] as BaseNode],
+          ],
+        })
+      );
+    },
+    []
+  );
 
   const isMounted = useRef(false);
   useEffect(() => {
     if (isMounted.current) {
-      const newSortOrder = documentNodes.map(d => d.tokenId);
+      const newSortOrder = documentNodes.map((d) => d.tokenId);
       formik.setFieldValue("ui", {
         ...formik.values.ui,
-        subgraphSidebarDocumentSortOrder: newSortOrder
+        subgraphSidebarDocumentSortOrder: newSortOrder,
       });
     } else {
       isMounted.current = true;
@@ -110,9 +120,9 @@ const SubgraphSidebar: FC<Props> = ({
           isStashed={stashedDocuments.indexOf(documentNode) > -1}
           isCurrent={documentNode.tokenId === currentDocument?.tokenId}
         />
-      )
+      );
     },
-    [],
+    []
   );
 
   return (
@@ -230,35 +240,36 @@ const SubgraphSidebar: FC<Props> = ({
               )}
             </div>
 
-
-            {canEdit ? (
-              documentNodes.map((n, i) => renderDocumentLink(n, i))
-            ) : (
-              documentNodes.map(d => {
-                const isStashed = stashedDocuments.indexOf(d) > -1;
-                if (d.tokenId === currentDocument?.tokenId) {
+            {canEdit
+              ? documentNodes.map((n, i) => renderDocumentLink(n, i))
+              : documentNodes.map((d) => {
+                  const isStashed = stashedDocuments.indexOf(d) > -1;
+                  if (d.tokenId === currentDocument?.tokenId) {
+                    return (
+                      <p key={d.tokenId} className="text-xs font-semibold pb-1">
+                        {isStashed ? "↗ " : ""}
+                        {
+                          d.currentRevision.metadata.properties.emoji.native
+                        }{" "}
+                        {d.currentRevision.metadata.name}
+                      </p>
+                    );
+                  }
                   return (
-                    <p key={d.tokenId} className="text-xs font-semibold pb-1">
-                      {isStashed ? "↗ " : ""}
-                      {d.currentRevision.metadata.properties.emoji.native}{" "}
-                      {d.currentRevision.metadata.name}
-                    </p>
+                    <Link
+                      key={d.tokenId}
+                      href={`/${slugifyNode(subgraph)}/${slugifyNode(d)}`}
+                    >
+                      <a className="block text-xs pb-1">
+                        {isStashed ? "↗ " : ""}
+                        {
+                          d.currentRevision.metadata.properties.emoji.native
+                        }{" "}
+                        {d.currentRevision.metadata.name}
+                      </a>
+                    </Link>
                   );
-                }
-                return (
-                  <Link
-                    key={d.tokenId}
-                    href={`/${slugifyNode(subgraph)}/${slugifyNode(d)}`}
-                  >
-                    <a className="block text-xs pb-1">
-                      {isStashed ? "↗ " : ""}
-                      {d.currentRevision.metadata.properties.emoji.native}{" "}
-                      {d.currentRevision.metadata.name}
-                    </a>
-                  </Link>
-                );
-              })
-            )}
+                })}
 
             {documentNodes.length === 0 && (
               <div className="flex flex-col items-center py-8 opacity-50">

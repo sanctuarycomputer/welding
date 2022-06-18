@@ -36,7 +36,7 @@ type MetadataProperties = {
   content?: any;
   ui?: {
     subgraphSidebarDocumentSortOrder?: string[];
-  }
+  };
 };
 
 type Metadata = {

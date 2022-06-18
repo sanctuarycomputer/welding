@@ -17,8 +17,8 @@ import { GraphProvider } from "src/hooks/useGraphData";
 import { ModalProvider } from "src/hooks/useModal";
 import { NavProvider } from "src/hooks/useNav";
 import { Toaster } from "react-hot-toast";
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
