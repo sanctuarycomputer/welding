@@ -1,11 +1,10 @@
 import { useFormik, FormikProps } from 'formik';
-import type { Label, BaseNodeFormValues, MintState, BaseNode, Account } from 'src/types';
+import type { Label, BaseNodeFormValues, BaseNode } from 'src/types';
 import * as yup from 'yup';
 import NProgress from 'nprogress';
 import Welding from 'src/lib/Welding';
 import toast from 'react-hot-toast';
 import Client from 'src/lib/Client';
-import { emojiIndex, BaseEmoji } from 'emoji-mart';
 import { detailedDiff } from 'deep-object-diff';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -49,9 +48,6 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
   accountData,
   label: Label,
   node: BaseNode,
-  onComplete: Function,
-  onError?: Function,
-  onProgress?: Function,
 ) => {
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
@@ -68,19 +64,34 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
     },
     onSubmit: async (values) => {
       let status;
-      let id = toast.loading('Publishing metadata...', {
+      let id = toast.loading('Publishing...', {
         className: 'toast'
       });
 
       try {
         if (!signer) throw new Error("no_signer_present");
 
+        const incomingDiff =
+          detailedDiff(node.incoming, values.incoming);
+        const hasConnectionChanges =
+          Object.values(incomingDiff.added).length > 0 ||
+          Object.values(incomingDiff.updated).length > 0 ||
+          Object.values(incomingDiff.deleted).length > 0;
+
+        if (hasConnectionChanges) {
+          status = PublishStep.FEES;
+          await new Promise((resolve, reject) => {
+            formik.setStatus({
+              status, resolve, reject
+            });
+          });
+        }
+
         /* Publish */
         status = PublishStep.PUBLISH;
         formik.setStatus({ status });
         NProgress.start();
 
-        // TODO: Deep diff
         const hash =
           await Welding.publishMetadataToIPFS(values);
         NProgress.done();
@@ -93,13 +104,13 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
 
         let tx;
         if (node.tokenId.startsWith('-')) {
-          // TODO: If it's a Document, add the Subgraph Delegate Permission ID
+          const belongsTo = values.outgoing.find(e => e.name === "BELONGS_TO");
           tx = await Welding.Nodes.connect(signer).mint(
             label,
             hash,
             values.incoming.filter(e => e.active),
             values.outgoing.filter(e => e.active),
-            [],
+            (belongsTo ? [belongsTo.tokenId] : []),
             { value: feesRequired(formik, accountData) }
           );
         } else {
@@ -133,7 +144,9 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
 
         if (!tx) {
           status = PublishStep.COMPLETE;
-          formik.setStatus({ status });
+          formik.setStatus({ status, tx: null });
+          toast.success('Success!', { id });
+          return;
         }
 
         /* Transact */
@@ -155,14 +168,18 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
         toast.success('Success!', { id });
         return;
       } catch(e) {
-        console.log(e);
-        NProgress.done();
-        toast.error('An error occured.', {
-          id,
-          className: 'toast',
-        });
-        formik.setStatus({ status, error: e });
-        throw e;
+        if (e.message === 'user_rejected') {
+          toast.dismiss();
+        } else {
+          console.log(e);
+          NProgress.done();
+          toast.error('An error occured.', {
+            id,
+            className: 'toast',
+          });
+          formik.setStatus({ status, error: e });
+          throw e;
+        }
       }
     },
     validationSchema: yup.object({

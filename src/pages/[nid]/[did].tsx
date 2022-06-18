@@ -11,12 +11,7 @@ const NodeShow: FC<Props> = ({
   subgraph,
   document,
 }) => {
-  return (
-    <Subgraph
-      subgraph={subgraph}
-      document={document}
-    />
-  );
+  return <Subgraph node={subgraph} document={document} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
-import { useProvider, useSigner, useNetwork } from 'wagmi';
+import { useProvider, useSigner } from 'wagmi';
 import { useFormik, FormikProps } from 'formik';
 import { ExchangeRateContext } from 'src/hooks/useExchangeRates';
 import { GraphContext } from 'src/hooks/useGraphData';
@@ -14,12 +14,17 @@ import toast from 'react-hot-toast';
 
 // Can Edit?
 const Fee = ({
-  node
+  node,
+  setLocked
 }) => {
   const provider = useProvider();
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
-  const { purgeCache } = useContext(GraphContext);
+  const {
+    purgeCache,
+    canAdministerNode,
+    loadShallowNodes
+  } = useContext(GraphContext);
   const [USDEstimate, setUSDEstimate] = useState(null);
 
   const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
@@ -31,10 +36,10 @@ const Fee = ({
       const { fee } = values;
       try {
         if (!signer) throw new Error("no_signer_present");
+        setLocked(true);
 
         NProgress.start();
         toastId = toast.loading('Requesting signature...', {
-          position: 'bottom-right',
           className: 'toast'
         });
         let tx = await Welding
@@ -56,6 +61,7 @@ const Fee = ({
         NProgress.done();
         await Client.fastForward(tx.blockNumber);
         await purgeCache();
+        await loadShallowNodes();
         toast.success('Success!', {
           id: toastId
         });
@@ -67,6 +73,8 @@ const Fee = ({
           id: toastId
         });
         console.log(e);
+      } finally {
+        setLocked(false);
       }
     },
   });
@@ -108,22 +116,26 @@ const Fee = ({
                     type="number"
                     inputMode="decimal"
                     min="0"
+                    readOnly={!canAdministerNode(node)}
                   />
                 </form>
               </td>
-              <td className="py-4 pl-2">
+              <td className="py-4 px-2 text-right">
                 <p>MATIC / {USDEstimate || '?'} USD</p>
               </td>
-              <td className="text-right pr-2">
-                <Button
-                  label="Update Fee"
-                  disabled={
-                    formik.isSubmitting ||
-                    !(formik.isValid && !formik.isDirty)
-                  }
-                  onClick={formik.handleSubmit}
-                />
-              </td>
+              {canAdministerNode(node) && (
+                <td className="text-right pr-2">
+                  <Button
+                    label="Update Fee"
+                    disabled={
+                      !canAdministerNode(node) ||
+                      formik.isSubmitting ||
+                      !(formik.isValid && !formik.isDirty)
+                    }
+                    onClick={formik.handleSubmit}
+                  />
+                </td>
+              )}
             </tr>
           )}
         </tbody>

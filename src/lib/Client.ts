@@ -15,6 +15,7 @@ import {
   LocalStorageWrapper
 } from 'apollo3-cache-persist';
 
+import { fetchEnsName } from '@wagmi/core';
 import { emojiIndex, BaseEmoji } from 'emoji-mart';
 
 const DEFAULT_EMOJI: BaseEmoji =
@@ -184,6 +185,9 @@ const Client = {
     let account: Account = accounts[0];
     if (!account) return null;
     account = JSON.parse(JSON.stringify(account));
+
+    account.ensName =
+      await fetchEnsName({ address: account.address, chainId: 1 });
 
     for (const node of account.related) {
       await Client.processRevision(node.currentRevision);

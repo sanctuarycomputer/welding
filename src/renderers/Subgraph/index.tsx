@@ -1,43 +1,19 @@
-import { FC, useContext, useState, useEffect } from 'react';
-import type { GetServerSideProps } from 'next';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { FC, useContext } from 'react';
 import NodeMeta from 'src/components/NodeMeta';
 
 import { GraphContext } from 'src/hooks/useGraphData';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
+import { ModalContext } from 'src/hooks/useModal';
 import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
-import useEditableImage from 'src/hooks/useEditableImage';
-import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
-import slugify from 'src/utils/slugify';
-import slugifyNode from 'src/utils/slugifyNode';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
 
 import type {
-  BaseNodeFormValues,
-  MintState,
-  BaseNode,
-  Account
+  BaseNode
 } from 'src/types';
 
 import { useSigner, useConnect, useAccount } from 'wagmi';
-import { useFormik, FormikProps } from 'formik';
-import * as yup from 'yup';
-
-import Tile from 'src/components/Tile';
-import VerticalDots from 'src/components/Icons/VerticalDots';
-import NodeImage from 'src/components/NodeImage';
-import Frontmatter from 'src/components/Frontmatter';
-import EditNav from 'src/components/EditNav';
-import TopicManager from 'src/components/TopicManager';
-import SubgraphSwitcher from 'src/components/Modals/SubgraphSwitcher';
 import Document from 'src/renderers/Document';
-import Graph from 'src/components/Icons/Graph';
 
 import withPublisher from 'src/hoc/withPublisher';
-
-import Client from 'src/lib/Client';
-import Welding from 'src/lib/Welding';
 
 import dynamic from 'next/dynamic';
 const SubgraphSidebar = dynamic(() => import('src/components/SubgraphSidebar'), {
@@ -50,27 +26,30 @@ interface Props extends WithPublisherProps {
 };
 
 const Subgraph: FC<Props> = ({
-  node,
   document,
-
   formik,
   imageDidChange,
   imagePreview,
-  clearImage
+  clearImage,
+  reloadData,
 }) => {
-  const router = useRouter();
+  const node = formik.values.__node__;
   const { isConnecting } = useConnect();
   const { data: signer } = useSigner();
   const { data: account } = useAccount();
-  const { accountData, loadAccountData } = useContext(GraphContext);
+  const {
+    accountData,
+    loadAccountData,
+    canEditNode
+  } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
 
   const canEditSubgraph =
     node.tokenId.startsWith('-') ||
-    accountData?.roles.find(r => r.tokenId === node.tokenId);
+    canEditNode(node);
 
   const canEditDocument = document
-    ? accountData?.roles.find(r => r.tokenId === document.tokenId)
+    ? canEditNode(document)
     : canEditSubgraph;
 
   const subgraphTopics =
@@ -80,11 +59,15 @@ const Subgraph: FC<Props> = ({
     ? getRelatedNodes(document, 'incoming', 'Topic', 'DESCRIBES')
     : [];
 
-  useConfirmRouteChange(formik.dirty, () => {
-    return confirm(
-      "You have unsaved changes. Discard them?"
-    );
-  });
+  useConfirmRouteChange(
+    formik.dirty && formik.status?.status !== "COMPLETE",
+    () => {
+      const didConfirm =
+        confirm("You have unsaved changes. Discard them?")
+      if (didConfirm) formik.resetForm();
+      return didConfirm;
+    }
+  );
 
   //useEffect(() => {
   //  if (account?.address) {
@@ -112,11 +95,12 @@ const Subgraph: FC<Props> = ({
           formik={formik}
           canEdit={canEditSubgraph}
           currentDocument={document}
+          reloadData={reloadData}
         />
       )}
 
       {document && showDocument && (
-        <div className="pl-4 ml-64 pt-14">
+        <div className="md:pl-4 md:ml-64 pt-14">
           <Document node={document} />
         </div>
       )}

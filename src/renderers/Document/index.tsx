@@ -1,5 +1,4 @@
-import { FC, useContext, useState, useEffect } from 'react';
-import type { GetServerSideProps } from 'next';
+import { FC, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
@@ -7,9 +6,8 @@ import { useAccount, useSigner } from 'wagmi';
 import { GraphContext } from 'src/hooks/useGraphData';
 import { NavContext } from 'src/hooks/useNav';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
-import useEditableImage from 'src/hooks/useEditableImage';
-import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
 
+import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
 import slugifyNode from 'src/utils/slugifyNode';
 import EditNav from 'src/components/EditNav';
 import NodeImage from 'src/components/NodeImage';
@@ -17,11 +15,6 @@ import NodeMeta from 'src/components/NodeMeta';
 import Actions from 'src/components/Actions';
 import Frontmatter from 'src/components/Frontmatter';
 import TopicManager from 'src/components/TopicManager';
-import Tile from 'src/components/Tile';
-import VerticalDots from 'src/components/Icons/VerticalDots';
-import Connect from 'src/components/Icons/Connect';
-
-import Client from 'src/lib/Client';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
 import withPublisher from 'src/hoc/withPublisher';
 
@@ -58,24 +51,28 @@ const DocumentStashInfo = ({
 };
 
 const Document: FC<Props> = ({
-  node,
-
   formik,
   imageDidChange,
   imagePreview,
-  clearImage
+  clearImage,
+  reloadData
 }) => {
+  const node = formik.values.__node__;
   const router = useRouter();
 
   const { data: account } = useAccount();
   const { data: signer } = useSigner();
-  const { accountData, loadAccountData } = useContext(GraphContext);
+  const {
+    accountData,
+    loadAccountData,
+    canEditNode
+  } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
 
   const canEdit =
-    node.tokenId.startsWith("-") ||
-    accountData?.roles.find(r => r.tokenId === node.tokenId);
+    node.tokenId.startsWith('-') ||
+    canEditNode(node);
 
   const canAdd = !!accountData;
 
@@ -97,6 +94,16 @@ const Document: FC<Props> = ({
       />
     );
   }, [canEdit, formik]);
+
+  useConfirmRouteChange(
+    formik.dirty && formik.status?.status !== "COMPLETE",
+    () => {
+      const didConfirm =
+        confirm("You have unsaved changes. Discard them?")
+      if (didConfirm) formik.resetForm();
+      return didConfirm;
+    }
+  );
 
   const triggerConnect = () => {
     openModal({
@@ -120,7 +127,7 @@ const Document: FC<Props> = ({
     <>
       <NodeMeta formik={formik} />
 
-      <div className="pt-8">
+      <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div className={`flex justify-${showStashInfo ? 'between' : 'end'} pb-2`}>
             {showStashInfo &&
@@ -132,12 +139,14 @@ const Document: FC<Props> = ({
               canEdit={canEdit}
               allowConnect={!node.tokenId.startsWith('-')}
               allowSettings={!node.tokenId.startsWith('-')}
+              reloadData={reloadData}
             />
           </div>
           <NodeImage
             imagePreview={imagePreview}
             imageDidChange={imageDidChange}
             clearImage={clearImage}
+            readOnly={!canEdit || formik.isSubmitting}
           />
           <Frontmatter
             formik={formik}

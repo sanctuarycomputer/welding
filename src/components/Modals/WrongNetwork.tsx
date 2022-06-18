@@ -1,5 +1,4 @@
-import { FC, useEffect, useContext } from 'react';
-import { ModalContext } from 'src/hooks/useModal';
+import { FC, useEffect } from 'react';
 import Modal from 'react-modal';
 import ModalHeader from 'src/components/Modals/ModalHeader';
 import Network from 'src/components/Icons/Network';
@@ -30,7 +29,6 @@ const WrongNetwork: FC<Props> = ({
       if (activeChain.network === process.env.NEXT_PUBLIC_NETWORK) {
         console.log("Correct Network");
         toast.success('Correct network selected!', {
-          position: 'bottom-right',
           className: 'toast'
         });
         onRequestClose();

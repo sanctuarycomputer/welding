@@ -6,22 +6,22 @@
 }
 
 .emoji-mart-category-label span {
-  color: var(--text-passive-color) !important;
+  color: var(--text-color-passive) !important;
   background-color: var(--background-color) !important;
 }
 
 .emoji-mart-search input {
   color: var(--text-color) !important;
-  border-color: var(--background-passive-color) !important;
+  border-color: var(--background-color-passive) !important;
   background-color: var(--background-color) !important;
 }
 
 .emoji-mart-bar {
-  border-color: var(--background-passive-color) !important;
+  border-color: var(--background-color-passive) !important;
 }
 
 .emoji-mart-anchor {
-  color: var(--background-passive-color) !important;
+  color: var(--background-color-passive) !important;
 }
 
 .emoji-mart-anchor-icon {
@@ -30,10 +30,10 @@
 }
 
 .emoji-mart-anchor:hover, .emoji-mart-dark .emoji-mart-anchor:focus, .emoji-mart-dark .emoji-mart-anchor-selected {
-  color: var(--text-passive-color) !important;
+  color: var(--text-color-passive) !important;
 }
 
 .emoji-mart-anchor-selected .emoji-mart-anchor-bar {
-  background-color: var(--text-passive-color) !important;
+  background-color: var(--text-color-passive) !important;
   height: 2px !important;
 }

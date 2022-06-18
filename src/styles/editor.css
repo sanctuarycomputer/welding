@@ -1,6 +1,6 @@
 .tc-wrap {
-  --color-border: var(--background-passive-color) !important;
-  --color-background: var(--background-passive-color) !important;
+  --color-border: var(--background-color-passive) !important;
+  --color-background: var(--background-color-passive) !important;
   --color-text-secondary: var(--text-color) !important);
 }
 
@@ -12,7 +12,7 @@
 .ce-settings__button,
 .ce-toolbar__settings-btn,
 .cdx-button {
-  background: var(--background-passive-color);
+  background: var(--background-color-passive);
   color: inherit;
   border: none;
 }
@@ -33,7 +33,7 @@
 .cdx-button:hover,
 .ce-inline-toolbar__dropdown:hover,
 .ce-inline-tool:hover {
-  background-color: var(--background-passive-color);
+  background-color: var(--background-color-passive);
   color: inherit;
   border: none;
 }

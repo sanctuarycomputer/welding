@@ -98,7 +98,7 @@ const merge = async (e, session) => {
           MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
           WITH n
           OPTIONAL MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
-            WHERE NOT r(type) STARTS WITH '_'
+            WHERE NOT type(r) STARTS WITH '_'
             SET r.active = false
           `;
 

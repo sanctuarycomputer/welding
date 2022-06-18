@@ -62,9 +62,9 @@ const Connect: FC<Props> = ({
           </p>
         </div>
 
-        <div className="p-4 flex flex-row-reverse justify-between">
+        <div className="p-4 flex flex-row-reverse justify-between items-center">
           <Button label="Cancel" onClick={() => onRequestClose()} disabled={false} />
-          <p className="py-2 text-error-color font-semibold">{error && (error?.message ?? 'Failed to connect')}</p>
+          <p className="text-red-500 font-semibold">{error && (error?.message ?? 'Failed to connect')}</p>
         </div>
       </div>
     </Modal>

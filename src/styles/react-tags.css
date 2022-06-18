@@ -34,7 +34,7 @@
   padding-bottom: 0.25rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  border: 2px solid var(--background-passive-color);
+  border: 2px solid var(--background-color-passive);
   margin: 0.5rem 0.25rem 0.25rem 0rem;
   font-weight: 500;
   border-radius: 99999px;
@@ -60,7 +60,7 @@
   width: 100%;
 }
 .ReactTags__suggestions li {
-  border-bottom: 1px solid var(--background-passive-color);
+  border-bottom: 1px solid var(--background-color-passive);
   font-size: 0.75rem;
   line-height: 1rem;
   padding: 0.5rem;
@@ -75,6 +75,6 @@
   color: var(--text-color);
 }
 .ReactTags__suggestions ul li.ReactTags__activeSuggestion {
-  background: var(--background-passive-color);
+  background: var(--background-color-passive);
   cursor: pointer;
 }

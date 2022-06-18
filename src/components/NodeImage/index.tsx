@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import Upload from 'src/components/Icons/Upload';
 import RemoveImage from 'src/components/Icons/RemoveImage';
+import { bg, bgPassive } from 'src/utils/theme';
 
 type Props = {
   showDefault?: boolean;
@@ -25,13 +26,13 @@ const NodeImage: FC<Props> = ({
   return (
     <div
       style={{ backgroundImage: `url(${imagePreview})` }}
-      className={`allowed aspect-sharecard bg-cover bg-center background-passive-color p-2 relative ${readOnly ? 'pointer-events-none' : ''}`}>
+      className={`${bgPassive} allowed aspect-sharecard bg-cover bg-center p-2 relative ${readOnly ? 'pointer-events-none' : ''}`}>
 
       {children}
 
       {!readOnly && (
         <>
-          <div className="opacity-0 hover:opacity-70 background-color absolute left-0 right-0 top-0 bottom-0">
+          <div className={`${bg} opacity-0 hover:opacity-70 absolute left-0 right-0 top-0 bottom-0`}>
             <label className="w-full h-full flex items-center justify-center cursor-pointer">
               <Upload />
               <input

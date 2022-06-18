@@ -4,7 +4,6 @@ import Copy from 'src/components/Icons/Copy';
 
 import {
   useNetwork,
-  chain,
 } from 'wagmi';
 
 const Metadata = ({

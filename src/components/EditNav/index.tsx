@@ -2,7 +2,7 @@ import { FC } from 'react';
 import Button from 'src/components/Button';
 import { FormikProps } from 'formik';
 import { BaseNodeFormValues } from 'src/types';
-import VerticalDots from 'src/components/Icons/VerticalDots';
+import { textPassive } from 'src/utils/theme';
 
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
@@ -21,14 +21,13 @@ const EditNav: FC<Props> = ({
     <div className="flex pr-2 items-center border-r border-color mr-2">
       {formik.dirty ? (
         <div
-          className="background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2"
+          className="bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2"
         >
           Unsaved
         </div>
       ) : (
         <div
-          className="text-passive-color text-xs px-2 py-1 rounded-full mr-2"
-        >
+          className={`${textPassive} text-xs px-2 py-1 rounded-full mr-2`}>
           No Changes
         </div>
       )}

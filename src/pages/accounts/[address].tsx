@@ -6,7 +6,6 @@ import type { Account } from 'src/types';
 import { NavContext } from 'src/hooks/useNav';
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
-import Button from 'src/components/Button';
 import Document from 'src/components/Icons/Document';
 import Graph from 'src/components/Icons/Graph';
 import Hashtag from 'src/components/Icons/Hashtag';
@@ -14,7 +13,9 @@ import dynamic from 'next/dynamic';
 import Card from 'src/components/Card';
 import TopicTile from 'src/components/TopicTile';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+
 import { useAccount } from 'wagmi';
+import { fetchEnsAddress } from '@wagmi/core'
 
 const Address = dynamic(() => import('src/components/Address'), {
   ssr: false
@@ -206,7 +207,14 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { address } = context.query;
+
+
   address = ((Array.isArray(address) ? address[0] : address) || '');
+
+  const resolvedAddress =
+    await fetchEnsAddress({ chainId: 1, name: address })
+  if (resolvedAddress) address = resolvedAddress;
+
   const accountData =
     await Client.fetchAccount(address);
   return {

@@ -1,5 +1,6 @@
 import { useEnsAvatar } from 'wagmi';
 import UnknownUser from 'src/components/Icons/UnknownUser';
+import { bgPassive } from 'src/utils/theme';
 
 type Props = {
   address: string;
@@ -16,8 +17,8 @@ const Avatar: FC<Props> = ({
       chainId: 1
     });
   return (ensAvatar
-    ? <img className={`aspect-square w-${width || 4} background-passive-color rounded-full inline-block`} src={ensAvatar} alt="ENS Avatar" />
-    : (width > 4 ? <div className={`aspect-square w-${width || 4} background-passive-color rounded-full inline-block flex items-center justify-center`}><UnknownUser /></div> : null)
+    ? <img className={`${bgPassive} aspect-square w-${width || 4} rounded-full inline-block`} src={ensAvatar} alt="ENS Avatar" />
+    : (width > 4 ? <div className={`${bgPassive} aspect-square w-${width || 4} rounded-full inline-block flex items-center justify-center`}><UnknownUser /></div> : null)
   );
 };
 

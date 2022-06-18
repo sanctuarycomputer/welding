@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { FC, useState, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import EditorJS from '@editorjs/editorjs';
+import Undo from 'editorjs-undo';
 
 import Header from '@editorjs/header';
 import Paragraph from '@editorjs/paragraph';
@@ -22,7 +23,7 @@ import SimpleImage from '@editorjs/simple-image';
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
   blocks: [{
-    "data": {"text": "Start welding..."},
+    "data": {"text": "Start writing..."},
     "type": "paragraph",
   }]
 };
@@ -72,6 +73,7 @@ const Editor: FC<Props> = ({
   readOnly
 }) => {
   const ejInstance = useRef();
+  const ejUndoInstance = useRef();
   const holder = useRef(DOM_ID);
 
   let guard = false;
@@ -87,7 +89,9 @@ const Editor: FC<Props> = ({
       onReady: () => {
         ejInstance.current = editor
         editor.readOnly.toggle(readOnly);
-        window.EDITOR = editor;
+
+        //ejUndoInstance.current = new Undo({ editor });
+        //ejUndoInstance.current.setReadOnly();
       },
       onChange: async function() {
         let newContent = await editor.saver.save();
@@ -110,10 +114,13 @@ const Editor: FC<Props> = ({
     if (ejInstance.current) {
       ejInstance.current.readOnly.toggle(readOnly);
     }
+    if (ejUndoInstance.current) {
+      ejUndoInstance.current.setReadOnly();
+    }
   }, [readOnly]);
 
   return (
-    <div id={holder.current}></div>
+    <div id={holder.current} className="px-2 md:px-0"></div>
   );
 };
 

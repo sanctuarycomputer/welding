@@ -1,10 +1,8 @@
-import { FC, useContext, useState, useEffect } from 'react';
+import { FC, useContext, useEffect } from 'react';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
 import type { GetServerSideProps } from 'next';
 import { GraphContext } from 'src/hooks/useGraphData';
 import { NavContext } from 'src/hooks/useNav';
-import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
-import useEditableImage from 'src/hooks/useEditableImage';
 import slugifyNode from 'src/utils/slugifyNode';
 import EditNav from 'src/components/EditNav';
 import { useRouter } from 'next/router';
@@ -13,18 +11,14 @@ import TopicTile from 'src/components/TopicTile';
 import type { BaseNode } from 'src/types';
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
-import Tile from 'src/components/Tile';
 import Document from 'src/components/Icons/Document';
 import Graph from 'src/components/Icons/Graph';
-import VerticalDots from 'src/components/Icons/VerticalDots';
-import Upload from 'src/components/Icons/Upload';
-import Connect from 'src/components/Icons/Connect';
 import Card from 'src/components/Card';
 import NodeImage from 'src/components/NodeImage';
 import NodeMeta from 'src/components/NodeMeta';
 import Actions from 'src/components/Actions';
-import { useSigner } from 'wagmi';
-import NProgress from 'nprogress';
+import { bg, border } from 'src/utils/theme';
+import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
 
 import withPublisher from 'src/hoc/withPublisher';
 
@@ -33,22 +27,31 @@ interface Props extends WithPublisherProps {
 };
 
 const TopicsShow: FC<Props> = ({
-  node,
   formik,
   imageDidChange,
   imagePreview,
-  clearImage
+  clearImage,
+  reloadData
 }) => {
+  const node = formik.values.__node__;
   const { canEditNode } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
   const { content, setContent } = useContext(NavContext);
 
+  useConfirmRouteChange(
+    formik.dirty && formik.status?.status !== "COMPLETE",
+    () => {
+      const didConfirm =
+        confirm("You have unsaved changes. Discard them?")
+      if (didConfirm) formik.resetForm();
+      return didConfirm;
+    }
+  );
+
   const router = useRouter();
   let { collection } = router.query;
   if (!collection) collection = "subgraphs";
-
-  const canEdit =
-    canEditNode(node.tokenId);
+  const canEdit = canEditNode(node);
 
   /* Content */
   useEffect(() => {
@@ -83,7 +86,7 @@ const TopicsShow: FC<Props> = ({
     <>
       <NodeMeta formik={formik} />
 
-      <div className="pt-20">
+      <div className="pt-12 md:pt-20">
         <div className="content py-4 mx-auto">
           <div className="flex justify-end pb-2">
             <Actions
@@ -92,11 +95,13 @@ const TopicsShow: FC<Props> = ({
               canEdit={canEdit}
               allowConnect={false}
               allowSettings
+              reloadData={reloadData}
             />
           </div>
 
           <NodeImage
             showDefault
+            readOnly={!canEdit}
             imagePreview={imagePreview}
             imageDidChange={imageDidChange}
             clearImage={clearImage}
@@ -107,7 +112,7 @@ const TopicsShow: FC<Props> = ({
             style={{ transform: 'translate(0, -50%)' }}
           >
             {canEdit ? (
-              <p className={`ml-2 border-2 border-color background-color flex rounded-full text-2xl px-2 py-1 font-medium whitespace-nowrap`}>
+              <p className={`ml-2 border-2 ${border} ${bg} flex rounded-full text-2xl px-2 py-1 font-medium whitespace-nowrap`}>
                 <span
                   className="cursor-pointer mr-1"
                   onClick={() => openModal({
@@ -126,7 +131,7 @@ const TopicsShow: FC<Props> = ({
             )}
           </div>
 
-          <div>
+          <div className={`px-2 md:px-0`}>
             {canEdit ? (
               <textarea
                 className="pb-4 w-full bg-transparent text-xs px-2 pt-2"

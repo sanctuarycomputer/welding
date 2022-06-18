@@ -1,9 +1,6 @@
-import { FC, useContext } from 'react';
-import Link from 'next/link';
-import truncate from 'src/utils/truncate';
+import { useContext } from 'react';
 import copyToClipboard from 'src/utils/copyToClipboard';
 import Copy from 'src/components/Icons/Copy';
-import Client from 'src/lib/Client';
 import { GraphContext } from 'src/hooks/useGraphData';
 import History from 'src/components/Icons/History';
 import slugifyNode from 'src/utils/slugifyNode';

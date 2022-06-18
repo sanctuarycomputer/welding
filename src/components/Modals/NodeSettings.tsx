@@ -1,5 +1,5 @@
-import { FC, useEffect, useContext, useState } from 'react';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
+import { FC, useContext, useState } from 'react';
+import { ModalContext } from 'src/hooks/useModal';
 import Modal from 'react-modal';
 import ModalHeader from 'src/components/Modals/ModalHeader';
 import { useAccount } from 'wagmi';
@@ -12,15 +12,13 @@ import FeeIcon from 'src/components/Icons/Fee';
 import Metadata from 'src/components/Metadata';
 import Revisions from 'src/components/Revisions';
 import Fee from 'src/components/Fee';
-
-import dynamic from 'next/dynamic';
-const Team = dynamic(() => import('src/components/Team'), {
-  ssr: false
-});
+import Team from 'src/components/Team';
+import { bgPassive } from 'src/utils/theme';
 
 export type NodeSettingsMeta = {
-  topic: BaseNode;
+  node: BaseNode;
   canEdit: boolean;
+  reloadData: Function
 };
 
 type Props = {
@@ -42,45 +40,51 @@ const NodeSettings: FC<Props> = ({
   const { openModal, closeModal } = useContext(ModalContext);
   const { data: account } = useAccount();
   const [level, setLevel] = useState(SettingsLevel.METADATA);
+  const [locked, setLocked] = useState(false);
+
+  const attemptClose = () => {
+    if (locked) return alert("Working, please wait.");
+    onRequestClose();
+  };
 
   return (
     <Modal
       isOpen={true}
-      onRequestClose={() => onRequestClose()}
+      onRequestClose={attemptClose}
     >
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           title="Settings"
           hint="Update the settings for this Node"
-          onClickClose={() => onRequestClose()}
+          onClickClose={attemptClose}
         />
 
         <div className="flex">
           <nav>
             <div
-              className={`flex cursor-pointer border-b border-color p-4 ${level === SettingsLevel.METADATA ? 'background-passive-color' : ''}`}
-              onClick={() => setLevel(SettingsLevel.METADATA)}
+              className={`flex border-b border-color p-4 ${level === SettingsLevel.METADATA ? bgPassive : ''} ${locked ? 'cursor-progress' : 'cursor-pointer'}`}
+              onClick={() => !locked && setLevel(SettingsLevel.METADATA)}
             >
               <Data />
               <p className="pl-2 font-semibold whitespace-nowrap">NFT Metadata</p>
             </div>
             <div
-              className={`flex cursor-pointer border-b border-color p-4 ${level === SettingsLevel.TEAM ? 'background-passive-color' : ''}`}
-              onClick={() => setLevel(SettingsLevel.TEAM)}
+              className={`flex border-b border-color p-4 ${level === SettingsLevel.TEAM ? bgPassive : ''} ${locked ? 'cursor-progress' : 'cursor-pointer'}`}
+              onClick={() => !locked && setLevel(SettingsLevel.TEAM)}
             >
               <TeamIcon />
-              <p className="pl-2 font-semibold whitespace-nowrap">Team</p>
+              <p className="pl-2 font-semibold whitespace-nowrap">Permissions</p>
             </div>
             <div
-              className={`flex cursor-pointer border-b border-color p-4 ${level === SettingsLevel.HISTORY ? 'background-passive-color' : ''}`}
-              onClick={() => setLevel(SettingsLevel.HISTORY)}
+              className={`flex border-b border-color p-4 ${level === SettingsLevel.HISTORY ? bgPassive : ''} ${locked ? 'cursor-progress' : 'cursor-pointer'}`}
+              onClick={() => !locked && setLevel(SettingsLevel.HISTORY)}
             >
               <History />
               <p className="pl-2 font-semibold whitespace-nowrap">Revision History</p>
             </div>
             <div
-              className={`flex cursor-pointer border-b border-color p-4 ${level === SettingsLevel.FEE ? 'background-passive-color' : ''}`}
-              onClick={() => setLevel(SettingsLevel.FEE)}
+              className={`flex border-b border-color p-4 ${level === SettingsLevel.FEE ? bgPassive : ''} ${locked ? 'cursor-progress' : 'cursor-pointer'}`}
+              onClick={() => !locked && setLevel(SettingsLevel.FEE)}
             >
               <FeeIcon />
               <p className="pl-2 font-semibold whitespace-nowrap">Connection Fee</p>
@@ -92,13 +96,13 @@ const NodeSettings: FC<Props> = ({
               <Metadata node={meta.node} />
             )}
             {level === SettingsLevel.TEAM && (
-              <Team node={meta.node} currentAddress={account?.address} />
+              <Team node={meta.node} currentAddress={account?.address} setLocked={setLocked} reloadData={meta.reloadData} />
             )}
             {level === SettingsLevel.HISTORY && (
               <Revisions node={meta.node} />
             )}
             {level === SettingsLevel.FEE && (
-              <Fee node={meta.node} />
+              <Fee node={meta.node} setLocked={setLocked} reloadData={meta.reloadData} />
             )}
           </div>
         </div>

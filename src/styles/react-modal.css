@@ -1,0 +1,33 @@
+/* React Modal */
+.ReactModal__Overlay {
+  z-index: 60;
+  background-color: rgba(23, 23, 23, 0.5) !important;
+  backdrop-filter: blur(16px);
+}
+
+.curtain {
+  background-color: rgba(23, 23, 23, 0.5) !important;
+  backdrop-filter: blur(16px);
+}
+
+.ReactModal__Overlay .ReactModal__Content {
+  max-width: 640px;
+  min-height: 100%;
+  width: 100%;
+  background-color: var(--background-color) !important;
+  border-color: var(--border-color) !important;
+  inset: auto !important;
+  padding: unset !important;
+}
+
+@media (min-width: 640px) {
+  .ReactModal__Overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ReactModal__Overlay .ReactModal__Content {
+    max-height: 90%;
+    min-height: auto;
+  }
+}

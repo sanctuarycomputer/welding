@@ -1,4 +1,3 @@
-
 import 'scripts/wdyr';
 import 'emoji-mart/css/emoji-mart.css'
 import 'src/styles/globals.css';
@@ -6,36 +5,30 @@ import 'src/styles/emojimart.css';
 import 'src/styles/editor.css';
 import 'src/styles/react-tags.css';
 import 'src/styles/nprogress.css';
+import 'src/styles/react-modal.css';
 
-import { useCallback, useEffect, useState } from 'react';
 import type { AppProps } from 'next/app';
 import Modal from 'react-modal';
 import dynamic from 'next/dynamic';
 import NProgress from 'nprogress';
 import Router from 'next/router';
-
-import Client from 'src/lib/Client';
 import { ExchangeRateProvider } from 'src/hooks/useExchangeRates';
 import { GraphProvider } from 'src/hooks/useGraphData';
-import { ModalProvider, ModalType } from 'src/hooks/useModal';
+import { ModalProvider } from 'src/hooks/useModal';
 import { NavProvider } from 'src/hooks/useNav';
 import { Toaster } from 'react-hot-toast';
-import { ApolloProvider } from '@apollo/client';
 
 import {
   WagmiConfig,
   chain,
   createClient,
   configureChains,
-  defaultChains,
 } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { InjectedConnector } from 'wagmi/connectors/injected';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
-import { providers } from 'ethers';
 
 const Wallet = dynamic(() => import('src/components/Wallet'), {
   ssr: false
@@ -85,7 +78,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ModalProvider>
             <NavProvider>
               <div
-                className="absolute right-0 top-0 pr-4 py-4 flex">
+                className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
                 <Wallet />
               </div>
               <Component {...pageProps} />

@@ -6,10 +6,9 @@ import ModalHeader from 'src/components/Modals/ModalHeader';
 import Button from 'src/components/Button';
 import Hashtag from 'src/components/Icons/Hashtag';
 import { WithContext as ReactTags } from 'src/components/Tags';
-import DEFAULT_EMOJI, { emojis } from 'src/utils/defaultEmoji';
-import Client from 'src/lib/Client';
+import { emojis } from  'src/utils/defaultEmoji';
 
-import { gql, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
 
 const baseNodesShallowQuery = gql`
   query BaseNodes {

@@ -2,13 +2,11 @@ import { useState, createContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ConnectModal from 'src/components/Modals/Connect';
 import WrongNetworkModal from 'src/components/Modals/WrongNetwork';
-import SubgraphSwitcherModal from 'src/components/Modals/SubgraphSwitcher';
 import TopicConnectorModal, { TopicConnectorMeta } from 'src/components/Modals/TopicConnector';
 import TopicMinterModal, { TopicMinterMeta } from 'src/components/Modals/TopicMinter';
 import EmojiPickerModal, { EmojiPickerMeta } from 'src/components/Modals/EmojiPicker';
 import NodeSettingsModal, { NodeSettingsMeta } from 'src/components/Modals/NodeSettings';
 import PublisherModal, { PublisherMeta } from 'src/components/Modals/Publisher';
-//import SubgraphConnectorModal, { SubgraphConnectorMeta } from 'src/components/Modals/SubgraphConnector';
 
 interface IModalContext {
   openModal: (type: ModalType) => void;
@@ -18,7 +16,6 @@ interface IModalContext {
 export enum ModalType {
   CONNECT = "CONNECT",
   WRONG_NETWORK = "WRONG_NETWORK",
-  SUBGRAPH_SWITCHER = "SUBGRAPH_SWITCHER",
   TOPIC_CONNECTOR = "TOPIC_CONNECTOR",
   TOPIC_MINTER = "TOPIC_MINTER",
   EMOJI_PICKER = "EMOJI_PICKER",
@@ -31,8 +28,6 @@ type CurrentModal = {
   type: ModalType.CONNECT
 } | {
   type: ModalType.WRONG_NETWORK
-} | {
-  type: ModalType.SUBGRAPH_SWITCHER
 } | {
   type: ModalType.TOPIC_CONNECTOR,
   meta: TopicConnectorMeta
@@ -92,12 +87,6 @@ const ModalProvider = ({ children }) => {
           onRequestClose={closeModal}
         />
       )}
-      {currentModal?.type === ModalType.SUBGRAPH_SWITCHER && (
-        <SubgraphSwitcherModal
-          isOpen
-          onRequestClose={closeModal}
-        />
-      )}
       {currentModal?.type === ModalType.TOPIC_CONNECTOR && (
         <TopicConnectorModal
           isOpen
@@ -133,13 +122,6 @@ const ModalProvider = ({ children }) => {
           meta={currentModal.meta}
         />
       )}
-      {/*currentModal?.type === ModalType.SUBGRAPH_CONNECTOR && (
-        <SubgraphConnectorModal
-          isOpen
-          onRequestClose={closeModal}
-          meta={currentModal.meta}
-        />
-      )*/}
       {children}
     </Provider>
   );

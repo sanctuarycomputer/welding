@@ -4878,6 +4878,13 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
+editorjs-undo@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/editorjs-undo/-/editorjs-undo-2.0.3.tgz#d1f464a08f8cac4602831b396ee60bdea0aad8a9"
+  integrity sha512-Q0XSOM2I/E7y4nkKEnYr1QuQq6/M+uuY/G0857DZ1/6QDS9OLcwwszbV/vlCxZPMVFD1GDCN+YwLYKFwwO3htg==
+  dependencies:
+    vanilla-caret-js "^1.0.1"
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -5151,6 +5158,11 @@ eslint-config-next@12.1.4:
     eslint-plugin-jsx-a11y "6.5.1"
     eslint-plugin-react "7.29.1"
     eslint-plugin-react-hooks "4.3.0"
+
+eslint-config-prettier@^8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-8.5.0.tgz#5a81680ec934beca02c7b1a61cf8ca34b66feab1"
+  integrity sha512-obmWKLUNCnhtQRKc+tmnYuQl0pFU1ibYJQ5BGhTVB08bHe9wC8qUeG7c08dj9XX+AuPj1YSGSQIHl1pnDHZR0Q==
 
 eslint-import-resolver-node@0.3.4:
   version "0.3.4"
@@ -10104,6 +10116,11 @@ prettier@^2.1.2:
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.6.2.tgz#e26d71a18a74c3d0f0597f55f01fb6c06c206032"
   integrity sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==
 
+prettier@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
+  integrity sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==
+
 private@^0.1.6, private@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
@@ -12505,6 +12522,11 @@ value-or-promise@1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/value-or-promise/-/value-or-promise-1.0.11.tgz#3e90299af31dd014fe843fe309cefa7c1d94b140"
   integrity sha512-41BrgH+dIbCFXClcSapVs5M6GkENd3gQOJpEfPDNa71LsUGMXDL0jMWpI/Rh7WhX+Aalfz2TTS3Zt5pUsbnhLg==
+
+vanilla-caret-js@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/vanilla-caret-js/-/vanilla-caret-js-1.0.1.tgz#96cf4e6ee154ca87c813bb4604c90a24555abc35"
+  integrity sha512-s5hXdyIMmeJ1dzfqvZSEGIXGi5xaHrWKsfRZfNUFVqDLwD2TA5QlPJqFhUhZ4D3wgyf6Pjw5ygUbOpj/QePsSw==
 
 varint@^5.0.0:
   version "5.0.2"

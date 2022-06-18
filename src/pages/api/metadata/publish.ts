@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createCanvas, loadImage } from 'canvas';
-import { NFTStorage, File, Blob } from 'nft.storage';
+import { NFTStorage, File } from 'nft.storage';
 import { MetadataProperties } from 'src/types';
 import { fileTypeFromBuffer } from 'file-type';
 

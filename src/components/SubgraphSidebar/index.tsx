@@ -4,8 +4,7 @@ import Link from 'next/link';
 import type { BaseNodeFormValues, BaseNode } from 'src/types';
 import type { FormikProps } from 'formik';
 import Button from 'src/components/Button';
-import Upload from 'src/components/Icons/Upload';
-import Welding from 'src/lib/Welding';
+import slugifyNode from 'src/utils/slugifyNode';
 
 import Document from 'src/components/Icons/Document';
 import Actions from 'src/components/Actions';
@@ -13,23 +12,24 @@ import useEditableImage from 'src/hooks/useEditableImage';
 import NodeImage from 'src/components/NodeImage';
 import TopicManager from 'src/components/TopicManager';
 import VerticalDots from 'src/components/Icons/VerticalDots';
-import Connect from 'src/components/Icons/Connect';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { bg, border, textPassive } from 'src/utils/theme';
 
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
   canEdit: boolean;
   currentDocument?: BaseNode;
-  newDocument?: FormikProps<BaseNodeFormValues>;
+  reloadData: Function;
 };
 
 const SubgraphSidebar: FC<Props> = ({
   formik,
   canEdit,
   currentDocument,
-  newDocument,
+  reloadData
 }) => {
   const { openModal, closeModal } = useContext(ModalContext);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const emoji = formik.values.emoji.native;
   const name = formik.values.name;
@@ -53,168 +53,172 @@ const SubgraphSidebar: FC<Props> = ({
   );
 
   return (
-    <nav
-      className="fixed top-0 inline-block ml-4 w-64 h-screen border-color border-r border-l background-color"
-    >
-      <div className="fixed left-0 h-screen items-center flex cursor-pointer opacity-0 hover:opacity-100" style={{paddingLeft: '0.5px'}}>
-        <VerticalDots />
+    <>
+      <button
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className="absolute p-2">
+        <p className="py-3 font-semibold">{emoji} {formik.values.name}</p>
+      </button>
+
+      <div
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className={`${bg} w-full h-screen fixed z-10 curtain ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:-translate-x-full`}>
       </div>
 
-      <div className="pl-2 pr-1 py-4 text-xs flex items-center">
-        <p
-          className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} mr-1 py-1`}
-          onClick={() => canEdit && openModal({
-            type: ModalType.EMOJI_PICKER,
-            meta: {
-              didPickEmoji: (emoji: BaseEmoji) => {
-                formik.setFieldValue('emoji', emoji);
-                closeModal();
+      <nav
+        className={`${bg} ${border} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed top-0 inline-block w-64 h-screen border-r z-20 `}>
+
+        <div className="pl-2 pr-1 py-4 text-xs flex items-center">
+          <p
+            className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} mr-1 py-1`}
+            onClick={() => canEdit && openModal({
+              type: ModalType.EMOJI_PICKER,
+              meta: {
+                didPickEmoji: (emoji: BaseEmoji) => {
+                  formik.setFieldValue('emoji', emoji);
+                  closeModal();
+                }
               }
-            }
-          })}
-        >{emoji}</p>
-        <input
-          readOnly={!canEdit}
-          type="text"
-          name="name"
-          className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} font-semibold`}
-          placeholder={`Subgraph name`}
-          value={formik.values.name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-        />
+            })}
+          >{emoji}</p>
+          <input
+            readOnly={!canEdit}
+            type="text"
+            name="name"
+            className={`${canEdit ? 'cursor-edit' : 'pointer-events-none'} font-semibold`}
+            placeholder={`Subgraph name`}
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          />
 
-        <Actions
-          node={subgraph}
-          canEdit={canEdit}
-          imageDidChange={imageDidChange}
-          allowConnect={!subgraph.tokenId.startsWith('-')}
-          allowSettings={!subgraph.tokenId.startsWith('-')}
-        />
-      </div>
+          <Actions
+            node={subgraph}
+            canEdit={canEdit}
+            imageDidChange={imageDidChange}
+            allowConnect={!subgraph.tokenId.startsWith('-')}
+            allowSettings={!subgraph.tokenId.startsWith('-')}
+            reloadData={reloadData}
+          />
+        </div>
 
-      <div className="background-color flex flex-col">
-        <NodeImage
-          showDefault={false}
-          readOnly={!canEdit}
-          imagePreview={imagePreview}
-          imageDidChange={imageDidChange}
-          clearImage={clearImage}
-        />
+        <div className={`${bg} flex flex-col`}>
+          <NodeImage
+            showDefault={false}
+            readOnly={!canEdit}
+            imagePreview={imagePreview}
+            imageDidChange={imageDidChange}
+            clearImage={clearImage}
+          />
 
-        {(descriptionPresent || canEdit) && (
-          <div className="border-b border-color">
-            <textarea
-              readOnly={!canEdit}
-              className={`${canEdit ? 'cursor-pointer' : 'pointer-events-none'} block pb-4 w-full bg-transparent text-xs px-2`}
-              type="text"
-              name="description"
-              placeholder="Add a description"
-              value={formik.values.description}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-          </div>
-        )}
-
-        {(topics.length || canEdit) && (
-          <div className="px-2 pt-2">
-            <TopicManager
-              readOnly={!canEdit}
-              formik={formik}
-            />
-          </div>
-        )}
-
-        <div className="pb-2 px-2 pt-2">
-          <div className="flex justify-between">
-            <p className="pb-2 font-semibold tracking-wide text-passive-color uppercase">Documents</p>
-
-            {canEdit && !subgraph.tokenId.startsWith('-') && (
-              <Link
-                href={`/${Welding.slugifyNode(subgraph)}/mint`}
-              >
-                <a className="pb-2 text-xs opacity-50 hover:opacity-100">+ New</a>
-              </Link>
-            )}
-          </div>
-
-          {[...documents, ...stashedDocuments].length === 0 && (
-            <div className="flex flex-col items-center py-8 opacity-50">
-              <Document />
-              <p className="pt-1 whitespace-nowrap">
-                No documents (yet).
-              </p>
+          {(descriptionPresent || canEdit) && (
+            <div className={`border-b ${border}`}>
+              <textarea
+                style={{resize: 'none'}}
+                readOnly={!canEdit}
+                className={`${canEdit ? 'cursor-edit' : 'pointer-events-none'} block pb-4 w-full bg-transparent text-xs px-2`}
+                type="text"
+                name="description"
+                placeholder="Add a description"
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
             </div>
           )}
 
-          {documents.map(d => {
-            if (
-              d.tokenId === currentDocument?.tokenId
-            ) {
-              return (
-                <p
-                  key={d.tokenId}
-                  className="text-xs font-semibold pb-1"
-                >
-                  {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
-                </p>
-              );
-            }
-            return (
-              <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
-                <a className="block text-xs pb-1">{d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
-              </Link>
-            );
-          })}
-
-          {stashedDocuments.map(d => {
-            if (
-              d.tokenId === currentDocument?.tokenId
-            ) {
-              return (
-                <p
-                  key={d.tokenId}
-                  className="text-xs font-semibold pb-1"
-                >
-                  ↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
-                </p>
-              );
-            }
-            return (
-              <Link key={d.tokenId} href={`/${Welding.slugifyNode(subgraph)}/${Welding.slugifyNode(d)}`}>
-                <a className="block text-xs pb-1">↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
-              </Link>
-            );
-          })}
-
-          {newDocument && (
-            <p
-              key="_new_"
-              className="text-xs font-semibold">{newDocument.values.emoji.native} {newDocument.values.name}
-            </p>
+          {(topics.length || canEdit) && (
+            <div className="px-2 pt-2">
+              <TopicManager
+                readOnly={!canEdit}
+                formik={formik}
+              />
+            </div>
           )}
 
-          {stashedSubgraphs.length > 0 && (
+          <div className="pb-2 px-2 pt-2">
             <div className="flex justify-between">
-              <p className="py-2 font-semibold tracking-wide text-passive-color uppercase">Subgraphs</p>
+              <p className={`${textPassive} pb-2 font-semibold tracking-wide uppercase`}>Documents</p>
+              {canEdit && !subgraph.tokenId.startsWith('-') && (
+                <Link
+                  href={`/${slugifyNode(subgraph)}/mint`}
+                >
+                  <a className="pb-2 text-xs opacity-60 hover:opacity-100">+ New</a>
+                </Link>
+              )}
             </div>
-          )}
 
-          {stashedSubgraphs.map(s => {
-            return (
-              <Link key={s.tokenId} href={`/${Welding.slugifyNode(s)}`}>
-                <a className="block text-xs pb-1">↗ {s.currentRevision.metadata.properties.emoji.native} {s.currentRevision.metadata.name}</a>
-              </Link>
-            );
-          })}
+            {[...documents, ...stashedDocuments].length === 0 && (
+              <div className="flex flex-col items-center py-8 opacity-50">
+                <Document />
+                <p className="pt-1 whitespace-nowrap">
+                  No documents (yet).
+                </p>
+              </div>
+            )}
+
+            {documents.map(d => {
+              if (
+                d.tokenId === currentDocument?.tokenId
+              ) {
+                return (
+                  <p
+                    key={d.tokenId}
+                    className="text-xs font-semibold pb-1"
+                  >
+                    {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                  </p>
+                );
+              }
+              return (
+                <Link key={d.tokenId} href={`/${slugifyNode(subgraph)}/${slugifyNode(d)}`}>
+                  <a className="block text-xs pb-1">{d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
+                </Link>
+              );
+            })}
+
+            {stashedDocuments.map(d => {
+              if (
+                d.tokenId === currentDocument?.tokenId
+              ) {
+                return (
+                  <p
+                    key={d.tokenId}
+                    className="text-xs font-semibold pb-1"
+                  >
+                    ↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}
+                  </p>
+                );
+              }
+              return (
+                <Link key={d.tokenId} href={`/${slugifyNode(subgraph)}/${slugifyNode(d)}`}>
+                  <a className="block text-xs pb-1">↗ {d.currentRevision.metadata.properties.emoji.native} {d.currentRevision.metadata.name}</a>
+                </Link>
+              );
+            })}
+
+            {stashedSubgraphs.length > 0 && (
+              <div className="flex justify-between">
+                <p className={`${textPassive} py-2 font-semibold tracking-wide uppercase`}>
+                  Subgraphs
+                </p>
+              </div>
+            )}
+
+            {stashedSubgraphs.map(s => {
+              return (
+                <Link key={s.tokenId} href={`/${slugifyNode(s)}`}>
+                  <a className="block text-xs pb-1">↗ {s.currentRevision.metadata.properties.emoji.native} {s.currentRevision.metadata.name}</a>
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="absolute w-full bottom-0 text-center border-t border-color">
-            {formik.dirty && (
+          {formik.dirty && (
+            <div className={`absolute w-full bottom-0 text-center border-t ${border}`}>
               <div className="flex px-2 py-4 justify-between">
                 <div
-                  className="basis-0 flex-grow background-warning-color text-background-color font-medium text-xs px-2 py-1 rounded-full mr-2 text-center"
+                  className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center"
                 >
                   Unsaved
                 </div>
@@ -228,10 +232,11 @@ const SubgraphSidebar: FC<Props> = ({
                   label={"Publish"}
                 />
               </div>
-            )}
-          </div>
-       </div>
-    </nav>
+            </div>
+          )}
+        </div>
+      </nav>
+    </>
   );
 };
 

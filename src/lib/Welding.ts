@@ -1,9 +1,8 @@
 import { ethers } from 'ethers';
 import type { BaseProvider, EventType } from '@ethersproject/providers';
-import type { BigNumberish } from '@ethersproject/bignumber';
 import Node from 'artifacts/contracts/src/Node.sol/Node.json';
 import slugify from 'slugify';
-import { Metadata, BaseNode } from 'src/types';
+import { BaseNode } from 'src/types';
 
 // TODO: Use private API key if it's avail (ie, on the server)
 const fallbackProvider = new ethers.providers.AlchemyProvider(

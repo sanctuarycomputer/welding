@@ -1,5 +1,6 @@
 import { FC, useState } from 'react';
 import Spinner from 'src/components/Icons/Spinner';
+import { bgPassive } from 'src/utils/theme';
 
 type Props = {
   label: string;
@@ -18,8 +19,7 @@ const Tile: FC<Props> = ({ label, onClick, tracked }) => {
 
   return (
     <div
-      className="inline-flex background-passive-color rounded-full p-1 items-center"
-    >
+      className={`${bgPassive} inline-flex rounded-full p-1 items-center`}>
       <span className={`px-1 text-xs ${tracked ? 'uppercase font-bold' : ''}`}>
         {label}
       </span>

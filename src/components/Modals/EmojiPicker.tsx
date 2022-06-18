@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import Modal from 'react-modal';
 import ModalHeader from 'src/components/Modals/ModalHeader';
-import { Picker, emojiIndex, EmojiData, BaseEmoji } from 'emoji-mart';
+import { Picker, BaseEmoji } from 'emoji-mart';
 
 export type EmojiPickerMeta = {
   didPickEmoji: (emoji: BaseEmoji) => void;

@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useSigner } from 'wagmi';
 import Client from 'src/lib/Client';
 import Welding from 'src/lib/Welding';
+import { bgPassive, bgInverted } from 'src/utils/theme';
 
 export type TopicMinterMeta = {
   topics: BaseNode[];
@@ -53,7 +54,6 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       if (!signer) throw new Error("no_signer_present");
 
       toastId = toast.loading(`Publishing metadata...`, {
-        position: 'bottom-right',
         className: 'toast'
       });
       setMintState({
@@ -79,6 +79,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       let tx = await Welding.Nodes.connect(signer).mint(
         Welding.LABELS.topic,
         hash,
+        [],
         [],
         []
       );
@@ -106,17 +107,15 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       if (!transferEvent) return;
       const topicId = transferEvent.args.tokenId;
       await Client.fastForward(tx.blockNumber);
-
+      await loadShallowNodes();
       toast.success('Success!', {
         id: toastId
       });
-      loadShallowNodes();
       setTopicId(topic, topicId.toString());
     } catch(e) {
       console.log(e);
       toast.error('An error occured.', {
         id: toastId,
-        position: 'bottom-right',
         className: 'toast'
       });
     } finally {
@@ -136,7 +135,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       className="flex relative p-4 justify-between items-center flex-row border-b border-color"
     >
       <div
-        className="absolute background-text-color left-0 top-0 h-0.5 transition-all duration-1000 ease-in-out"
+        className={`${bgInverted} absolute left-0 top-0 h-0.5 transition-all duration-1000 ease-in-out`}
         style={{ width: `${mintState.progress * 100}%` }}
       ></div>
       <div className="flex flex-row items-center py-1 flex-grow">
@@ -147,7 +146,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
             openEmojiPicker(topic);
           }}
         >
-          <div className="aspect-square p-1 mr-2 background-passive-color rounded-full w-8 text-center">
+          <div className={`${bgPassive} aspect-square p-1 mr-2 rounded-full w-8 text-center`}>
             {topic.currentRevision.metadata.properties.emoji.native}
           </div>
         </div>

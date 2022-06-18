@@ -6,14 +6,15 @@ import Connect from 'src/components/Icons/Connect';
 import Upload from 'src/components/Icons/Upload';
 import useOutsideAlerter from 'src/hooks/useOutsideAlerter';
 import Graph from 'src/components/Icons/Graph';
-import { useAccount, useSigner } from 'wagmi';
+import { useSigner } from 'wagmi';
 import { useRouter } from 'next/router';
 import makeFormikForBaseNode, {
-  hasStagedRelations,
+  stageNodeRelations,
   unstageNodeRelations,
-  stageNodeRelations
+  hasStagedRelations
 } from 'src/lib/makeBaseNodeFormik';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { bg, bgHover } from 'src/utils/theme';
 
 const List = ({
   collection,
@@ -31,9 +32,9 @@ const List = ({
           node: item.node,
           shouldStash: !item.stashed
         })}
-        className="text-left flex flex-row items-center flex-grow"
+        className={`${bgHover} w-full text-left flex flex-row items-center flex-grow`}
       >
-        <p className="pl-1 font-semibold w-32 truncate py-1">
+        <p className={`pl-1 font-semibold w-32 truncate py-1`}>
           {emoji} {name}
         </p>
         {item.stashed && (
@@ -49,11 +50,11 @@ const Actions = ({
   canEdit,
   imageDidChange,
   allowConnect,
-  allowSettings
+  allowSettings,
+  reloadData,
 }) => {
   const router = useRouter();
   const { data: signer } = useSigner();
-
   const {
     openModal,
     closeModal
@@ -66,10 +67,7 @@ const Actions = ({
     subgraphPickerOpen,
     setSubgraphPickerOpen
   ] = useState(false);
-
   const [focus, setFocus] = useState(null);
-  const [publishStep, setPublishStep] = useState(null);
-  const [publishError, setPublishError] = useState(null);
 
   const pickerRef = useRef(null);
   useOutsideAlerter(pickerRef, () => {
@@ -81,81 +79,65 @@ const Actions = ({
     accountData,
     "Subgraph",
     ((focus && focus.node) || node),
-    router.reload,
-    setPublishError,
-    setPublishStep
   );
 
-  //useEffect(() => {
-  //  console.log("BING");
-  //  if (
-  //    formik.values.__node__.tokenId ===
-  //    node.tokenId
-  //  ) return;
-
-  //  if (
-  //    focus?.shouldStash &&
-  //    !hasStagedRelations(
-  //      formik,
-  //      'incoming',
-  //      [node],
-  //      'STASHED_BY'
-  //    )
-  //  ) {
-  //    stageNodeRelations(
-  //      formik,
-  //      'incoming',
-  //      [node],
-  //      'STASHED_BY'
-  //    );
-  //  }
-
-  //  if (
-  //    !focus?.shouldStash &&
-  //    hasStagedRelations(
-  //      formik,
-  //      'incoming',
-  //      [node],
-  //      'STASHED_BY'
-  //    )
-  //  ) {
-  //    unstageNodeRelations(
-  //      formik,
-  //      'incoming',
-  //      [node],
-  //      'STASHED_BY'
-  //    );
-  //  }
-
-
-  //  if (publishStep === null) {
-  //    console.log("WILL");
-  //    setPublishStep("FEES");
-  //  }
-  //}, [formik]);
-
   useEffect(() => {
-    if (!publishStep) return;
+    if (!formik?.status) {
+      closeModal();
+      return;
+    }
+    const { status, tx } = formik.status;
+    if (status === 'COMPLETE') {
+      setFocus(null);
+      reloadData();
+      return;
+    }
     openModal({
       type: ModalType.PUBLISHER,
-      meta: {
-        publishStep,
-        publishError,
-        formik,
-        setPublishStep: (step) => {
-          if (step === null) {
-            setFocus({ node, operation: null });
-            //setPublishStep(step);
-          }
-        }
-      }
+      meta: { formik }
     });
-  }, [publishStep, publishError])
+  }, [formik?.status]);
 
+  useEffect(() => {
+    if (!focus) return;
+    if (formik.values.__node__.tokenId === node.tokenId) return;
+
+    if (focus.shouldStash) {
+      stageNodeRelations(
+        formik,
+        'incoming',
+        [node],
+        'STASHED_BY',
+        false
+      );
+    } else {
+      unstageNodeRelations(
+        formik,
+        'incoming',
+        [node],
+        'STASHED_BY',
+      );
+    }
+  }, [focus?.shouldStash, formik.values.__node__]);
+
+  useEffect(() => {
+    if (formik.values.__node__.tokenId === node.tokenId) return;
+    const incomingConnectionsDidChange =
+      JSON.stringify(formik.values.incoming) !==
+      JSON.stringify(formik.values.__node__.incoming);
+    if (incomingConnectionsDidChange) formik.handleSubmit();
+  }, [formik.values.incoming]);
+
+  const belongsTo =
+    node.outgoing.find(e => e.name === "BELONGS_TO");
   const subgraphs = Object.values(
     accountNodesByCollectionType['Subgraph']
   ).filter(item => {
+    // Don't allow subgraphs to stash themselves
     return item.node.tokenId !== node.tokenId;
+  }).filter(item => {
+    // Don't allow subgraphs to stash documents that belong to them
+    return item.node.tokenId !== belongsTo?.tokenId;
   }).map(item => {
     return {
       ...item,
@@ -171,17 +153,15 @@ const Actions = ({
   });
 
   return (
-    <div className="flex relative">
+    <div className="flex relative px-2 md:px-0">
       {canEdit && (
         <label
-          className="cursor-pointer opacity-50 hover:opacity-100 scale-75 pr-1"
-        >
+          className="cursor-pointer opacity-50 hover:opacity-100 scale-75 pr-1">
           <input
             style={{display: 'none'}}
             type="file"
             onChange={imageDidChange}
-            accept="image/*"
-          />
+            accept="image/*" />
           <Upload />
         </label>
       )}
@@ -189,8 +169,7 @@ const Actions = ({
       {allowConnect && (
         <div
           className="cursor-pointer opacity-50 hover:opacity-100 scale-75"
-          onClick={() => setSubgraphPickerOpen(true)}
-        >
+          onClick={() => setSubgraphPickerOpen(true)}>
           <Connect />
         </div>
       )}
@@ -198,8 +177,7 @@ const Actions = ({
       {subgraphPickerOpen && (
         <div
           ref={pickerRef}
-          className="w-fit border border-color absolute top-6 right-0 shadow-lg rounded background-color z-10"
-        >
+          className={`${bg} w-fit border border-color absolute top-6 right-0 shadow-lg rounded z-10`}>
           {subgraphs.length === 0 && (
             <div className="flex flex-col items-center p-2">
               <Graph />
@@ -220,9 +198,8 @@ const Actions = ({
           className="cursor-pointer opacity-50 hover:opacity-100"
           onClick={() => openModal({
             type: ModalType.NODE_SETTINGS,
-            meta: { canEdit, node }
-          })}
-        >
+            meta: { canEdit, node, reloadData }
+          })}>
           <VerticalDots />
         </div>
       )}

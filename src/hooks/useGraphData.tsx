@@ -18,6 +18,7 @@ function GraphProvider({ children }) {
     useState<boolean>(false);
   const [accountData, setAccountData] =
     useState<Account | null>(null);
+
   const [shallowNodesLoading, setShallowNodesLoading] =
     useState(null);
   const [shallowNodes, setShallowNodes] =
@@ -39,6 +40,7 @@ function GraphProvider({ children }) {
       const subscription = await Client
         .makeShallowNodesSubscription()
       subscription.subscribe(async ({ data, loading }) => {
+        console.log("STARTED LOADING SHALLOW NODES");
         setShallowNodesLoading(loading);
         const withRevisions = data.baseNodes.map(async (node: BaseNode) => {
           if (!node) return null;
@@ -120,9 +122,33 @@ function GraphProvider({ children }) {
       }, accountNodesByCollectionType);
   }
 
-  const canEditNode = tokenId => {
-    return accountData?.roles.find(r => {
-      return r.tokenId === tokenId && r.role !== null;
+  const canEditNode = baseNode => {
+    const directPermissions =
+      !!accountData?.roles.find(r => {
+        return r.tokenId === baseNode.tokenId && r.role !== null;
+      });
+    if (directPermissions) return true;
+
+    return baseNode.outgoing.some(e => {
+      if (e.name !== '_DELEGATES_PERMISSIONS_TO') return false;
+      return !!accountData?.roles.find(r => {
+        return r.tokenId === e.tokenId && r.role !== null;
+      });
+    });
+  };
+
+  const canAdministerNode = baseNode => {
+    const directPermissions =
+      !!accountData?.roles.find(r => {
+        return r.tokenId === baseNode.tokenId && r.role === '0';
+      });
+    if (directPermissions) return true;
+
+    return baseNode.outgoing.some(e => {
+      if (e.name !== '_DELEGATES_PERMISSIONS_TO') return false;
+      return !!accountData?.roles.find(r => {
+        return r.tokenId === e.tokenId && r.role === '0';
+      });
     });
   };
 
@@ -138,7 +164,8 @@ function GraphProvider({ children }) {
       purgeCache,
       revisionData,
       loadRevisionsForBaseNode,
-      canEditNode
+      canEditNode,
+      canAdministerNode
     }}>
       {children}
     </Provider>

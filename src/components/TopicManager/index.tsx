@@ -1,22 +1,12 @@
 import { FC, useContext } from 'react';
 import { ModalContext, ModalType } from 'src/hooks/useModal';
-import { GraphContext } from 'src/hooks/useGraphData';
-import Modal from 'react-modal';
-import Button from 'src/components/Button';
-import { useState } from 'react';
 import Link from 'next/link';
-import { WithContext as ReactTags } from 'src/components/Tags';
-import { Picker, emojiIndex, EmojiData, BaseEmoji } from 'emoji-mart';
-import Add from 'src/components/Icons/Add';
 import TopicTile from 'src/components/TopicTile';
-import { BaseNode } from 'src/types';
-import { useSigner } from 'wagmi';
 import slugifyNode from 'src/utils/slugifyNode';
 import {
   getRelatedNodes,
   stageNodeRelations
 } from 'src/lib/makeBaseNodeFormik';
-import Tooltip from 'src/components/Tooltip';
 
 type Props = {
   readOnly: boolean;
@@ -47,9 +37,7 @@ const TopicManager: FC<Props> = ({
         return (
           <Link key={t.tokenId} href={`/${slugifyNode(t)}`}>
             <a className="inline-block pb-2">
-              <Tooltip message={t.currentRevision.metadata.description || 'No Description'}>
-                <TopicTile key={t.tokenId} topic={t} />
-              </Tooltip>
+              <TopicTile key={t.tokenId} topic={t} />
             </a>
           </Link>
         );
@@ -65,7 +53,10 @@ const TopicManager: FC<Props> = ({
               setTopics
             }
           })}>
-          <p className="inline-block border-2 border-color background-color border-dashed rounded-full text-xs px-2 py-1 font-medium">+ Topic</p>
+          <p
+            className={`inline-block text-xs px-1 opacity-60 hover:opacity-100`}>
+            + Topic
+          </p>
         </div>
       )}
     </div>

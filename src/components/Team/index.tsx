@@ -2,10 +2,9 @@ import { FC } from 'react';
 import { useRouter } from 'next/router';
 import { Account } from 'src/types';
 import Tile from 'src/components/Tile';
-import { useSigner, useConnect, useAccount } from 'wagmi';
+import { useSigner, useAccount } from 'wagmi';
 import { useFormik, FormikProps } from 'formik';
 import * as yup from 'yup';
-import HorizontalDots from 'src/components/Icons/HorizontalDots';
 import Reflection from 'src/components/Icons/Reflection';
 import Button from 'src/components/Button';
 import dynamic from 'next/dynamic';
@@ -15,6 +14,7 @@ import Welding from 'src/lib/Welding';
 import NProgress from 'nprogress';
 import toast from 'react-hot-toast';
 import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { bg } from 'src/utils/theme';
 
 const Address = dynamic(() => import('src/components/Address'), {
   ssr: false
@@ -29,9 +29,16 @@ enum Roles {
 type Props = {
   node: BaseNode;
   currentAddress: string;
+  setLocked: Function;
+  reloadData: Function;
 };
 
-const Team: FC<Props> = ({ node, currentAddress }) => {
+const Team: FC<Props> = ({
+  node,
+  currentAddress,
+  setLocked,
+  reloadData
+}) => {
   const router = useRouter();
   const { data: account } = useAccount();
   const { data: signer } = useSigner();
@@ -69,9 +76,9 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
       const { role, address } = values;
 
       try {
+        setLocked(true);
         NProgress.start();
         toastId = toast.loading('Requesting signature...', {
-          position: 'bottom-right',
           className: 'toast'
         });
         let tx = await Welding.Nodes.connect(signer).grantRole(
@@ -89,6 +96,7 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
           id: toastId
         });
         await Client.fastForward(tx.blockNumber);
+        await reloadData();
         toast.success('Success!', {
           id: toastId
         });
@@ -98,6 +106,7 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
         });
         console.log(e);
       } finally {
+        setLocked(false);
         NProgress.done();
       }
     },
@@ -125,9 +134,9 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
       const { toTokenId } = values;
 
       try {
+        setLocked(true);
         NProgress.start();
         toastId = toast.loading('Requesting signature...', {
-          //position: 'bottom-right',
           className: 'toast'
         });
         let tx = await Welding.Nodes.connect(signer).delegatePermissions(
@@ -144,6 +153,7 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
           id: toastId
         });
         await Client.fastForward(tx.blockNumber);
+        await reloadData();
         toast.success('Success!', {
           id: toastId
         });
@@ -153,6 +163,7 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
         });
         console.log(e);
       } finally {
+        setLocked(false);
         NProgress.done();
       }
     },
@@ -173,9 +184,19 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
 
     let toastId;
     try {
+      if (
+        node.admins.length === 1 &&
+        role === 'Admin'
+      ) {
+        toast.error("Can't remove last admin", {
+          className: 'toast'
+        });
+        return;
+      }
+
+      setLocked(true);
       NProgress.start();
       toastId = toast.loading('Requesting signature...', {
-        position: 'bottom-right',
         className: 'toast'
       });
 
@@ -203,16 +224,18 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
       });
 
       await Client.fastForward(tx.blockNumber);
+      await reloadData();
       toast.success('Success!', {
         id: toastId
       });
-      return router.reload();
     } catch(e) {
       NProgress.done();
       toast.error('An error occured.', {
         id: toastId
       });
       console.log(e);
+    } finally {
+      setLocked(false);
     }
   };
 
@@ -223,9 +246,9 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
 
     let toastId;
     try {
+      setLocked(true);
       NProgress.start();
       toastId = toast.loading('Requesting signature...', {
-        //position: 'bottom-right',
         className: 'toast'
       });
 
@@ -244,16 +267,18 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
       });
 
       await Client.fastForward(tx.blockNumber);
+      await reloadData();
       toast.success('Success!', {
         id: toastId
       });
-      return router.reload();
     } catch(e) {
       NProgress.done();
       toast.error('An error occured.', {
         id: toastId
       });
       console.log(e);
+    } finally {
+      setLocked(false);
     }
   };
 
@@ -333,7 +358,7 @@ const Team: FC<Props> = ({ node, currentAddress }) => {
               <td className="text-right pr-2">
                 <select
                   name="role"
-                  className="background-color text-xs mr-2"
+                  className={`${bg} text-xs mr-2`}
                   value={formik.values.role}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}

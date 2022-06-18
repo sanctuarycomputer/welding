@@ -10,6 +10,7 @@ import Button from 'src/components/Button';
 import ModalHeader from 'src/components/Modals/ModalHeader';
 import Spinner from 'src/components/Icons/Spinner';
 import Warning from 'src/components/Icons/Warning';
+import { bgPassive, text, textPassive } from 'src/utils/theme';
 
 export type PublisherMeta = {
   formik: BaseNode;
@@ -41,7 +42,7 @@ const PublisherStep = ({
   return (
     <div>
       <p className="flex items-center text-base">
-        <span className={`text-3xl pr-2 ${active ? 'text-color' : 'text-passive-color'}`}>{icon}</span> {title}
+        <span className={`text-3xl pr-2 ${active ? text : textPassive}`}>{icon}</span> {title}
       </p>
       {active && (
         <div
@@ -90,15 +91,8 @@ const NodeTile = ({
   }
 
   return (
-    <p
-      className="whitespace-nowrap border rounded-full p-1 border-color mb-1"
-    >
-      <span>
-        {emoji}
-      </span>
-      <span className="ml-1">
-        {name}
-      </span>
+    <p className="py-1 px-2 whitespace-nowrap border rounded-full border-color">
+      {emoji} {name}
     </p>
   );
 };
@@ -107,9 +101,8 @@ const EdgeTile = ({
   edge
 }) => {
   return (
-    <p
-      className="background-passive-color rounded-sm whitespace-nowrap p-1"
-    >{edge.name.replace(/_/g, ' ')}
+    <p className={`${bgPassive} rounded-full whitespace-nowrap px-2 py-1`}>
+      {edge.name.replace(/_/g, ' ')}
     </p>
   );
 };
@@ -174,6 +167,7 @@ const ConnectionTile = ({
 const ConnectionDiff = ({
   formik,
   incomingDiff,
+  resolve
 }) => {
   const { accountData } = useContext(GraphContext);
   const node = formik.values.__node__;
@@ -248,18 +242,14 @@ const ConnectionDiff = ({
 
       <div className="border-t border-color pt-3 text-right flex justify-between items-center">
         {removedConnections.length > 0 ? (
-          <p className="text-error-color">
+          <p className="text-red-500">
             {removedConnections.length}x connection{removedConnections.length > 1 ? 's' : ''} removed
           </p>
         ) : (<p>No connections removed</p>)}
 
         <Button
           label="Confirm"
-          onClick={formik.handleSubmit}
-          disabled={
-            formik.isSubmitting ||
-            !(formik.isValid && !formik.isDirty)
-          }
+          onClick={resolve}
         />
       </div>
     </div>
@@ -273,7 +263,12 @@ const Publisher: FC<Props> = ({
     formik
   }
 }) => {
-  const { status, error } = formik.status || {};
+  const {
+    status,
+    error,
+    resolve,
+    reject
+  } = formik.status || {};
 
   const attemptClose = () => {
     if (
@@ -281,9 +276,9 @@ const Publisher: FC<Props> = ({
       status === PublishStep.FEES
     ) {
       formik.setStatus(null);
+      if (reject) reject(new Error('user_rejected'));
       return onRequestClose();
     };
-
     return alert("Currently publishing, please wait.");
   };
 
@@ -295,6 +290,8 @@ const Publisher: FC<Props> = ({
     Object.values(incomingDiff.updated).length > 0 ||
     Object.values(incomingDiff.deleted).length > 0;
 
+  console.log(incomingDiff, node.incoming, formik.values.incoming);
+
   return (
     <Modal
       isOpen={true}
@@ -303,7 +300,7 @@ const Publisher: FC<Props> = ({
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           title="Publishing Node"
-          hint="Publish updates to this Node on IPFS & the Blockchain"
+          hint="Publish on-chain updates to this node"
           onClickClose={attemptClose}
         />
         <div className="p-4">
@@ -319,6 +316,7 @@ const Publisher: FC<Props> = ({
               <ConnectionDiff
                 formik={formik}
                 incomingDiff={incomingDiff}
+                resolve={resolve}
               />
             </PublisherStep>
           )}

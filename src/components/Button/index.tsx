@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { bg } from 'src/utils/theme';
 
 type Props = {
   label: string;
@@ -15,7 +16,7 @@ const Button: FC<Props> = ({
 }) => {
   return (
     <button
-      className={`Button ${className} background-color`}
+      className={`Button ${className} ${bg}`}
       disabled={disabled}
       onClick={() => onClick()}
     >

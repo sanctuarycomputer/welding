@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Client from 'src/lib/Client';
 import makeFormikForBaseNode from 'src/lib/makeBaseNodeFormik';
 import useEditableImage from 'src/hooks/useEditableImage';
@@ -15,17 +16,32 @@ export default function withPublisher<T extends WithPublisherProps = WithPublish
   WrappedComponent: React.ComponentType<T>
 ) {
   const ComponentWithPublisher = (props: Omit<T, keyof WithPublisherProps>) => {
+    const router = useRouter();
     const { data: signer } = useSigner();
-    const { accountData } = useContext(GraphContext);
+    const {
+      accountData,
+      loadAccountData
+    } = useContext(GraphContext);
     const { openModal, closeModal } = useContext(ModalContext);
 
     const [node, setNode] = useState(props.node);
-    const reloadNode = async () => {
-      const reloadedNode =
-        await Client.fetchBaseNodeByTokenId(node.tokenId);
-      setNode(reloadedNode);
-      formik.setStatus(null);
+    const reloadData = async (tx) => {
+      loadAccountData(accountData?.address);
+      if (node.tokenId.startsWith('-')) {
+        const transferEvent =
+          tx?.events.find(e => e.event === "Transfer");
+        if (transferEvent) {
+          await router.push(
+            `/${transferEvent.args.tokenId.toString()}`
+          );
+        } else {
+          await router.reload();
+        }
+      } else {
+        setNode(await Client.fetchBaseNodeByTokenId(node.tokenId));
+      }
       NProgress.done();
+      formik.setStatus(null);
     };
 
     const formik =
@@ -42,9 +58,9 @@ export default function withPublisher<T extends WithPublisherProps = WithPublish
         closeModal();
         return;
       }
-      const { status } = formik.status;
+      const { status, tx } = formik.status;
       if (status === 'COMPLETE') {
-        reloadNode();
+        reloadData(tx);
         return;
       }
       openModal({
@@ -59,6 +75,7 @@ export default function withPublisher<T extends WithPublisherProps = WithPublish
         imageDidChange={imageDidChange}
         imagePreview={imagePreview}
         clearImage={clearImage}
+        reloadData={reloadData}
       {...(props as T)} />
     );
   };
