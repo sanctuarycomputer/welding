@@ -1,16 +1,16 @@
-import { FC, useEffect, useContext, useState } from 'react';
-import { GraphContext } from 'src/hooks/useGraphData';
-import { ExchangeRateContext } from 'src/hooks/useExchangeRates';
-import { detailedDiff } from 'deep-object-diff';
-import { formatUnits } from 'ethers/lib/utils';
-import { useNetwork } from 'wagmi';
-import Modal from 'react-modal';
+import { FC, useEffect, useContext, useState } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
+import { ExchangeRateContext } from "src/hooks/useExchangeRates";
+import { detailedDiff } from "deep-object-diff";
+import { formatUnits } from "ethers/lib/utils";
+import { useNetwork } from "wagmi";
+import Modal from "react-modal";
 
-import Button from 'src/components/Button';
-import ModalHeader from 'src/components/Modals/ModalHeader';
-import Spinner from 'src/components/Icons/Spinner';
-import Warning from 'src/components/Icons/Warning';
-import { bgPassive, text, textPassive } from 'src/utils/theme';
+import Button from "src/components/Button";
+import ModalHeader from "src/components/Modals/ModalHeader";
+import Spinner from "src/components/Icons/Spinner";
+import Warning from "src/components/Icons/Warning";
+import { bgPassive, text, textPassive } from "src/utils/theme";
 
 export type PublisherMeta = {
   formik: BaseNode;
@@ -29,7 +29,7 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
   COMPLETE = "COMPLETE",
   ERROR = "ERROR",
-};
+}
 
 const PublisherStep = ({
   icon,
@@ -37,19 +37,22 @@ const PublisherStep = ({
   description,
   active,
   error,
-  children
+  children,
 }) => {
   return (
     <div>
       <p className="flex items-center text-base">
-        <span className={`text-3xl pr-2 ${active ? text : textPassive}`}>{icon}</span> {title}
+        <span className={`text-3xl pr-2 ${active ? text : textPassive}`}>
+          {icon}
+        </span>{" "}
+        {title}
       </p>
       {active && (
         <div
           className="border-l border-color my-2"
           style={{
-            marginLeft: '13px',
-            paddingLeft: '22px'
+            marginLeft: "13px",
+            paddingLeft: "22px",
           }}
         >
           <div className="border border-color rounded p-4 flex">
@@ -77,15 +80,13 @@ const PublisherStep = ({
   );
 };
 
-const NodeTile = ({
-  node
-}) => {
+const NodeTile = ({ node }) => {
   let name, emoji;
 
-  if ('__typename' in node) {
+  if ("__typename" in node) {
     name = node.currentRevision.metadata.name;
     emoji = node.currentRevision.metadata.properties.emoji.native;
-  } else if ('dirty' in node) {
+  } else if ("dirty" in node) {
     name = node.values.name;
     emoji = node.values.emoji.native;
   }
@@ -97,25 +98,17 @@ const NodeTile = ({
   );
 };
 
-const EdgeTile = ({
-  edge
-}) => {
+const EdgeTile = ({ edge }) => {
   return (
     <p className={`${bgPassive} rounded-full whitespace-nowrap px-2 py-1`}>
-      {edge.name.replace(/_/g, ' ')}
+      {edge.name.replace(/_/g, " ")}
     </p>
   );
 };
 
-const ConnectionTile = ({
-  to,
-  from,
-  edge,
-  prevConnected,
-  owned
-}) => {
+const ConnectionTile = ({ to, from, edge, prevConnected, owned }) => {
   const { activeChain } = useNetwork();
-  const symbol = activeChain?.nativeCurrency.symbol || '';
+  const symbol = activeChain?.nativeCurrency.symbol || "";
 
   const { exchangeRate } = useContext(ExchangeRateContext);
   const [USDEstimate, setUSDEstimate] = useState(null);
@@ -123,10 +116,7 @@ const ConnectionTile = ({
   useEffect(() => {
     if (from.fee && exchangeRate) {
       setUSDEstimate(
-        (
-          parseFloat(formatUnits(from.fee, "ether")) *
-          exchangeRate
-        ).toFixed(2)
+        (parseFloat(formatUnits(from.fee, "ether")) * exchangeRate).toFixed(2)
       );
     } else {
       setUSDEstimate(null);
@@ -147,91 +137,91 @@ const ConnectionTile = ({
         <NodeTile node={to} />
       </td>
 
-      <td className="text-right" style={{ width: '99%'}}>
+      <td className="text-right" style={{ width: "99%" }}>
         {prevConnected ? (
           <p>Prev. Connected ✓</p>
+        ) : from.fee === "0" || owned ? (
+          <p>No Fee ✓</p>
         ) : (
-          (from.fee === "0" || owned) ? (
-            <p>No Fee ✓</p>
-          ) : (
-            <p>
-              {formatUnits(from.fee, "ether")} {symbol} / {USDEstimate || '??'} USD
-            </p>
-          )
+          <p>
+            {formatUnits(from.fee, "ether")} {symbol} / {USDEstimate || "??"}{" "}
+            USD
+          </p>
         )}
       </td>
     </tr>
   );
 };
 
-const ConnectionDiff = ({
-  formik,
-  incomingDiff,
-  resolve
-}) => {
+const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
   const { accountData } = useContext(GraphContext);
   const node = formik.values.__node__;
 
   const addedConnections = Object.values(incomingDiff.added);
-  const toggledOnConnections =
-    Object.values(incomingDiff.updated).filter(d => d.active)
+  const toggledOnConnections = Object.values(incomingDiff.updated).filter(
+    (d) => d.active
+  );
   const removedConnections = [
     ...Object.values(incomingDiff.deleted),
-    ...Object.values(incomingDiff.updated).filter(d => !d.active)
+    ...Object.values(incomingDiff.updated).filter((d) => !d.active),
   ];
 
   return (
     <div className="w-full">
-      {(addedConnections.length > 0 || toggledOnConnections.length > 0) ? (
+      {addedConnections.length > 0 || toggledOnConnections.length > 0 ? (
         <table className="w-full mb-2">
           <tbody>
-          {Object.keys(incomingDiff.added).map(key => {
-            if (!incomingDiff.added[key].active) return null;
-            const edge = formik.values.incoming[key];
-            if (!edge || !edge.active) return null;
-            const n = formik.values.related.find((n: BaseNode) =>
-              edge.tokenId === n.tokenId
-            );
-            if (!n) return null;
-            const owned = accountData && !!accountData.related.find(r => {
-              return r.tokenId === n.tokenId;
-            });
+            {Object.keys(incomingDiff.added).map((key) => {
+              if (!incomingDiff.added[key].active) return null;
+              const edge = formik.values.incoming[key];
+              if (!edge || !edge.active) return null;
+              const n = formik.values.related.find(
+                (n: BaseNode) => edge.tokenId === n.tokenId
+              );
+              if (!n) return null;
+              const owned =
+                accountData &&
+                !!accountData.related.find((r) => {
+                  return r.tokenId === n.tokenId;
+                });
 
-            return (
-              <ConnectionTile
-                key={`in-${edge.tokenId}-${edge.name}`}
-                to={formik}
-                from={n}
-                edge={edge}
-                prevConnected={false}
-                owned={owned}
-              />
-            );
-          })}
+              return (
+                <ConnectionTile
+                  key={`in-${edge.tokenId}-${edge.name}`}
+                  to={formik}
+                  from={n}
+                  edge={edge}
+                  prevConnected={false}
+                  owned={owned}
+                />
+              );
+            })}
 
-          {Object.keys(incomingDiff.updated).map((key) => {
-            if (!incomingDiff.updated[key].active) return null;
-            const edge = formik.values.incoming[key];
-            if (!edge || !edge.active) return null;
-            const n = formik.values.related.find((n: BaseNode) =>
-              edge.tokenId === n.tokenId
-            );
-            if (!n) return null;
-            const owned = accountData && !!accountData.related.find(r => {
-              return r.tokenId === n.tokenId;
-            });
+            {Object.keys(incomingDiff.updated).map((key) => {
+              if (!incomingDiff.updated[key].active) return null;
+              const edge = formik.values.incoming[key];
+              if (!edge || !edge.active) return null;
+              const n = formik.values.related.find(
+                (n: BaseNode) => edge.tokenId === n.tokenId
+              );
+              if (!n) return null;
+              const owned =
+                accountData &&
+                !!accountData.related.find((r) => {
+                  return r.tokenId === n.tokenId;
+                });
 
-            return (
-              <ConnectionTile
-                key={`in-${edge.tokenId}-${edge.name}`}
-                to={node}
-                from={n}
-                edge={edge}
-                prevConnected
-                owned={owned}
-              />
-            );
-          })}
+              return (
+                <ConnectionTile
+                  key={`in-${edge.tokenId}-${edge.name}`}
+                  to={node}
+                  from={n}
+                  edge={edge}
+                  prevConnected
+                  owned={owned}
+                />
+              );
+            })}
           </tbody>
         </table>
       ) : (
@@ -243,48 +233,33 @@ const ConnectionDiff = ({
       <div className="border-t border-color pt-3 text-right flex justify-between items-center">
         {removedConnections.length > 0 ? (
           <p className="text-red-500">
-            {removedConnections.length}x connection{removedConnections.length > 1 ? 's' : ''} removed
+            {removedConnections.length}x connection
+            {removedConnections.length > 1 ? "s" : ""} removed
           </p>
-        ) : (<p>No connections removed</p>)}
+        ) : (
+          <p>No connections removed</p>
+        )}
 
-        <Button
-          label="Confirm"
-          onClick={resolve}
-        />
+        <Button label="Confirm" onClick={resolve} />
       </div>
     </div>
   );
-
 };
 
-const Publisher: FC<Props> = ({
-  onRequestClose,
-  meta: {
-    formik
-  }
-}) => {
-  const {
-    status,
-    error,
-    resolve,
-    reject
-  } = formik.status || {};
+const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
+  const { status, error, resolve, reject } = formik.status || {};
 
   const attemptClose = () => {
-    if (
-      error ||
-      status === PublishStep.FEES
-    ) {
+    if (error || status === PublishStep.FEES) {
       formik.setStatus(null);
-      if (reject) reject(new Error('user_rejected'));
+      if (reject) reject(new Error("user_rejected"));
       return onRequestClose();
-    };
+    }
     return alert("Currently publishing, please wait.");
   };
 
   const node = formik.values.__node__;
-  const incomingDiff =
-    detailedDiff(node.incoming, formik.values.incoming);
+  const incomingDiff = detailedDiff(node.incoming, formik.values.incoming);
   const hasConnectionChanges =
     Object.values(incomingDiff.added).length > 0 ||
     Object.values(incomingDiff.updated).length > 0 ||
@@ -293,10 +268,7 @@ const Publisher: FC<Props> = ({
   console.log(incomingDiff, node.incoming, formik.values.incoming);
 
   return (
-    <Modal
-      isOpen={true}
-      onRequestClose={attemptClose}
-    >
+    <Modal isOpen={true} onRequestClose={attemptClose}>
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           title="Publishing Node"
@@ -304,7 +276,6 @@ const Publisher: FC<Props> = ({
           onClickClose={attemptClose}
         />
         <div className="p-4">
-
           {hasConnectionChanges && (
             <PublisherStep
               icon="①"
@@ -338,7 +309,7 @@ const Publisher: FC<Props> = ({
           />
 
           <PublisherStep
-            icon={hasConnectionChanges ? "④" : "③" }
+            icon={hasConnectionChanges ? "④" : "③"}
             title="Processing Transaction on the Blockchain"
             description="Transaction processing. This usually takes ~30 seconds or so."
             active={status === PublishStep.TRANSACT}
@@ -346,7 +317,7 @@ const Publisher: FC<Props> = ({
           />
 
           <PublisherStep
-            icon={hasConnectionChanges ? "⑤" : "④" }
+            icon={hasConnectionChanges ? "⑤" : "④"}
             title="Confirming & Caching Transaction"
             description="We're caching your new NFT metadata for fast access."
             active={status === PublishStep.CONFIRM}

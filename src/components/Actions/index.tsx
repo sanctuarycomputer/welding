@@ -1,47 +1,42 @@
-import { useContext, useState, useEffect, useRef } from 'react';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
-import { GraphContext } from 'src/hooks/useGraphData';
-import VerticalDots from 'src/components/Icons/VerticalDots';
-import Connect from 'src/components/Icons/Connect';
-import Upload from 'src/components/Icons/Upload';
-import useOutsideAlerter from 'src/hooks/useOutsideAlerter';
-import Graph from 'src/components/Icons/Graph';
-import { useSigner } from 'wagmi';
-import { useRouter } from 'next/router';
+import { useContext, useState, useEffect, useRef } from "react";
+import { ModalContext, ModalType } from "src/hooks/useModal";
+import { GraphContext } from "src/hooks/useGraphData";
+import VerticalDots from "src/components/Icons/VerticalDots";
+import Connect from "src/components/Icons/Connect";
+import Upload from "src/components/Icons/Upload";
+import useOutsideAlerter from "src/hooks/useOutsideAlerter";
+import Graph from "src/components/Icons/Graph";
+import { useSigner } from "wagmi";
+import { useRouter } from "next/router";
 import makeFormikForBaseNode, {
   stageNodeRelations,
   unstageNodeRelations,
-  hasStagedRelations
-} from 'src/lib/makeBaseNodeFormik';
-import getRelatedNodes from 'src/utils/getRelatedNodes';
-import { bg, bgHover } from 'src/utils/theme';
+  hasStagedRelations,
+} from "src/lib/makeBaseNodeFormik";
+import getRelatedNodes from "src/utils/getRelatedNodes";
+import { bg, bgHover } from "src/utils/theme";
 
-const List = ({
-  collection,
-  didPick
-}) => {
-  return collection.map(item => {
-    const name =
-      item.node.currentRevision.metadata.name;
-    const emoji =
-      item.node.currentRevision.metadata.properties.emoji.native;
+const List = ({ collection, didPick }) => {
+  return collection.map((item) => {
+    const name = item.node.currentRevision.metadata.name;
+    const emoji = item.node.currentRevision.metadata.properties.emoji.native;
     return (
       <button
         key={item.node.tokenId}
-        onClick={() => didPick({
-          node: item.node,
-          shouldStash: !item.stashed
-        })}
+        onClick={() =>
+          didPick({
+            node: item.node,
+            shouldStash: !item.stashed,
+          })
+        }
         className={`${bgHover} w-full text-left flex flex-row items-center flex-grow`}
       >
         <p className={`pl-1 font-semibold w-32 truncate py-1`}>
           {emoji} {name}
         </p>
-        {item.stashed && (
-          <p className="pr-2">✓</p>
-        )}
+        {item.stashed && <p className="pr-2">✓</p>}
       </button>
-    )
+    );
   });
 };
 
@@ -55,18 +50,10 @@ const Actions = ({
 }) => {
   const router = useRouter();
   const { data: signer } = useSigner();
-  const {
-    openModal,
-    closeModal
-  } = useContext(ModalContext);
-  const {
-    accountData,
-    accountNodesByCollectionType
-  } = useContext(GraphContext);
-  const [
-    subgraphPickerOpen,
-    setSubgraphPickerOpen
-  ] = useState(false);
+  const { openModal, closeModal } = useContext(ModalContext);
+  const { accountData, accountNodesByCollectionType } =
+    useContext(GraphContext);
+  const [subgraphPickerOpen, setSubgraphPickerOpen] = useState(false);
   const [focus, setFocus] = useState(null);
 
   const pickerRef = useRef(null);
@@ -78,7 +65,7 @@ const Actions = ({
     signer,
     accountData,
     "Subgraph",
-    ((focus && focus.node) || node),
+    (focus && focus.node) || node
   );
 
   useEffect(() => {
@@ -87,14 +74,14 @@ const Actions = ({
       return;
     }
     const { status, tx } = formik.status;
-    if (status === 'COMPLETE') {
+    if (status === "COMPLETE") {
       setFocus(null);
       reloadData();
       return;
     }
     openModal({
       type: ModalType.PUBLISHER,
-      meta: { formik }
+      meta: { formik },
     });
   }, [formik?.status]);
 
@@ -103,20 +90,9 @@ const Actions = ({
     if (formik.values.__node__.tokenId === node.tokenId) return;
 
     if (focus.shouldStash) {
-      stageNodeRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY',
-        false
-      );
+      stageNodeRelations(formik, "incoming", [node], "STASHED_BY", false);
     } else {
-      unstageNodeRelations(
-        formik,
-        'incoming',
-        [node],
-        'STASHED_BY',
-      );
+      unstageNodeRelations(formik, "incoming", [node], "STASHED_BY");
     }
   }, [focus?.shouldStash, formik.values.__node__]);
 
@@ -128,40 +104,40 @@ const Actions = ({
     if (incomingConnectionsDidChange) formik.handleSubmit();
   }, [formik.values.incoming]);
 
-  const belongsTo =
-    node.outgoing.find(e => e.name === "BELONGS_TO");
-  const subgraphs = Object.values(
-    accountNodesByCollectionType['Subgraph']
-  ).filter(item => {
-    // Don't allow subgraphs to stash themselves
-    return item.node.tokenId !== node.tokenId;
-  }).filter(item => {
-    // Don't allow subgraphs to stash documents that belong to them
-    return item.node.tokenId !== belongsTo?.tokenId;
-  }).map(item => {
-    return {
-      ...item,
-      stashed: !!getRelatedNodes(
-        node,
-        'outgoing',
-        'Subgraph',
-        'STASHED_BY'
-      ).find(n => {
-        return n.tokenId === item.node.tokenId;
-      })
-    }
-  });
+  const belongsTo = node.outgoing.find((e) => e.name === "BELONGS_TO");
+  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"])
+    .filter((item) => {
+      // Don't allow subgraphs to stash themselves
+      return item.node.tokenId !== node.tokenId;
+    })
+    .filter((item) => {
+      // Don't allow subgraphs to stash documents that belong to them
+      return item.node.tokenId !== belongsTo?.tokenId;
+    })
+    .map((item) => {
+      return {
+        ...item,
+        stashed: !!getRelatedNodes(
+          node,
+          "outgoing",
+          "Subgraph",
+          "STASHED_BY"
+        ).find((n) => {
+          return n.tokenId === item.node.tokenId;
+        }),
+      };
+    });
 
   return (
     <div className="flex relative px-2 md:px-0">
       {canEdit && (
-        <label
-          className="cursor-pointer opacity-50 hover:opacity-100 scale-75 pr-1">
+        <label className="cursor-pointer opacity-50 hover:opacity-100 scale-75 pr-1">
           <input
-            style={{display: 'none'}}
+            style={{ display: "none" }}
             type="file"
             onChange={imageDidChange}
-            accept="image/*" />
+            accept="image/*"
+          />
           <Upload />
         </label>
       )}
@@ -169,7 +145,8 @@ const Actions = ({
       {allowConnect && (
         <div
           className="cursor-pointer opacity-50 hover:opacity-100 scale-75"
-          onClick={() => setSubgraphPickerOpen(true)}>
+          onClick={() => setSubgraphPickerOpen(true)}
+        >
           <Connect />
         </div>
       )}
@@ -177,29 +154,28 @@ const Actions = ({
       {subgraphPickerOpen && (
         <div
           ref={pickerRef}
-          className={`${bg} w-fit border border-color absolute top-6 right-0 shadow-lg rounded z-10`}>
+          className={`${bg} w-fit border border-color absolute top-6 right-0 shadow-lg rounded z-10`}
+        >
           {subgraphs.length === 0 && (
             <div className="flex flex-col items-center p-2">
               <Graph />
-              <p className="pt-1 whitespace-nowrap">
-                No subgraphs.
-              </p>
+              <p className="pt-1 whitespace-nowrap">No subgraphs.</p>
             </div>
           )}
-          <List
-            collection={subgraphs}
-            didPick={setFocus}
-          />
+          <List collection={subgraphs} didPick={setFocus} />
         </div>
       )}
 
       {allowSettings && (
         <div
           className="cursor-pointer opacity-50 hover:opacity-100"
-          onClick={() => openModal({
-            type: ModalType.NODE_SETTINGS,
-            meta: { canEdit, node, reloadData }
-          })}>
+          onClick={() =>
+            openModal({
+              type: ModalType.NODE_SETTINGS,
+              meta: { canEdit, node, reloadData },
+            })
+          }
+        >
           <VerticalDots />
         </div>
       )}

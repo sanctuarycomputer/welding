@@ -1,12 +1,12 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import Welding from 'src/lib/Welding';
-import neo4j from 'neo4j-driver';
+import type { NextApiRequest, NextApiResponse } from "next";
+import Welding from "src/lib/Welding";
+import neo4j from "neo4j-driver";
 
 const driver = neo4j.driver(
-  process.env.NEO4J_URI || '',
+  process.env.NEO4J_URI || "",
   neo4j.auth.basic(
-    process.env.NEO4J_USERNAME || '',
-    process.env.NEO4J_PASSWORD || '',
+    process.env.NEO4J_USERNAME || "",
+    process.env.NEO4J_PASSWORD || ""
   )
 );
 
@@ -17,9 +17,8 @@ function capitalizeFirstLetter(string) {
 const merge = async (e, session) => {
   const { blockNumber, event, args } = e;
   switch (event) {
-    case 'Mint': {
-      let q =
-         `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "Mint": {
+      let q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
           SET n :${capitalizeFirstLetter(args.label)}
@@ -32,11 +31,12 @@ const merge = async (e, session) => {
 
       q = args.incomingEdges.reduce((acc, edge) => {
         const index = args.incomingEdges.indexOf(edge);
-        acc +=
-          `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+        acc += `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET i${index}.fee = '0'
-           MERGE (i${index})-[ri${index}:${edge.name} {pivotTokenId: $tokenId}]->(n)
+           MERGE (i${index})-[ri${index}:${
+          edge.name
+        } {pivotTokenId: $tokenId}]->(n)
              SET ri${index}.active = true
            `;
         return acc;
@@ -44,29 +44,31 @@ const merge = async (e, session) => {
 
       q = args.outgoingEdges.reduce((acc, edge) => {
         const index = args.outgoingEdges.indexOf(edge);
-        acc +=
-          `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+        acc += `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET o${index}.fee = '0'
-           MERGE (n)-[ro${index}:${edge.name} {pivotTokenId: $tokenId}]->(o${index})
+           MERGE (n)-[ro${index}:${
+          edge.name
+        } {pivotTokenId: $tokenId}]->(o${index})
              SET ro${index}.active = true
            `;
         return acc;
       }, q);
 
-      await session.writeTransaction(tx => tx.run(q, {
-        tokenId: args.tokenId.toString(),
-        hash: args.hash,
-        block: e.blockNumber,
-        sender: args.sender
-      }));
+      await session.writeTransaction((tx) =>
+        tx.run(q, {
+          tokenId: args.tokenId.toString(),
+          hash: args.hash,
+          block: e.blockNumber,
+          sender: args.sender,
+        })
+      );
 
       break;
     }
 
-    case 'Revise': {
-      let q =
-         `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "Revise": {
+      let q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
           MERGE (rev:Revision {hash: $hash})
@@ -76,19 +78,20 @@ const merge = async (e, session) => {
           MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
           `;
 
-      await session.writeTransaction(tx => tx.run(q, {
-        tokenId: args.tokenId.toString(),
-        hash: args.hash,
-        block: e.blockNumber,
-        sender: args.sender
-      }));
+      await session.writeTransaction((tx) =>
+        tx.run(q, {
+          tokenId: args.tokenId.toString(),
+          hash: args.hash,
+          block: e.blockNumber,
+          sender: args.sender,
+        })
+      );
 
       break;
     }
 
-    case 'Merge': {
-      let q =
-         `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "Merge": {
+      let q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
           MERGE (rev:Revision {hash: $hash})
@@ -104,9 +107,10 @@ const merge = async (e, session) => {
 
       q = args.incomingEdges.reduce((acc, edge) => {
         const index = args.incomingEdges.indexOf(edge);
-        acc +=
-          `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
-           MERGE (i${index})-[ri${index}:${edge.name} {pivotTokenId: $tokenId}]->(n)
+        acc += `MERGE (i${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+           MERGE (i${index})-[ri${index}:${
+          edge.name
+        } {pivotTokenId: $tokenId}]->(n)
              SET ri${index}.active = true
            `;
         return acc;
@@ -114,29 +118,31 @@ const merge = async (e, session) => {
 
       q = args.outgoingEdges.reduce((acc, edge) => {
         const index = args.outgoingEdges.indexOf(edge);
-        acc +=
-          `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
+        acc += `MERGE (o${index}:BaseNode {tokenId: '${edge.tokenId.toString()}'})
            ON CREATE
              SET o${index}.fee = '0'
-           MERGE (n)-[ro${index}:${edge.name} {pivotTokenId: $tokenId}]->(o${index})
+           MERGE (n)-[ro${index}:${
+          edge.name
+        } {pivotTokenId: $tokenId}]->(o${index})
              SET ro${index}.active = true
            `;
         return acc;
       }, q);
 
-      await session.writeTransaction(tx => tx.run(q, {
-        tokenId: args.tokenId.toString(),
-        hash: args.hash,
-        block: e.blockNumber,
-        sender: args.sender
-      }));
+      await session.writeTransaction((tx) =>
+        tx.run(q, {
+          tokenId: args.tokenId.toString(),
+          hash: args.hash,
+          block: e.blockNumber,
+          sender: args.sender,
+        })
+      );
 
       break;
     }
 
-    case 'Transfer': {
-      const q =
-         `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "Transfer": {
+      const q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
           MERGE (from:Account {address: $fromAddress})
@@ -144,58 +150,55 @@ const merge = async (e, session) => {
           MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
           MERGE (to)-[:OWNS]->(n)
           WITH from, n OPTIONAL MATCH (from)-[r:OWNS]->(n) DELETE r`;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
           fromAddress: args.from,
-          toAddress: args.to
+          toAddress: args.to,
         });
       });
       break;
     }
 
-    case 'RoleGranted': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "RoleGranted": {
+      const q = `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
          MERGE (recipient)-[:CAN {role: $role}]->(n)
          `;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
           role: args.role.toString(),
           toAddress: args.account,
-          senderAddress: args.sender
+          senderAddress: args.sender,
         });
       });
       break;
     }
 
-    case 'RoleRevoked': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "RoleRevoked": {
+      const q = `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
          WITH recipient, n OPTIONAL MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r
          `;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
           role: args.role.toString(),
           toAddress: args.account,
-          senderAddress: args.sender
+          senderAddress: args.sender,
         });
       });
       break;
     }
 
-    case 'ConnectionFeeSet': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $tokenId})
+    case "ConnectionFeeSet": {
+      const q = `MERGE (n:BaseNode {tokenId: $tokenId})
          SET n.fee = $fee
          `;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
           fee: args.connectionFee.toString(),
@@ -204,14 +207,13 @@ const merge = async (e, session) => {
       break;
     }
 
-    case 'PermissionsDelegated': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $forTokenId})
+    case "PermissionsDelegated": {
+      const q = `MERGE (n:BaseNode {tokenId: $forTokenId})
          MERGE (o:BaseNode {tokenId: $toTokenId})
          MERGE (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
            SET r.active = true
         `;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           forTokenId: args.forTokenId.toString(),
           toTokenId: args.toTokenId.toString(),
@@ -220,15 +222,14 @@ const merge = async (e, session) => {
       break;
     }
 
-    case 'DelegatePermissionsRenounced': {
-      const q =
-        `MERGE (n:BaseNode {tokenId: $forTokenId})
+    case "DelegatePermissionsRenounced": {
+      const q = `MERGE (n:BaseNode {tokenId: $forTokenId})
          MERGE (o:BaseNode {tokenId: $toTokenId})
          WITH n, o
          OPTIONAL MATCH (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
            SET r.active = false
         `;
-      await session.writeTransaction(tx => {
+      await session.writeTransaction((tx) => {
         tx.run(q, {
           forTokenId: args.forTokenId.toString(),
           toTokenId: args.toTokenId.toString(),
@@ -237,9 +238,9 @@ const merge = async (e, session) => {
       break;
     }
 
-    case 'Approval':
-    case 'ApprovalForAll':
-    case 'PermissionsBypassSet':
+    case "Approval":
+    case "ApprovalForAll":
+    case "PermissionsBypassSet":
     default:
       console.log(`Implement Me: ${event}`);
   }
@@ -253,22 +254,22 @@ export default async function handler(
     const session = driver.session();
 
     if (false) {
-      const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`
+      const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
       const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
-      await session.writeTransaction(tx => tx.run(flushQ1));
-      await session.writeTransaction(tx => tx.run(flushQ2));
+      await session.writeTransaction((tx) => tx.run(flushQ1));
+      await session.writeTransaction((tx) => tx.run(flushQ2));
 
-      await session.writeTransaction(tx =>
+      await session.writeTransaction((tx) =>
         tx.run(
           `CREATE FULLTEXT INDEX revisionContent IF NOT EXISTS FOR (n:Revision) ON EACH [n.content]`
         )
       );
-      await session.writeTransaction(tx =>
+      await session.writeTransaction((tx) =>
         tx.run(
           `CREATE CONSTRAINT tokenId IF NOT EXISTS FOR (n:BaseNode) REQUIRE n.tokenId IS UNIQUE`
         )
       );
-      await session.writeTransaction(tx =>
+      await session.writeTransaction((tx) =>
         tx.run(
           `CREATE CONSTRAINT hash IF NOT EXISTS FOR (r:Revision) REQUIRE r.hash IS UNIQUE`
         )
@@ -276,17 +277,14 @@ export default async function handler(
     }
 
     // Load our cursor
-    const latestQ =
-      `MATCH (b:Block {id: '__singleton__'})
+    const latestQ = `MATCH (b:Block {id: '__singleton__'})
        RETURN b.number
        LIMIT 1`;
-    const readResult =
-      await session.readTransaction(tx => tx.run(latestQ));
+    const readResult = await session.readTransaction((tx) => tx.run(latestQ));
 
-    let cursor =
-      parseInt(process.env.NEXT_PUBLIC_NODE_DEPLOY_BLOCK || '0');
+    let cursor = parseInt(process.env.NEXT_PUBLIC_NODE_DEPLOY_BLOCK || "0");
     if (readResult.records.length) {
-      cursor = readResult.records[0].get('b.number');
+      cursor = readResult.records[0].get("b.number");
     }
 
     // Load the latest block
@@ -296,33 +294,36 @@ export default async function handler(
     let { ensure } = req.query;
     if (ensure) {
       ensure = parseInt(ensure);
-      if (ensure > latestBlock)
-        throw new Error("invalid_ensure_block_given");
+      if (ensure > latestBlock) throw new Error("invalid_ensure_block_given");
       if (cursor >= ensure)
         return res.status(200).json({ status: "already_processed", cursor });
     }
 
-    const { endAt, events } =
-      await Welding.queryEvents(null, cursor + 1, ensure);
-    events.sort(function(a, b) {
+    const { endAt, events } = await Welding.queryEvents(
+      null,
+      cursor + 1,
+      ensure
+    );
+    events.sort(function (a, b) {
       return a.blockNumber - b.blockNumber;
     });
     for (const event of events) await merge(event, session);
 
     // Store our cursor
-    const q =
-      `MERGE (b:Block {id: '__singleton__'})
+    const q = `MERGE (b:Block {id: '__singleton__'})
        SET b.number = $blockNumber`;
-    await session.writeTransaction(tx => tx.run(q, {
-      blockNumber: endAt
-    }));
+    await session.writeTransaction((tx) =>
+      tx.run(q, {
+        blockNumber: endAt,
+      })
+    );
 
     res.status(200).json({ status: "synced", cursor: endAt });
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     if (e instanceof Error) {
-      return res.status(500).json({ error: e.message || "unexpected" })
+      return res.status(500).json({ error: e.message || "unexpected" });
     }
-    res.status(500).json({ error: "unexpected" })
+    res.status(500).json({ error: "unexpected" });
   }
 }

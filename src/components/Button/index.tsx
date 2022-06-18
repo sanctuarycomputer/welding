@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { bg } from 'src/utils/theme';
+import { bg } from "src/utils/theme";
 
 type Props = {
   label: string;
@@ -8,12 +8,7 @@ type Props = {
   className?: string;
 };
 
-const Button: FC<Props> = ({
-  label,
-  disabled,
-  onClick,
-  className
-}) => {
+const Button: FC<Props> = ({ label, disabled, onClick, className }) => {
   return (
     <button
       className={`Button ${className} ${bg}`}
@@ -23,6 +18,6 @@ const Button: FC<Props> = ({
       {label}
     </button>
   );
-}
+};
 
 export default Button;

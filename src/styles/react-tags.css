@@ -13,7 +13,8 @@
 }
 
 /* Styles for the input */
-.ReactTags__tagInput {}
+.ReactTags__tagInput {
+}
 .ReactTags__tagInput input.ReactTags__tagInputField,
 .ReactTags__tagInput input.ReactTags__tagInputField:focus {
   font-size: 0.75rem;
@@ -27,7 +28,7 @@
 /* Styles for selected tags */
 .ReactTags__selected {
   font-size: 0.75rem;
-  padding: 0 0.5rem
+  padding: 0 0.5rem;
 }
 .ReactTags__selected span.ReactTags__tag {
   padding-top: 0.25rem;
@@ -53,7 +54,8 @@
   cursor: pointer;
 }
 
-.ReactTags__suggestions {}
+.ReactTags__suggestions {
+}
 .ReactTags__suggestions ul {
   background-color: var(--background-color);
   list-style-type: none;

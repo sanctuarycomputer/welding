@@ -71,23 +71,26 @@ a {
 }
 
 ::selection {
-  background: var(--border-color)
+  background: var(--border-color);
 }
 
-::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: var(--text-color-passive);
   opacity: 1; /* Firefox */
   font-style: italic;
   text-transform: capitalize;
 }
 
-:-ms-input-placeholder { /* Internet Explorer 10-11 */
+:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
   color: var(--text-color-passive);
   font-style: italic;
   text-transform: capitalize;
 }
 
-::-ms-input-placeholder { /* Microsoft Edge */
+::-ms-input-placeholder {
+  /* Microsoft Edge */
   color: var(--text-color-passive);
   font-style: italic;
   text-transform: capitalize;
@@ -157,19 +160,23 @@ input {
   width: 14px;
   height: 14px;
   display: inline;
-  -webkit-animation:spin 2s ease-in-out infinite;
-  -moz-animation:spin 2s ease-in-out infinite;
-  animation:spin 2s ease-in-out infinite;
+  -webkit-animation: spin 2s ease-in-out infinite;
+  -moz-animation: spin 2s ease-in-out infinite;
+  animation: spin 2s ease-in-out infinite;
 }
 @-moz-keyframes spin {
-  100% { -moz-transform: rotate(360deg); }
+  100% {
+    -moz-transform: rotate(360deg);
+  }
 }
 @-webkit-keyframes spin {
-  100% { -webkit-transform: rotate(360deg); }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 @keyframes spin {
   100% {
     -webkit-transform: rotate(360deg);
-    transform:rotate(360deg);
+    transform: rotate(360deg);
   }
 }

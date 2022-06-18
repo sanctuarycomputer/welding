@@ -1,13 +1,13 @@
-import React, { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
-import PropTypes from 'prop-types';
-import ClassNames from 'classnames';
-import { canDrag, canDrop } from './utils';
-import get from 'lodash/get';
+import React, { useRef } from "react";
+import { useDrag, useDrop } from "react-dnd";
+import PropTypes from "prop-types";
+import ClassNames from "classnames";
+import { canDrag, canDrop } from "./utils";
+import get from "lodash/get";
 
-import RemoveComponent from './RemoveComponent';
+import RemoveComponent from "./RemoveComponent";
 
-const ItemTypes = { TAG: 'tag' };
+const ItemTypes = { TAG: "tag" };
 
 const Tag = (props) => {
   const tagRef = useRef(null);
@@ -39,19 +39,20 @@ const Tag = (props) => {
   drag(drop(tagRef));
 
   const label = get(props.tag, props.labelField);
-  const { className = '' } = tag;
+  const { className = "" } = tag;
   /* istanbul ignore next */
   const opacity = isDragging ? 0 : 1;
   const tagComponent = (
     <span
       ref={tagRef}
-      className={ClassNames('tag-wrapper', classNames.tag, className)}
+      className={ClassNames("tag-wrapper", classNames.tag, className)}
       style={{
         opacity,
-        cursor: canDrag(props) ? 'move' : 'auto',
+        cursor: canDrag(props) ? "move" : "auto",
       }}
       onClick={props.onTagClicked}
-      onTouchStart={props.onTagClicked}>
+      onTouchStart={props.onTagClicked}
+    >
       {label}
       <RemoveComponent
         tag={props.tag}
@@ -79,7 +80,7 @@ Tag.propTypes = {
 };
 
 Tag.defaultProps = {
-  labelField: 'text',
+  labelField: "text",
   readOnly: false,
 };
 

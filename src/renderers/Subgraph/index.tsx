@@ -1,29 +1,30 @@
-import { FC, useContext } from 'react';
-import NodeMeta from 'src/components/NodeMeta';
+import { FC, useContext } from "react";
+import NodeMeta from "src/components/NodeMeta";
 
-import { GraphContext } from 'src/hooks/useGraphData';
-import { ModalContext } from 'src/hooks/useModal';
-import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
-import getRelatedNodes from 'src/utils/getRelatedNodes';
+import { GraphContext } from "src/hooks/useGraphData";
+import { ModalContext } from "src/hooks/useModal";
+import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
+import getRelatedNodes from "src/utils/getRelatedNodes";
 
-import type {
-  BaseNode
-} from 'src/types';
+import type { BaseNode } from "src/types";
 
-import { useSigner, useConnect, useAccount } from 'wagmi';
-import Document from 'src/renderers/Document';
+import { useSigner, useConnect, useAccount } from "wagmi";
+import Document from "src/renderers/Document";
 
-import withPublisher from 'src/hoc/withPublisher';
+import withPublisher from "src/hoc/withPublisher";
 
-import dynamic from 'next/dynamic';
-const SubgraphSidebar = dynamic(() => import('src/components/SubgraphSidebar'), {
-  ssr: false
-});
+import dynamic from "next/dynamic";
+const SubgraphSidebar = dynamic(
+  () => import("src/components/SubgraphSidebar"),
+  {
+    ssr: false,
+  }
+);
 
 interface Props extends WithPublisherProps {
-  node: BaseNode
-  document?: BaseNode,
-};
+  node: BaseNode;
+  document?: BaseNode;
+}
 
 const Subgraph: FC<Props> = ({
   document,
@@ -37,33 +38,29 @@ const Subgraph: FC<Props> = ({
   const { isConnecting } = useConnect();
   const { data: signer } = useSigner();
   const { data: account } = useAccount();
-  const {
-    accountData,
-    loadAccountData,
-    canEditNode
-  } = useContext(GraphContext);
+  const { accountData, loadAccountData, canEditNode } =
+    useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
 
-  const canEditSubgraph =
-    node.tokenId.startsWith('-') ||
-    canEditNode(node);
+  const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node);
 
-  const canEditDocument = document
-    ? canEditNode(document)
-    : canEditSubgraph;
+  const canEditDocument = document ? canEditNode(document) : canEditSubgraph;
 
-  const subgraphTopics =
-    getRelatedNodes(node, 'incoming', 'Topic', 'DESCRIBES');
+  const subgraphTopics = getRelatedNodes(
+    node,
+    "incoming",
+    "Topic",
+    "DESCRIBES"
+  );
 
   const documentTopics = document
-    ? getRelatedNodes(document, 'incoming', 'Topic', 'DESCRIBES')
+    ? getRelatedNodes(document, "incoming", "Topic", "DESCRIBES")
     : [];
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
     () => {
-      const didConfirm =
-        confirm("You have unsaved changes. Discard them?")
+      const didConfirm = confirm("You have unsaved changes. Discard them?");
       if (didConfirm) formik.resetForm();
       return didConfirm;
     }
@@ -78,11 +75,9 @@ const Subgraph: FC<Props> = ({
   //  }
   //}, [account]);
 
-  const showSubgraph = node.tokenId.startsWith('-')
-    ? !!account?.address
-    : true;
+  const showSubgraph = node.tokenId.startsWith("-") ? !!account?.address : true;
 
-  const showDocument = document?.tokenId.startsWith('-')
+  const showDocument = document?.tokenId.startsWith("-")
     ? canEditSubgraph
     : true;
 
@@ -128,6 +123,6 @@ const Subgraph: FC<Props> = ({
       )*/}
     </>
   );
-}
+};
 
 export default withPublisher("Subgraph", Subgraph);

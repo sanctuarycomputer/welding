@@ -1,19 +1,15 @@
-import { useContext } from 'react';
-import copyToClipboard from 'src/utils/copyToClipboard';
-import Copy from 'src/components/Icons/Copy';
-import { GraphContext } from 'src/hooks/useGraphData';
-import History from 'src/components/Icons/History';
-import slugifyNode from 'src/utils/slugifyNode';
+import { useContext } from "react";
+import copyToClipboard from "src/utils/copyToClipboard";
+import Copy from "src/components/Icons/Copy";
+import { GraphContext } from "src/hooks/useGraphData";
+import History from "src/components/Icons/History";
+import slugifyNode from "src/utils/slugifyNode";
 
 const metadataLink = (hash) => {
   return `https://ipfs.io/ipfs/${hash}/metadata.json`;
 };
 
-const Revision = ({
-  node,
-  revision,
-  current
-}) => {
+const Revision = ({ node, revision, current }) => {
   return (
     <tr className="border-b border-color border-dashed">
       <td className="pl-2 py-4 whitespace-nowrap truncate">
@@ -37,20 +33,16 @@ const Revision = ({
       </td>
       <td
         onClick={() => copyToClipboard(revision.hash)}
-        className="pr-2 py-4 cursor-pointer whitespace-nowrap">
+        className="pr-2 py-4 cursor-pointer whitespace-nowrap"
+      >
         <Copy />
       </td>
     </tr>
   );
 };
 
-const Revisions = ({
-  node
-}) => {
-  const {
-    revisionData,
-    loadRevisionsForBaseNode
-  } = useContext(GraphContext);
+const Revisions = ({ node }) => {
+  const { revisionData, loadRevisionsForBaseNode } = useContext(GraphContext);
 
   let status = "LOADING";
   if (revisionData[node.tokenId]) {
@@ -69,26 +61,18 @@ const Revisions = ({
             revision={node.currentRevision}
             current
           />
-          {status === "FULFILLED" && (
-            revisionData[node.tokenId].revisions)
-              .filter(r => {
+          {status === "FULFILLED" &&
+            revisionData[node.tokenId].revisions
+              .filter((r) => {
                 return r.hash !== node.currentRevision.hash;
               })
-              .map(r => {
-                return (
-                  <Revision
-                    key={r.hash}
-                    node={node}
-                    revision={r}
-                  />
-                );
-              })
-          }
+              .map((r) => {
+                return <Revision key={r.hash} node={node} revision={r} />;
+              })}
         </tbody>
       </table>
 
-      <div
-        className="py-16 flex relative flex-grow justify-center items-center flex-col">
+      <div className="py-16 flex relative flex-grow justify-center items-center flex-col">
         <History />
         <p className="pt-2 font-semibold">
           All revisions are stored permanently via IPFS.

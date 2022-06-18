@@ -5,17 +5,15 @@ type Props = {
   onClickBack: Function | null;
 };
 
-const ModalHeader: FC<Props> = ({
-  title,
-  hint,
-  onClickClose,
-  onClickBack
-}) => {
+const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {
   return (
     <div className="flex p-4 border-b border-color justify-between">
       <div>
         {onClickBack && (
-          <p onClick={onClickBack} className="text-xs flex items-center inline-block cursor-pointer pb-1">
+          <p
+            onClick={onClickBack}
+            className="text-xs flex items-center inline-block cursor-pointer pb-1"
+          >
             ← Back
           </p>
         )}
@@ -24,7 +22,8 @@ const ModalHeader: FC<Props> = ({
       </div>
       <span
         onClick={onClickClose}
-        className="cursor-pointer flex items-center pl-8">
+        className="cursor-pointer flex items-center pl-8"
+      >
         ✕
       </span>
     </div>

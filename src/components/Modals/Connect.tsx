@@ -1,24 +1,18 @@
-import { FC, useEffect, useContext } from 'react';
-import { ModalContext } from 'src/hooks/useModal';
-import Modal from 'react-modal';
-import ModalHeader from 'src/components/Modals/ModalHeader';
-import Wallet from 'src/components/Icons/Wallet';
-import Button from 'src/components/Button';
+import { FC, useEffect, useContext } from "react";
+import { ModalContext } from "src/hooks/useModal";
+import Modal from "react-modal";
+import ModalHeader from "src/components/Modals/ModalHeader";
+import Wallet from "src/components/Icons/Wallet";
+import Button from "src/components/Button";
 
-import {
-  useConnect,
-  useAccount
-} from 'wagmi';
+import { useConnect, useAccount } from "wagmi";
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function
+  onRequestClose: Function;
 };
 
-const Connect: FC<Props> = ({
-  isOpen,
-  onRequestClose
-}) => {
+const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
   const { closeModal } = useContext(ModalContext);
   const { connect, connectors, error } = useConnect();
   const { data: account } = useAccount();
@@ -28,10 +22,7 @@ const Connect: FC<Props> = ({
   }, [account]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={() => onRequestClose()}
-    >
+    <Modal isOpen={isOpen} onRequestClose={() => onRequestClose()}>
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           title="Connect"
@@ -40,22 +31,23 @@ const Connect: FC<Props> = ({
         />
 
         <div>
-          {connectors.map(connector =>
+          {connectors.map((connector) => (
             <div
               onClick={() => connect(connector)}
-              key={connector.id} className="cursor-pointer flex relative p-4 justify-between items-center flex-row border-b border-color">
+              key={connector.id}
+              className="cursor-pointer flex relative p-4 justify-between items-center flex-row border-b border-color"
+            >
               <div className="flex flex-row items-center py-1 flex-grow">
                 <p className="pr-2 font-semibold w-32 truncate">
                   {connector.name}
-                  {!connector.ready && ' (unsupported)'}
+                  {!connector.ready && " (unsupported)"}
                 </p>
               </div>
             </div>
-          )}
+          ))}
         </div>
 
-        <div
-          className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Wallet />
           <p className="pt-2 font-semibold">
             Connect a provider to get started.
@@ -63,8 +55,14 @@ const Connect: FC<Props> = ({
         </div>
 
         <div className="p-4 flex flex-row-reverse justify-between items-center">
-          <Button label="Cancel" onClick={() => onRequestClose()} disabled={false} />
-          <p className="text-red-500 font-semibold">{error && (error?.message ?? 'Failed to connect')}</p>
+          <Button
+            label="Cancel"
+            onClick={() => onRequestClose()}
+            disabled={false}
+          />
+          <p className="text-red-500 font-semibold">
+            {error && (error?.message ?? "Failed to connect")}
+          </p>
         </div>
       </div>
     </Modal>

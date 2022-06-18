@@ -1,25 +1,23 @@
-import { useState, createContext } from 'react';
+import { useState, createContext } from "react";
 
-interface INavContext {
-};
+interface INavContext {}
 
 const NavContext = createContext<INavContext>();
 const { Provider } = NavContext;
 
 function NavProvider({ children }) {
-  const [
-    content,
-    setContent
-  ] = useState(null);
+  const [content, setContent] = useState(null);
 
   return (
-    <Provider value={{
-      content,
-      setContent
-    }}>
+    <Provider
+      value={{
+        content,
+        setContent,
+      }}
+    >
       {children}
     </Provider>
   );
-};
+}
 
 export { NavContext, NavProvider };

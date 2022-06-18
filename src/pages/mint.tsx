@@ -1,7 +1,7 @@
-import { FC, useContext, useEffect } from 'react';
-import { NavContext } from 'src/hooks/useNav';
-import Subgraph from 'src/renderers/Subgraph';
-import makeDummyNode from 'src/lib/makeDummyNode';
+import { FC, useContext, useEffect } from "react";
+import { NavContext } from "src/hooks/useNav";
+import Subgraph from "src/renderers/Subgraph";
+import makeDummyNode from "src/lib/makeDummyNode";
 
 const Mint: FC<{}> = () => {
   const { setContent } = useContext(NavContext);
@@ -9,7 +9,7 @@ const Mint: FC<{}> = () => {
     setContent(null);
   }, []);
 
-  return <Subgraph node={makeDummyNode('Subgraph')} />;
+  return <Subgraph node={makeDummyNode("Subgraph")} />;
 };
 
 export default Mint;

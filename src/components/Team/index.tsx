@@ -1,30 +1,30 @@
-import { FC } from 'react';
-import { useRouter } from 'next/router';
-import { Account } from 'src/types';
-import Tile from 'src/components/Tile';
-import { useSigner, useAccount } from 'wagmi';
-import { useFormik, FormikProps } from 'formik';
-import * as yup from 'yup';
-import Reflection from 'src/components/Icons/Reflection';
-import Button from 'src/components/Button';
-import dynamic from 'next/dynamic';
+import { FC } from "react";
+import { useRouter } from "next/router";
+import { Account } from "src/types";
+import Tile from "src/components/Tile";
+import { useSigner, useAccount } from "wagmi";
+import { useFormik, FormikProps } from "formik";
+import * as yup from "yup";
+import Reflection from "src/components/Icons/Reflection";
+import Button from "src/components/Button";
+import dynamic from "next/dynamic";
 
-import Client from 'src/lib/Client';
-import Welding from 'src/lib/Welding';
-import NProgress from 'nprogress';
-import toast from 'react-hot-toast';
-import getRelatedNodes from 'src/utils/getRelatedNodes';
-import { bg } from 'src/utils/theme';
+import Client from "src/lib/Client";
+import Welding from "src/lib/Welding";
+import NProgress from "nprogress";
+import toast from "react-hot-toast";
+import getRelatedNodes from "src/utils/getRelatedNodes";
+import { bg } from "src/utils/theme";
 
-const Address = dynamic(() => import('src/components/Address'), {
-  ssr: false
+const Address = dynamic(() => import("src/components/Address"), {
+  ssr: false,
 });
 
 enum Roles {
   OWNER = "Owner",
   ADMIN = "Admin",
-  EDITOR = "Editor"
-};
+  EDITOR = "Editor",
+}
 
 type Props = {
   node: BaseNode;
@@ -33,205 +33,200 @@ type Props = {
   reloadData: Function;
 };
 
-const Team: FC<Props> = ({
-  node,
-  currentAddress,
-  setLocked,
-  reloadData
-}) => {
+const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
   const router = useRouter();
   const { data: account } = useAccount();
   const { data: signer } = useSigner();
 
   const roles = {};
-  roles[node.owner.address] =
-    roles[node.owner.address] || { account: node.owner, roles: [Roles.OWNER] };
+  roles[node.owner.address] = roles[node.owner.address] || {
+    account: node.owner,
+    roles: [Roles.OWNER],
+  };
   node.admins.forEach((a: Account) => {
-    roles[a.address] =
-      roles[a.address] || { account: a, roles: [] };
+    roles[a.address] = roles[a.address] || { account: a, roles: [] };
     roles[a.address].roles.push(Roles.ADMIN);
   });
   node.editors.forEach((a: Account) => {
-    roles[a.address] =
-      roles[a.address] || { account: a, roles: [] };
+    roles[a.address] = roles[a.address] || { account: a, roles: [] };
     roles[a.address].roles.push(Roles.EDITOR);
   });
 
-  const isAdmin =
-    roles[currentAddress]?.roles.includes(Roles.ADMIN);
+  const isAdmin = roles[currentAddress]?.roles.includes(Roles.ADMIN);
 
-  const permissionDelegates =
-    getRelatedNodes(node, 'outgoing', 'BaseNode', '_DELEGATES_PERMISSIONS_TO');
+  const permissionDelegates = getRelatedNodes(
+    node,
+    "outgoing",
+    "BaseNode",
+    "_DELEGATES_PERMISSIONS_TO"
+  );
 
-  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
-    enableReinitialize: true,
-    initialValues: {
-      address: '',
-      role: 1,
-    },
-    onSubmit: async (values) => {
-      if (!signer) return;
+  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>(
+    {
+      enableReinitialize: true,
+      initialValues: {
+        address: "",
+        role: 1,
+      },
+      onSubmit: async (values) => {
+        if (!signer) return;
 
-      let toastId;
-      const { role, address } = values;
+        let toastId;
+        const { role, address } = values;
 
-      try {
-        setLocked(true);
-        NProgress.start();
-        toastId = toast.loading('Requesting signature...', {
-          className: 'toast'
-        });
-        let tx = await Welding.Nodes.connect(signer).grantRole(
-          node.tokenId,
-          role,
-          address
-        );
+        try {
+          setLocked(true);
+          NProgress.start();
+          toastId = toast.loading("Requesting signature...", {
+            className: "toast",
+          });
+          let tx = await Welding.Nodes.connect(signer).grantRole(
+            node.tokenId,
+            role,
+            address
+          );
 
-        toast.loading('Granting role...', {
-          id: toastId
-        });
-        tx = await tx.wait();
+          toast.loading("Granting role...", {
+            id: toastId,
+          });
+          tx = await tx.wait();
 
-        toast.loading('Confirming transaction...', {
-          id: toastId
-        });
-        await Client.fastForward(tx.blockNumber);
-        await reloadData();
-        toast.success('Success!', {
-          id: toastId
-        });
-      } catch(e) {
-        toast.error('An error occured.', {
-          id: toastId
-        });
-        console.log(e);
-      } finally {
-        setLocked(false);
-        NProgress.done();
-      }
-    },
-    validationSchema: yup.object({
-      address: yup
-        .string()
-        .trim()
-        .required('A valid address is required')
-        .matches(
-          /0x[a-fA-F0-9]{40}/,
-          "Must be a valid address"
-        ),
-    }),
-  });
+          toast.loading("Confirming transaction...", {
+            id: toastId,
+          });
+          await Client.fastForward(tx.blockNumber);
+          await reloadData();
+          toast.success("Success!", {
+            id: toastId,
+          });
+        } catch (e) {
+          toast.error("An error occured.", {
+            id: toastId,
+          });
+          console.log(e);
+        } finally {
+          setLocked(false);
+          NProgress.done();
+        }
+      },
+      validationSchema: yup.object({
+        address: yup
+          .string()
+          .trim()
+          .required("A valid address is required")
+          .matches(/0x[a-fA-F0-9]{40}/, "Must be a valid address"),
+      }),
+    }
+  );
 
-  const delegateFormik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>({
-    enableReinitialize: true,
-    initialValues: {
-      toTokenId: '',
-    },
-    onSubmit: async (values) => {
-      if (!signer) return;
+  const delegateFormik: FormikProps<BaseNodeFormValues> =
+    useFormik<BaseNodeFormValues>({
+      enableReinitialize: true,
+      initialValues: {
+        toTokenId: "",
+      },
+      onSubmit: async (values) => {
+        if (!signer) return;
 
-      let toastId;
-      const { toTokenId } = values;
+        let toastId;
+        const { toTokenId } = values;
 
-      try {
-        setLocked(true);
-        NProgress.start();
-        toastId = toast.loading('Requesting signature...', {
-          className: 'toast'
-        });
-        let tx = await Welding.Nodes.connect(signer).delegatePermissions(
-          node.tokenId,
-          toTokenId
-        );
+        try {
+          setLocked(true);
+          NProgress.start();
+          toastId = toast.loading("Requesting signature...", {
+            className: "toast",
+          });
+          let tx = await Welding.Nodes.connect(signer).delegatePermissions(
+            node.tokenId,
+            toTokenId
+          );
 
-        toast.loading('Granting delegate permissions...', {
-          id: toastId
-        });
-        tx = await tx.wait();
+          toast.loading("Granting delegate permissions...", {
+            id: toastId,
+          });
+          tx = await tx.wait();
 
-        toast.loading('Confirming transaction...', {
-          id: toastId
-        });
-        await Client.fastForward(tx.blockNumber);
-        await reloadData();
-        toast.success('Success!', {
-          id: toastId
-        });
-      } catch(e) {
-        toast.error('An error occured.', {
-          id: toastId
-        });
-        console.log(e);
-      } finally {
-        setLocked(false);
-        NProgress.done();
-      }
-    },
-    validationSchema: yup.object({
-      toTokenId: yup
-        .number()
-        .integer()
-        .required('A valid Token ID is required')
-    }),
-  });
+          toast.loading("Confirming transaction...", {
+            id: toastId,
+          });
+          await Client.fastForward(tx.blockNumber);
+          await reloadData();
+          toast.success("Success!", {
+            id: toastId,
+          });
+        } catch (e) {
+          toast.error("An error occured.", {
+            id: toastId,
+          });
+          console.log(e);
+        } finally {
+          setLocked(false);
+          NProgress.done();
+        }
+      },
+      validationSchema: yup.object({
+        toTokenId: yup
+          .number()
+          .integer()
+          .required("A valid Token ID is required"),
+      }),
+    });
 
   const triggerRoleRemoval = async (
     address,
     role,
-    method = 'revoke' | 'renounce'
+    method = "revoke" | "renounce"
   ) => {
     if (!signer) return;
 
     let toastId;
     try {
-      if (
-        node.admins.length === 1 &&
-        role === 'Admin'
-      ) {
+      if (node.admins.length === 1 && role === "Admin") {
         toast.error("Can't remove last admin", {
-          className: 'toast'
+          className: "toast",
         });
         return;
       }
 
       setLocked(true);
       NProgress.start();
-      toastId = toast.loading('Requesting signature...', {
-        className: 'toast'
+      toastId = toast.loading("Requesting signature...", {
+        className: "toast",
       });
 
       let tx;
-      if (method === 'revoke') {
+      if (method === "revoke") {
         tx = await Welding.Nodes.connect(signer).revokeRole(
           node.tokenId,
-          (role === Roles.ADMIN ? 0 : 1),
+          role === Roles.ADMIN ? 0 : 1,
           address
         );
       } else {
         tx = await Welding.Nodes.connect(signer).renounceRole(
           node.tokenId,
-          (role === Roles.ADMIN ? 0 : 1)
+          role === Roles.ADMIN ? 0 : 1
         );
       }
 
-      toast.loading('Removing role...', {
-        id: toastId
+      toast.loading("Removing role...", {
+        id: toastId,
       });
       tx = await tx.wait();
 
-      toast.loading('Confirming transaction...', {
-        id: toastId
+      toast.loading("Confirming transaction...", {
+        id: toastId,
       });
 
       await Client.fastForward(tx.blockNumber);
       await reloadData();
-      toast.success('Success!', {
-        id: toastId
+      toast.success("Success!", {
+        id: toastId,
       });
-    } catch(e) {
+    } catch (e) {
       NProgress.done();
-      toast.error('An error occured.', {
-        id: toastId
+      toast.error("An error occured.", {
+        id: toastId,
       });
       console.log(e);
     } finally {
@@ -239,17 +234,15 @@ const Team: FC<Props> = ({
     }
   };
 
-  const triggerRenounceDelegate = async (
-    delegate
-  ) => {
+  const triggerRenounceDelegate = async (delegate) => {
     if (!signer) return;
 
     let toastId;
     try {
       setLocked(true);
       NProgress.start();
-      toastId = toast.loading('Requesting signature...', {
-        className: 'toast'
+      toastId = toast.loading("Requesting signature...", {
+        className: "toast",
       });
 
       let tx = await Welding.Nodes.connect(signer).renounceDelegatePermissions(
@@ -257,24 +250,24 @@ const Team: FC<Props> = ({
         delegate.tokenId
       );
 
-      toast.loading('Removing role...', {
-        id: toastId
+      toast.loading("Removing role...", {
+        id: toastId,
       });
       tx = await tx.wait();
 
-      toast.loading('Confirming transaction...', {
-        id: toastId
+      toast.loading("Confirming transaction...", {
+        id: toastId,
       });
 
       await Client.fastForward(tx.blockNumber);
       await reloadData();
-      toast.success('Success!', {
-        id: toastId
+      toast.success("Success!", {
+        id: toastId,
       });
-    } catch(e) {
+    } catch (e) {
       NProgress.done();
-      toast.error('An error occured.', {
-        id: toastId
+      toast.error("An error occured.", {
+        id: toastId,
       });
       console.log(e);
     } finally {
@@ -283,17 +276,15 @@ const Team: FC<Props> = ({
   };
 
   const onClickHandlerForDelegate = (delegate) => {
-    if (isAdmin)
-      return () => triggerRenounceDelegate(delegate);
+    if (isAdmin) return () => triggerRenounceDelegate(delegate);
     return null;
   };
 
   const onClickHandlerForRole = (address, role) => {
     if (role === Roles.OWNER) return null;
     if (address === currentAddress)
-      return () => triggerRoleRemoval(address, role, 'renounce');
-    if (isAdmin)
-      return () => triggerRoleRemoval(address, role, 'revoke');
+      return () => triggerRoleRemoval(address, role, "renounce");
+    if (isAdmin) return () => triggerRoleRemoval(address, role, "revoke");
     return null;
   };
 
@@ -304,40 +295,39 @@ const Team: FC<Props> = ({
           {permissionDelegates.length > 0 && (
             <tr className="border-b border-color border-dashed">
               <td className="px-2 py-3">
-                <p className="font-semibold py-1">Inherits permissions from →</p>
+                <p className="font-semibold py-1">
+                  Inherits permissions from →
+                </p>
               </td>
               <td className="pr-2 text-right">
-                {permissionDelegates.map(n =>
+                {permissionDelegates.map((n) => (
                   <Tile
                     key={n.tokenId}
-                    label={
-                      `${n.currentRevision.metadata.properties.emoji.native} ${n.currentRevision.metadata.name}`
-                    }
-                    onClick={
-                      onClickHandlerForDelegate(n)
-                    }
+                    label={`${n.currentRevision.metadata.properties.emoji.native} ${n.currentRevision.metadata.name}`}
+                    onClick={onClickHandlerForDelegate(n)}
                   />
-                )}
+                ))}
               </td>
             </tr>
           )}
 
-          {Object.values(roles).map(v => {
+          {Object.values(roles).map((v) => {
             return (
-              <tr key={v.account.address} className="border-b border-color border-dashed">
+              <tr
+                key={v.account.address}
+                className="border-b border-color border-dashed"
+              >
                 <td className="px-2 py-3">
                   <Address address={v.account.address} />
                 </td>
                 <td className="pr-2 text-right">
-                  {v.roles.map(r =>
+                  {v.roles.map((r) => (
                     <Tile
                       key={r}
                       label={r}
-                      onClick={
-                        onClickHandlerForRole(v.account.address, r)
-                      }
+                      onClick={onClickHandlerForRole(v.account.address, r)}
                     />
-                  )}
+                  ))}
                 </td>
               </tr>
             );
@@ -368,7 +358,9 @@ const Team: FC<Props> = ({
                 </select>
                 <Button
                   label="+ Add Member"
-                  disabled={formik.isSubmitting || !(formik.isValid && !formik.isDirty)}
+                  disabled={
+                    formik.isSubmitting || !(formik.isValid && !formik.isDirty)
+                  }
                   onClick={formik.handleSubmit}
                 />
               </td>
@@ -402,12 +394,10 @@ const Team: FC<Props> = ({
         </tbody>
       </table>
 
-      <div
-        className="py-16 flex relative flex-grow justify-center items-center flex-col">
+      <div className="py-16 flex relative flex-grow justify-center items-center flex-col">
         <Reflection />
         <p className="pt-2 font-semibold">
-          Admins can edit and invite others.
-          Editors can not manage roles.
+          Admins can edit and invite others. Editors can not manage roles.
         </p>
       </div>
     </>

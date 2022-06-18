@@ -1,6 +1,7 @@
 # Ref
 
 TODO
+
 - [ ] Royalties!
 - [ ] Who gets paid when the token is burnt? (post UI)
 - [ ] Validation audit (security)
@@ -12,9 +13,9 @@ TODO
 - [ ] The last admin should not be able to renouce permissions
 
 Candy
-- [ ] Reorderable Subgraph Documents
+
 - [ ] Global activity loader?
-- [ ] Local storage drafts
+- [ ] Drafts
 - [ ] Editor should extract welding links and ask for references
 - [ ] Editor should have a blocktune feature to link into blocks within revisions
 - [ ] Mobile Modals & Emoji Picker - Action bar & Title Bar in modals should not be scrollable
@@ -26,6 +27,7 @@ Candy
 - [ ] Document Meta should include Subgraph title
 
 Before Deploy:
+
 - [ ] Autoformat code
 - [ ] Remove babel?
 - [ ] Cleanup env
@@ -39,11 +41,14 @@ Before Deploy:
 - [ ] Security - Alchemy settings, IPFS settings, etc
 - [ ] CORS
 - [ ] Console Logs
+- [ ] Re-add tsc check to Husky
+- [ ] Remove TS Lint?
+- [ ] Error Boundary
 
 Roadmap
+
 - [ ] Deprecate Welding.js
 - [ ] Iron Session? (Persisted Drafts)
-- [ ] Reorderable Sidebar
 - [ ] Comments
 - [ ] Favorites
 - [ ] i18n (chinese)
@@ -54,6 +59,7 @@ Roadmap
 - [ ] I should be able to view a revision for subgraph
 
 Ideas for Writing:
+
 - [ ] What is Welding
 - [ ] How it Works
 - [ ] NFT Contracts as a Database

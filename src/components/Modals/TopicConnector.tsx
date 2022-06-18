@@ -1,14 +1,14 @@
-import { FC, useContext, useState } from 'react';
-import { GraphContext } from 'src/hooks/useGraphData';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
-import Modal from 'react-modal';
-import ModalHeader from 'src/components/Modals/ModalHeader';
-import Button from 'src/components/Button';
-import Hashtag from 'src/components/Icons/Hashtag';
-import { WithContext as ReactTags } from 'src/components/Tags';
-import { emojis } from  'src/utils/defaultEmoji';
+import { FC, useContext, useState } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
+import { ModalContext, ModalType } from "src/hooks/useModal";
+import Modal from "react-modal";
+import ModalHeader from "src/components/Modals/ModalHeader";
+import Button from "src/components/Button";
+import Hashtag from "src/components/Icons/Hashtag";
+import { WithOutContext as ReactTags } from "src/components/Tags";
+import { emojis } from "src/utils/defaultEmoji";
 
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 const baseNodesShallowQuery = gql`
   query BaseNodes {
@@ -16,7 +16,10 @@ const baseNodesShallowQuery = gql`
       tokenId
       labels
       currentRevision {
-        hash, block, content, contentType
+        hash
+        block
+        content
+        contentType
       }
     }
   }
@@ -33,23 +36,16 @@ type Props = {
   meta: TopicConnectorMeta;
 };
 
-const TopicConnector: FC<Props> = ({
-  isOpen,
-  onRequestClose,
-  meta
-}) => {
-  const {
-    shallowNodes,
-    shallowNodesLoading,
-    loadShallowNodes
-  } = useContext(GraphContext);
+const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
+  const { shallowNodes, shallowNodesLoading, loadShallowNodes } =
+    useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
-  const newTopics = topics.filter(t => t.tokenId.startsWith('-'));
+  const newTopics = topics.filter((t) => t.tokenId.startsWith("-"));
 
   const suggestions = shallowNodes
-    ? shallowNodes.filter(n => n.labels.includes("Topic"))
+    ? shallowNodes.filter((n) => n.labels.includes("Topic"))
     : [];
 
   const setTopics = (topics) => {
@@ -61,47 +57,41 @@ const TopicConnector: FC<Props> = ({
     setTopics(topics.filter((tag, index) => index !== i));
   };
 
-  const handleAddition = (
-    tag: {
-      tokenId: string,
-      'currentRevision.metadata.name': string
-    }
-  ) => {
-    if (tag.tokenId !== tag['currentRevision.metadata.name'])
+  const handleAddition = (tag: {
+    tokenId: string;
+    "currentRevision.metadata.name": string;
+  }) => {
+    if (tag.tokenId !== tag["currentRevision.metadata.name"])
       return setTopics([...topics, tag]);
 
     const newTopic: BaseNode = {
-      __typename: 'BaseNode',
+      __typename: "BaseNode",
       tokenId: `-${newTopics.length + 1}`,
-      labels: ['BaseNode', 'Topic'],
+      labels: ["BaseNode", "Topic"],
       related: [],
       outgoing: [],
       incoming: [],
       fee: "0",
       currentRevision: {
-        hash: '',
+        hash: "",
         block: 0,
-        content: '',
-        contentType: '',
+        content: "",
+        contentType: "",
         metadata: {
-          name: tag['currentRevision.metadata.name'],
-          description: '',
-          image: '',
+          name: tag["currentRevision.metadata.name"],
+          description: "",
+          image: "",
           properties: {
-            emoji: emojis[Math.floor(Math.random() * emojis.length)]
-          }
-        }
+            emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          },
+        },
       },
     };
 
     setTopics([...topics, newTopic]);
   };
 
-  const handleDrag = (
-    tag: BaseNode,
-    currPos: number,
-    newPos: number
-  ) => {
+  const handleDrag = (tag: BaseNode, currPos: number, newPos: number) => {
     const newTopics = topics.slice();
     newTopics.splice(currPos, 1);
     newTopics.splice(newPos, 0, tag);
@@ -111,20 +101,14 @@ const TopicConnector: FC<Props> = ({
   const attemptClose = () => {
     if (newTopics.length === 0) return onRequestClose();
     if (confirm("Discard unminted topics?")) {
-      setTopics(topics.filter(t => !t.tokenId.startsWith('-')));
+      setTopics(topics.filter((t) => !t.tokenId.startsWith("-")));
       onRequestClose();
     }
   };
 
-  if (
-    shallowNodesLoading === null ||
-    shallowNodesLoading === true
-  ) {
+  if (shallowNodesLoading === null || shallowNodesLoading === true) {
     return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={attemptClose}
-      >
+      <Modal isOpen={isOpen} onRequestClose={attemptClose}>
         <div className="h-screen sm:h-auto flex flex-col">
           <ModalHeader
             title="Topics"
@@ -133,22 +117,16 @@ const TopicConnector: FC<Props> = ({
           />
         </div>
 
-        <div
-          className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Hashtag />
-          <p className="pt-2 font-semibold">
-            Loading Topics, please wait...
-          </p>
+          <p className="pt-2 font-semibold">Loading Topics, please wait...</p>
         </div>
       </Modal>
     );
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={attemptClose}
-    >
+    <Modal isOpen={isOpen} onRequestClose={attemptClose}>
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           title="Topics"
@@ -170,24 +148,28 @@ const TopicConnector: FC<Props> = ({
           />
         </div>
 
-        <div
-          className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Hashtag />
           <p className="pt-2 font-semibold">
-            Topics improve discoverability of nodes, and reward the owner of the Topic NFT.
+            Topics improve discoverability of nodes, and reward the owner of the
+            Topic NFT.
           </p>
         </div>
 
         <div className="p-4 flex flex-row-reverse justify-between">
           <Button
             label={newTopics.length ? "Mint & Connect" : "Connect"}
-            onClick={() => (newTopics.length ? openModal({
-              type: ModalType.TOPIC_MINTER,
-              meta: {
-                topics: topics,
-                setTopics: setParentTopics
-              }
-            }) : onRequestClose())}
+            onClick={() =>
+              newTopics.length
+                ? openModal({
+                    type: ModalType.TOPIC_MINTER,
+                    meta: {
+                      topics: topics,
+                      setTopics: setParentTopics,
+                    },
+                  })
+                : onRequestClose()
+            }
             disabled={false}
           />
         </div>

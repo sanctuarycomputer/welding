@@ -6,4 +6,3 @@ export const border = `border-neutral-200 dark:border-neutral-700`;
 export const text = `text-neutral-700 dark:text-neutral-100`;
 export const textPassive = `text-neutral-600 dark:text-neutral-400`;
 export const textInverted = `text-neutral-100 dark:text-neutral-800`;
-

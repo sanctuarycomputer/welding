@@ -1,37 +1,37 @@
-import { FC, useContext, useEffect } from 'react';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
-import type { GetServerSideProps } from 'next';
-import { GraphContext } from 'src/hooks/useGraphData';
-import { NavContext } from 'src/hooks/useNav';
-import slugifyNode from 'src/utils/slugifyNode';
-import EditNav from 'src/components/EditNav';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import TopicTile from 'src/components/TopicTile';
-import type { BaseNode } from 'src/types';
-import Client from 'src/lib/Client';
-import Welding from 'src/lib/Welding';
-import Document from 'src/components/Icons/Document';
-import Graph from 'src/components/Icons/Graph';
-import Card from 'src/components/Card';
-import NodeImage from 'src/components/NodeImage';
-import NodeMeta from 'src/components/NodeMeta';
-import Actions from 'src/components/Actions';
-import { bg, border } from 'src/utils/theme';
-import useConfirmRouteChange from 'src/hooks/useConfirmRouteChange';
+import { FC, useContext, useEffect } from "react";
+import { ModalContext, ModalType } from "src/hooks/useModal";
+import type { GetServerSideProps } from "next";
+import { GraphContext } from "src/hooks/useGraphData";
+import { NavContext } from "src/hooks/useNav";
+import slugifyNode from "src/utils/slugifyNode";
+import EditNav from "src/components/EditNav";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import TopicTile from "src/components/TopicTile";
+import type { BaseNode } from "src/types";
+import Client from "src/lib/Client";
+import Welding from "src/lib/Welding";
+import Document from "src/components/Icons/Document";
+import Graph from "src/components/Icons/Graph";
+import Card from "src/components/Card";
+import NodeImage from "src/components/NodeImage";
+import NodeMeta from "src/components/NodeMeta";
+import Actions from "src/components/Actions";
+import { bg, border } from "src/utils/theme";
+import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 
-import withPublisher from 'src/hoc/withPublisher';
+import withPublisher from "src/hoc/withPublisher";
 
 interface Props extends WithPublisherProps {
-  node: BaseNode
-};
+  node: BaseNode;
+}
 
 const TopicsShow: FC<Props> = ({
   formik,
   imageDidChange,
   imagePreview,
   clearImage,
-  reloadData
+  reloadData,
 }) => {
   const node = formik.values.__node__;
   const { canEditNode } = useContext(GraphContext);
@@ -41,8 +41,7 @@ const TopicsShow: FC<Props> = ({
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
     () => {
-      const didConfirm =
-        confirm("You have unsaved changes. Discard them?")
+      const didConfirm = confirm("You have unsaved changes. Discard them?");
       if (didConfirm) formik.resetForm();
       return didConfirm;
     }
@@ -58,11 +57,9 @@ const TopicsShow: FC<Props> = ({
     setContent(
       <EditNav
         formik={formik}
-        buttonLabel={formik.isSubmitting
-          ? "Loading..."
-          : "Publish"}
+        buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
-    )
+    );
   }, [formik.isSubmitting, formik.isValid, formik.dirty]);
 
   const nodesByCollectionType = {
@@ -70,17 +67,16 @@ const TopicsShow: FC<Props> = ({
     documents: {},
   };
   node.outgoing.forEach((e: Edge) => {
-    const n = node.related.find((node: BaseNode) =>
-      node.tokenId === e.tokenId);
+    const n = node.related.find((node: BaseNode) => node.tokenId === e.tokenId);
     if (!n) return;
-    const collectionType =
-      `${n.labels.filter(l => l !== "BaseNode")[0].toLowerCase()}s`;
+    const collectionType = `${n.labels
+      .filter((l) => l !== "BaseNode")[0]
+      .toLowerCase()}s`;
     if (!["subgraphs", "documents"].includes(collectionType)) return;
     nodesByCollectionType[collectionType][n.tokenId] = n;
   });
 
-  const nodes: BaseNode[] =
-    Object.values(nodesByCollectionType[collection]);
+  const nodes: BaseNode[] = Object.values(nodesByCollectionType[collection]);
 
   return (
     <>
@@ -109,22 +105,29 @@ const TopicsShow: FC<Props> = ({
 
           <div
             className="inline-block"
-            style={{ transform: 'translate(0, -50%)' }}
+            style={{ transform: "translate(0, -50%)" }}
           >
             {canEdit ? (
-              <p className={`ml-2 border-2 ${border} ${bg} flex rounded-full text-2xl px-2 py-1 font-medium whitespace-nowrap`}>
+              <p
+                className={`ml-2 border-2 ${border} ${bg} flex rounded-full text-2xl px-2 py-1 font-medium whitespace-nowrap`}
+              >
                 <span
                   className="cursor-pointer mr-1"
-                  onClick={() => openModal({
-                    type: ModalType.EMOJI_PICKER,
-                    meta: {
-                      didPickEmoji: (emoji: BaseEmoji) => {
-                        formik.setFieldValue('emoji', emoji);
-                        closeModal();
-                      }
-                    }
-                  })}
-                >{formik.values.emoji.native}</span> #{formik.values.name}
+                  onClick={() =>
+                    openModal({
+                      type: ModalType.EMOJI_PICKER,
+                      meta: {
+                        didPickEmoji: (emoji: BaseEmoji) => {
+                          formik.setFieldValue("emoji", emoji);
+                          closeModal();
+                        },
+                      },
+                    })
+                  }
+                >
+                  {formik.values.emoji.native}
+                </span>{" "}
+                #{formik.values.name}
               </p>
             ) : (
               <TopicTile topic={node} textSize="2xl" />
@@ -143,20 +146,34 @@ const TopicsShow: FC<Props> = ({
                 onBlur={formik.handleBlur}
               />
             ) : (
-              <p>{formik.values.description || 'No description'}</p>
+              <p>{formik.values.description || "No description"}</p>
             )}
           </div>
 
           <div className="border-b border-color flex justify-between">
             <Link href={`/${slugifyNode(node)}?collection=subgraphs`}>
-              <a className={`p-4 flex-grow basis-0 text-center ${collection === "subgraphs" ? "border-b" : ""}`}>
-                <p>Subgraphs • {Object.values(nodesByCollectionType["subgraphs"]).length}</p>
+              <a
+                className={`p-4 flex-grow basis-0 text-center ${
+                  collection === "subgraphs" ? "border-b" : ""
+                }`}
+              >
+                <p>
+                  Subgraphs •{" "}
+                  {Object.values(nodesByCollectionType["subgraphs"]).length}
+                </p>
               </a>
             </Link>
 
             <Link href={`/${slugifyNode(node)}?collection=documents`}>
-              <a className={`p-4 flex-grow basis-0 text-center ${collection === "documents" ? "border-b" : ""}`}>
-                <p>Documents • {Object.values(nodesByCollectionType["documents"]).length}</p>
+              <a
+                className={`p-4 flex-grow basis-0 text-center ${
+                  collection === "documents" ? "border-b" : ""
+                }`}
+              >
+                <p>
+                  Documents •{" "}
+                  {Object.values(nodesByCollectionType["documents"]).length}
+                </p>
               </a>
             </Link>
           </div>
@@ -165,28 +182,31 @@ const TopicsShow: FC<Props> = ({
             <div className="flex flex-col pt-16 items-center">
               {collection === "subgraphs" && <Graph />}
               {collection === "documents" && <Document />}
-              <p className="pt-4">This topic is not used by any {collection}.</p>
+              <p className="pt-4">
+                This topic is not used by any {collection}.
+              </p>
             </div>
           )}
 
           {nodes.length !== 0 && collection === "subgraphs" && (
             <div className="">
-              {nodes.map(node => {
+              {nodes.map((node) => {
                 return (
                   <Link
                     key={node.tokenId}
-                    href={`/${Welding.slugifyNode(node)}`}>
-
-                  <a
-                    className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color"
+                    href={`/${Welding.slugifyNode(node)}`}
                   >
-                    <div className="flex flex-row items-center py-1 flex-grow">
-                      <p className="pr-2 font-semibold w-32 truncate">
-                        {node.currentRevision.metadata.properties.emoji.native} {node.currentRevision.metadata.name}
-                      </p>
-                    </div>
-                  </a>
-
+                    <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
+                      <div className="flex flex-row items-center py-1 flex-grow">
+                        <p className="pr-2 font-semibold w-32 truncate">
+                          {
+                            node.currentRevision.metadata.properties.emoji
+                              .native
+                          }{" "}
+                          {node.currentRevision.metadata.name}
+                        </p>
+                      </div>
+                    </a>
                   </Link>
                 );
               })}
@@ -195,11 +215,12 @@ const TopicsShow: FC<Props> = ({
 
           {nodes.length !== 0 && collection === "documents" && (
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
-              {nodes.map(node => {
+              {nodes.map((node) => {
                 return (
                   <Link
                     key={node.tokenId}
-                    href={`/${Welding.slugifyNode(node)}`}>
+                    href={`/${Welding.slugifyNode(node)}`}
+                  >
                     <a>
                       <Card key={node.tokenId} node={node} />
                     </a>
@@ -208,25 +229,24 @@ const TopicsShow: FC<Props> = ({
               })}
             </div>
           )}
-
         </div>
       </div>
     </>
   );
-}
+};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { tid } = context.query;
-  tid = ((Array.isArray(tid) ? tid[0] : tid) || '').split('-')[0];
-  const node =
-    await Client.fetchBaseNodeByTokenId(tid);
-  if (!node || !node.labels.includes('Topic')) return {
-    redirect: { permanent: false, destination: `/` },
-    props: {},
-  };
+  tid = ((Array.isArray(tid) ? tid[0] : tid) || "").split("-")[0];
+  const node = await Client.fetchBaseNodeByTokenId(tid);
+  if (!node || !node.labels.includes("Topic"))
+    return {
+      redirect: { permanent: false, destination: `/` },
+      props: {},
+    };
 
   return { props: { node } };
-}
+};
 
 TopicsShow.whyDidYouRender = true;
 export default withPublisher("Topic", TopicsShow);

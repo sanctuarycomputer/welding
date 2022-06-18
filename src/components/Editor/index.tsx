@@ -1,31 +1,33 @@
 // @ts-nocheck
-import { FC, useEffect, useRef } from 'react';
-import EditorJS from '@editorjs/editorjs';
-import Undo from 'editorjs-undo';
+import { FC, useEffect, useRef } from "react";
+import EditorJS from "@editorjs/editorjs";
+import Undo from "editorjs-undo";
 
-import Header from '@editorjs/header';
-import Paragraph from '@editorjs/paragraph';
-import Embed from '@editorjs/embed';
-import Table from '@editorjs/table';
-import List from '@editorjs/list';
-import Warning from '@editorjs/warning';
-import Code from '@editorjs/code';
-import LinkTool from '@editorjs/link';
+import Header from "@editorjs/header";
+import Paragraph from "@editorjs/paragraph";
+import Embed from "@editorjs/embed";
+import Table from "@editorjs/table";
+import List from "@editorjs/list";
+import Warning from "@editorjs/warning";
+import Code from "@editorjs/code";
+import LinkTool from "@editorjs/link";
 //import Image from '@editorjs/image';
-import Raw from '@editorjs/raw';
-import Quote from '@editorjs/quote';
-import Marker from '@editorjs/marker';
-import CheckList from '@editorjs/checklist';
-import Delimiter from '@editorjs/delimiter';
-import InlineCode from '@editorjs/inline-code';
-import SimpleImage from '@editorjs/simple-image';
+import Raw from "@editorjs/raw";
+import Quote from "@editorjs/quote";
+import Marker from "@editorjs/marker";
+import CheckList from "@editorjs/checklist";
+import Delimiter from "@editorjs/delimiter";
+import InlineCode from "@editorjs/inline-code";
+import SimpleImage from "@editorjs/simple-image";
 
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
-  blocks: [{
-    "data": {"text": "Start writing..."},
-    "type": "paragraph",
-  }]
+  blocks: [
+    {
+      data: { text: "Start writing..." },
+      type: "paragraph",
+    },
+  ],
 };
 
 const EDITOR_JS_TOOLS = {
@@ -40,7 +42,7 @@ const EDITOR_JS_TOOLS = {
   code: Code,
   linkTool: {
     class: LinkTool,
-    config: { endpoint: '/api/og' }
+    config: { endpoint: "/api/og" },
   },
   //image: Image,
   raw: Raw,
@@ -48,8 +50,8 @@ const EDITOR_JS_TOOLS = {
     class: Header,
     config: {
       levels: [1, 2, 3],
-      defaultLevel: 1
-    }
+      defaultLevel: 1,
+    },
   },
   quote: Quote,
   marker: Marker,
@@ -59,19 +61,15 @@ const EDITOR_JS_TOOLS = {
   simpleImage: SimpleImage,
 };
 
-const DOM_ID = 'editor';
+const DOM_ID = "editor";
 
 type Props = {
-  content: any,
-  contentDidChange: Function,
-  readOnly: boolean
+  content: any;
+  contentDidChange: Function;
+  readOnly: boolean;
 };
 
-const Editor: FC<Props> = ({
-  content,
-  contentDidChange,
-  readOnly
-}) => {
+const Editor: FC<Props> = ({ content, contentDidChange, readOnly }) => {
   const ejInstance = useRef();
   const ejUndoInstance = useRef();
   const holder = useRef(DOM_ID);
@@ -87,18 +85,18 @@ const Editor: FC<Props> = ({
       logLevel: "ERROR",
       data: content || DEFAULT_CONTENT,
       onReady: () => {
-        ejInstance.current = editor
+        ejInstance.current = editor;
         editor.readOnly.toggle(readOnly);
 
         //ejUndoInstance.current = new Undo({ editor });
         //ejUndoInstance.current.setReadOnly();
       },
-      onChange: async function() {
+      onChange: async function () {
         let newContent = await editor.saver.save();
         contentDidChange(newContent);
       },
       autofocus: true,
-      tools: EDITOR_JS_TOOLS
+      tools: EDITOR_JS_TOOLS,
     });
   };
 
@@ -107,7 +105,7 @@ const Editor: FC<Props> = ({
     return () => {
       ejInstance.current?.destroy();
       ejInstance.current = null;
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -119,9 +117,7 @@ const Editor: FC<Props> = ({
     }
   }, [readOnly]);
 
-  return (
-    <div id={holder.current} className="px-2 md:px-0"></div>
-  );
+  return <div id={holder.current} className="px-2 md:px-0"></div>;
 };
 
 export default Editor;

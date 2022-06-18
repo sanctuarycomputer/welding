@@ -1,13 +1,13 @@
-import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
-import { gql, ApolloServer } from 'apollo-server-micro';
-import { Neo4jGraphQL } from '@neo4j/graphql';
-import neo4j from 'neo4j-driver';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+import { gql, ApolloServer } from "apollo-server-micro";
+import { Neo4jGraphQL } from "@neo4j/graphql";
+import neo4j from "neo4j-driver";
 
 const driver = neo4j.driver(
-  process.env.NEO4J_URI || '',
+  process.env.NEO4J_URI || "",
   neo4j.auth.basic(
-    process.env.NEO4J_USERNAME || '',
-    process.env.NEO4J_PASSWORD || '',
+    process.env.NEO4J_USERNAME || "",
+    process.env.NEO4J_PASSWORD || ""
   )
 );
 
@@ -15,18 +15,36 @@ const typeDefs = gql`
   type BaseNode {
     tokenId: String!
     fee: String!
-    labels: [String!] @cypher(statement:"MATCH (this) RETURN distinct labels(this)")
+    labels: [String!]
+      @cypher(statement: "MATCH (this) RETURN distinct labels(this)")
 
-    currentRevision: Revision! @cypher(statement:"MATCH (this)<-[r:REVISES]-(rev:Revision) RETURN rev ORDER BY r.block DESC LIMIT 1")
+    currentRevision: Revision!
+      @cypher(
+        statement: "MATCH (this)<-[r:REVISES]-(rev:Revision) RETURN rev ORDER BY r.block DESC LIMIT 1"
+      )
     revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
 
-    owner: Account! @cypher(statement:"MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
-    admins: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a")
-    editors: [Account!]! @cypher(statement:"MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a")
+    owner: Account!
+      @cypher(statement: "MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
+    admins: [Account!]!
+      @cypher(
+        statement: "MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a"
+      )
+    editors: [Account!]!
+      @cypher(
+        statement: "MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a"
+      )
 
-    related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
-    incoming: [Edge!]! @cypher(statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }")
-    outgoing: [Edge!]! @cypher(statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }")
+    related: [BaseNode!]!
+      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN n")
+    incoming: [Edge!]!
+      @cypher(
+        statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }"
+      )
+    outgoing: [Edge!]!
+      @cypher(
+        statement: "MATCH (this)-[r]->(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }"
+      )
   }
 
   type Edge {
@@ -38,8 +56,12 @@ const typeDefs = gql`
 
   type Account {
     address: String!
-    roles: [Role!]! @cypher(statement:"MATCH (this)-[r:CAN|OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }")
-    related: [BaseNode!]! @cypher(statement:"MATCH (this)-[]-(n:BaseNode) RETURN n")
+    roles: [Role!]!
+      @cypher(
+        statement: "MATCH (this)-[r:CAN|OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }"
+      )
+    related: [BaseNode!]!
+      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN n")
   }
 
   type Role {
@@ -63,7 +85,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  const schema = await (new Neo4jGraphQL({ typeDefs, driver })).getSchema();
+  const schema = await new Neo4jGraphQL({ typeDefs, driver }).getSchema();
   const server = new ApolloServer({
     schema,
     introspection: true,
@@ -71,4 +93,4 @@ export default async function handler(req, res) {
   });
   await server.start();
   await server.createHandler({ path: "/api/graphql" })(req, res);
-};
+}

@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import Welding from 'src/lib/Welding';
+import { useState } from "react";
+import Welding from "src/lib/Welding";
 
-const useEditableImage = (
-  formik
-) => {
+const useEditableImage = (formik) => {
   let imageSrc = null;
   if (formik.values.image) {
-    imageSrc =
-      `${Welding.ipfsGateways[0]}${formik.values.image.replace('ipfs://', '/ipfs/')}`;
+    imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(
+      "ipfs://",
+      "/ipfs/"
+    )}`;
   }
   const [imagePreview, setImagePreview] = useState<string | null>(imageSrc);
 
   const clearImage = () => {
     setImagePreview(null);
-    formik.setFieldValue('image', '');
+    formik.setFieldValue("image", "");
   };
 
   const imageDidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,14 +23,14 @@ const useEditableImage = (
     if (!file) return;
 
     const fileReader = new FileReader();
-    fileReader.addEventListener("load", function(e) {
+    fileReader.addEventListener("load", function (e) {
       setImagePreview(e.target.result);
-      formik.setFieldValue('image', e.target.result.split(',')[1]);
+      formik.setFieldValue("image", e.target.result.split(",")[1]);
     });
     fileReader.readAsDataURL(file);
   };
 
   return [imagePreview, imageDidChange, clearImage];
-}
+};
 
 export default useEditableImage;

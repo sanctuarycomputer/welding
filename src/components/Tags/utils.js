@@ -1,4 +1,4 @@
-import escapeRegExp from 'lodash/escapeRegExp';
+import escapeRegExp from "lodash/escapeRegExp";
 
 /**
  * Convert an array of delimiter characters into a regular expression
@@ -13,7 +13,7 @@ export function buildRegExpFromDelimiters(delimiters) {
       const chrCode = delimiter - 48 * Math.floor(delimiter / 48);
       return String.fromCharCode(96 <= delimiter ? chrCode : delimiter);
     })
-    .join('');
+    .join("");
   const escapedDelimiterChars = escapeRegExp(delimiterChars);
   return new RegExp(`[${escapedDelimiterChars}]+`);
 }

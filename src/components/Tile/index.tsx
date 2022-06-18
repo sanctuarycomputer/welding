@@ -1,6 +1,6 @@
-import { FC, useState } from 'react';
-import Spinner from 'src/components/Icons/Spinner';
-import { bgPassive } from 'src/utils/theme';
+import { FC, useState } from "react";
+import Spinner from "src/components/Icons/Spinner";
+import { bgPassive } from "src/utils/theme";
 
 type Props = {
   label: string;
@@ -18,14 +18,13 @@ const Tile: FC<Props> = ({ label, onClick, tracked }) => {
   };
 
   return (
-    <div
-      className={`${bgPassive} inline-flex rounded-full p-1 items-center`}>
-      <span className={`px-1 text-xs ${tracked ? 'uppercase font-bold' : ''}`}>
+    <div className={`${bgPassive} inline-flex rounded-full p-1 items-center`}>
+      <span className={`px-1 text-xs ${tracked ? "uppercase font-bold" : ""}`}>
         {label}
       </span>
 
-      {onClick && (
-        isLoading ? (
+      {onClick &&
+        (isLoading ? (
           <span className={`loader inline-flex`}>
             <Spinner />
           </span>
@@ -33,8 +32,7 @@ const Tile: FC<Props> = ({ label, onClick, tracked }) => {
           <span className="text-xs pr-1 cursor-pointer" onClick={didClickTile}>
             ✕
           </span>
-        )
-      )}
+        ))}
     </div>
   );
 };

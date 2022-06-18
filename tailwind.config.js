@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       aspectRatio: {
-        'sharecard': '120/63'
-      }
+        sharecard: "120/63",
+      },
     },
   },
   plugins: [],
-}
+};

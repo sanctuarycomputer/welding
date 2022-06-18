@@ -1,23 +1,23 @@
-import { BaseEmoji } from 'emoji-mart';
+import { BaseEmoji } from "emoji-mart";
 
 enum Roles {
   OWNER = "Owner",
   ADMIN = "Admin",
-  EDITOR = "Editor"
-};
+  EDITOR = "Editor",
+}
 
 type BaseNodeFormValues = {
-  name: string,
-  description: string,
-  emoji: BaseEmoji,
-  content?: any
+  name: string;
+  description: string;
+  emoji: BaseEmoji;
+  content?: any;
 };
 
 type MintState = {
-  tokenId: string,
-  label: string,
-  progress: number,
-  disabled: boolean
+  tokenId: string;
+  label: string;
+  progress: number;
+  disabled: boolean;
 };
 
 type Role = {
@@ -27,13 +27,16 @@ type Role = {
 
 type Account = {
   address: string;
-  roles: Role[],
-  related: BaseNode[],
+  roles: Role[];
+  related: BaseNode[];
 };
 
 type MetadataProperties = {
-  emoji: BaseEmoji,
-  content?: any
+  emoji: BaseEmoji;
+  content?: any;
+  ui?: {
+    subgraphSidebarDocumentSortOrder?: string[];
+  }
 };
 
 type Metadata = {

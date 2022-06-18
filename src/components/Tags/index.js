@@ -1,17 +1,17 @@
-import React, { Component, createRef } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import isEqual from 'lodash/isEqual';
-import noop from 'lodash/noop';
-import uniq from 'lodash/uniq';
-import get from 'lodash/get';
-import ClearAllTags from './ClearAllTags';
-import Suggestions from './Suggestions';
-import PropTypes from 'prop-types';
-import ClassNames from 'classnames';
-import Tag from './Tag';
+import React, { Component, createRef } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import isEqual from "lodash/isEqual";
+import noop from "lodash/noop";
+import uniq from "lodash/uniq";
+import get from "lodash/get";
+import ClearAllTags from "./ClearAllTags";
+import Suggestions from "./Suggestions";
+import PropTypes from "prop-types";
+import ClassNames from "classnames";
+import Tag from "./Tag";
 
-import { buildRegExpFromDelimiters } from './utils';
+import { buildRegExpFromDelimiters } from "./utils";
 
 //Constants
 import {
@@ -21,7 +21,7 @@ import {
   DEFAULT_ID_FIELD,
   DEFAULT_LABEL_FIELD,
   INPUT_FIELD_POSITIONS,
-} from './constants';
+} from "./constants";
 
 class ReactTags extends Component {
   static propTypes = {
@@ -99,7 +99,7 @@ class ReactTags extends Component {
     if (!props.inline) {
       /* eslint-disable no-console */
       console.warn(
-        '[Deprecation] The inline attribute is deprecated and will be removed in v7.x.x, please use inputFieldPosition instead.'
+        "[Deprecation] The inline attribute is deprecated and will be removed in v7.x.x, please use inputFieldPosition instead."
       );
       /* eslint-enable no-console */
     }
@@ -107,11 +107,11 @@ class ReactTags extends Component {
     const { suggestions } = props;
     this.state = {
       suggestions,
-      query: '',
+      query: "",
       isFocused: false,
       selectedIndex: -1,
       selectionMode: false,
-      ariaLiveStatus: '',
+      ariaLiveStatus: "",
       currentEditIndex: -1,
     };
     this.reactTagsRef = createRef();
@@ -142,9 +142,12 @@ class ReactTags extends Component {
   filteredSuggestions = (query) => {
     let { suggestions, idField } = this.props;
     if (this.props.allowUnique) {
-      const existingTags = this.props.tags.map((tag) => get(tag, idField).toLowerCase());
+      const existingTags = this.props.tags.map((tag) =>
+        get(tag, idField).toLowerCase()
+      );
       suggestions = suggestions.filter(
-        (suggestion) => !existingTags.includes(get(suggestion, idField).toLowerCase())
+        (suggestion) =>
+          !existingTags.includes(get(suggestion, idField).toLowerCase())
       );
     }
     if (this.props.handleFilterSuggestions) {
@@ -167,9 +170,9 @@ class ReactTags extends Component {
   };
 
   resetAndFocusInput = () => {
-    this.setState({ query: '' });
+    this.setState({ query: "" });
     if (this.textInput) {
-      this.textInput.value = '';
+      this.textInput.value = "";
       this.textInput.focus();
     }
   };
@@ -183,10 +186,13 @@ class ReactTags extends Component {
     if (currentTags.length === 0) {
       return;
     }
-    let ariaLiveStatus = `Tag at index ${index} with value ${get(currentTags[index], this.props.idField)} deleted.`;
+    let ariaLiveStatus = `Tag at index ${index} with value ${get(
+      currentTags[index],
+      this.props.idField
+    )} deleted.`;
     this.props.handleDelete(index, event);
     const allTags =
-      this.reactTagsRef.current.querySelectorAll('.ReactTags__remove');
+      this.reactTagsRef.current.querySelectorAll(".ReactTags__remove");
     let nextElementToFocus, nextIndex, nextTag;
     if (index === 0 && currentTags.length > 1) {
       nextElementToFocus = allTags[0];
@@ -202,9 +208,12 @@ class ReactTags extends Component {
       nextElementToFocus = this.textInput;
     }
     if (nextIndex >= 0) {
-      ariaLiveStatus += ` Tag at index ${nextIndex} with value ${get(nextTag, this.props.idField)} focussed. Press backspace to remove`;
+      ariaLiveStatus += ` Tag at index ${nextIndex} with value ${get(
+        nextTag,
+        this.props.idField
+      )} focussed. Press backspace to remove`;
     } else {
-      ariaLiveStatus += 'Input focussed. Press enter to add a new tag';
+      ariaLiveStatus += "Input focussed. Press enter to add a new tag";
     }
     nextElementToFocus.focus();
     this.setState({
@@ -215,9 +224,12 @@ class ReactTags extends Component {
   handleTagClick(i, tag, e) {
     const { editable, handleTagClick, labelField } = this.props;
     if (editable) {
-      this.setState({ currentEditIndex: i, query: get(tag, labelField) }, () => {
-        this.tagInput.focus();
-      });
+      this.setState(
+        { currentEditIndex: i, query: get(tag, labelField) },
+        () => {
+          this.tagInput.focus();
+        }
+      );
     }
     if (handleTagClick) {
       handleTagClick(i, e);
@@ -260,7 +272,7 @@ class ReactTags extends Component {
     if (this.props.handleInputBlur) {
       this.props.handleInputBlur(value);
       if (this.textInput) {
-        this.textInput.value = '';
+        this.textInput.value = "";
       }
     }
     this.setState({ isFocused: false, currentEditIndex: -1 });
@@ -285,7 +297,7 @@ class ReactTags extends Component {
     // If no text is typed in so far, ignore the action - so we don't end up with a terminating
     // character typed in.
     if (this.props.delimiters.indexOf(e.keyCode) !== -1 && !e.shiftKey) {
-      if (e.keyCode !== KEYS.TAB || query !== '') {
+      if (e.keyCode !== KEYS.TAB || query !== "") {
         e.preventDefault();
       }
 
@@ -294,7 +306,7 @@ class ReactTags extends Component {
           ? suggestions[selectedIndex]
           : { [this.props.idField]: query, [this.props.labelField]: query };
 
-      if (selectedQuery !== '') {
+      if (selectedQuery !== "") {
         this.addTag(selectedQuery);
       }
     }
@@ -302,7 +314,7 @@ class ReactTags extends Component {
     // when backspace key is pressed and query is blank, delete tag
     if (
       e.keyCode === KEYS.BACKSPACE &&
-      query === '' &&
+      query === "" &&
       this.props.allowDeleteFromEmptyInput
     ) {
       this.handleDelete(this.props.tags.length - 1, e);
@@ -339,12 +351,12 @@ class ReactTags extends Component {
     e.preventDefault();
 
     const clipboardData = e.clipboardData || window.clipboardData;
-    const clipboardText = clipboardData.getData('text');
+    const clipboardText = clipboardData.getData("text");
 
     const { maxLength = clipboardText.length } = this.props;
 
     const maxTextLength = Math.min(maxLength, clipboardText.length);
-    const pastedText = clipboardData.getData('text').substr(0, maxTextLength);
+    const pastedText = clipboardData.getData("text").substr(0, maxTextLength);
 
     // Used to determine how the pasted content is split.
     const delimiterRegExp = buildRegExpFromDelimiters(this.props.delimiters);
@@ -365,7 +377,10 @@ class ReactTags extends Component {
     const existingKeys = tags.map((tag) => get(tag, idField).toLowerCase());
 
     // Return if tag has been already added
-    if (allowUnique && existingKeys.indexOf(get(tag, idField).toLowerCase()) >= 0) {
+    if (
+      allowUnique &&
+      existingKeys.indexOf(get(tag, idField).toLowerCase()) >= 0
+    ) {
       return;
     }
     if (this.props.autocomplete) {
@@ -386,7 +401,7 @@ class ReactTags extends Component {
 
     // reset the state
     this.setState({
-      query: '',
+      query: "",
       selectionMode: false,
       selectedIndex: -1,
       currentEditIndex: -1,
@@ -539,21 +554,23 @@ class ReactTags extends Component {
 
     return (
       <div
-        className={ClassNames(classNames.tags, 'react-tags-wrapper')}
-        ref={this.reactTagsRef}>
+        className={ClassNames(classNames.tags, "react-tags-wrapper")}
+        ref={this.reactTagsRef}
+      >
         <p
           role="alert"
           className="sr-only"
           style={{
-            position: 'absolute',
-            overflow: 'hidden',
-            clip: 'rect(0 0 0 0)',
-            margin: '-1px',
+            position: "absolute",
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            margin: "-1px",
             padding: 0,
-            width: '1px',
-            height: '1px',
+            width: "1px",
+            height: "1px",
             border: 0,
-          }}>
+          }}
+        >
           {this.state.ariaLiveStatus}
         </p>
         {position === INPUT_FIELD_POSITIONS.TOP && tagInput}

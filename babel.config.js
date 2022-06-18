@@ -1,20 +1,20 @@
 module.exports = function (api) {
-  const isServer = api.caller((caller) => caller?.isServer)
-  const isCallerDevelopment = api.caller((caller) => caller?.isDev)
+  const isServer = api.caller((caller) => caller?.isServer);
+  const isCallerDevelopment = api.caller((caller) => caller?.isDev);
 
   const presets = [
     [
-      'next/babel',
+      "next/babel",
       {
-        'preset-react': {
+        "preset-react": {
           importSource:
             !isServer && isCallerDevelopment
-              ? '@welldone-software/why-did-you-render'
-              : 'react',
+              ? "@welldone-software/why-did-you-render"
+              : "react",
         },
       },
     ],
-  ]
+  ];
 
-  return { presets }
-}
+  return { presets };
+};

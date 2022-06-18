@@ -1,11 +1,11 @@
-import { useState, useEffect, createContext } from 'react';
-import { useNetwork } from 'wagmi';
+import { useState, useEffect, createContext } from "react";
+import { useNetwork } from "wagmi";
 
 interface IExchangeRateContext {
   exchangeRate: number | null;
   exchangeRateLoading: boolean;
   loadExchangeRate: Function;
-};
+}
 
 const ExchangeRateContext = createContext<IExchangeRateContext>();
 const { Provider } = ExchangeRateContext;
@@ -13,14 +13,9 @@ const { Provider } = ExchangeRateContext;
 function ExchangeRateProvider({ children }) {
   const { activeChain } = useNetwork();
 
-  const [
-    exchangeRateLoading,
-    setExchangeRateLoading
-  ] = useState<boolean>(false);
-  const [
-    exchangeRate,
-    setExchangeRate
-  ] = useState<number | null>(null);
+  const [exchangeRateLoading, setExchangeRateLoading] =
+    useState<boolean>(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   const loadExchangeRate = async () => {
     if (!activeChain?.nativeCurrency?.symbol) return;
@@ -31,7 +26,7 @@ function ExchangeRateProvider({ children }) {
         `https://api.coinbase.com/v2/exchange-rates?currency=${symbol}`
       );
       const json = await response.json();
-      setExchangeRate(parseFloat(json.data.rates['USD']));
+      setExchangeRate(parseFloat(json.data.rates["USD"]));
     } finally {
       setExchangeRateLoading(false);
     }
@@ -42,14 +37,16 @@ function ExchangeRateProvider({ children }) {
   }, [activeChain]);
 
   return (
-    <Provider value={{
-      exchangeRateLoading,
-      exchangeRate,
-      loadExchangeRate
-    }}>
+    <Provider
+      value={{
+        exchangeRateLoading,
+        exchangeRate,
+        loadExchangeRate,
+      }}
+    >
       {children}
     </Provider>
   );
-};
+}
 
 export { ExchangeRateContext, ExchangeRateProvider };

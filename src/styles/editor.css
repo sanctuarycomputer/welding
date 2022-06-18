@@ -1,7 +1,7 @@
 .tc-wrap {
   --color-border: var(--background-color-passive) !important;
   --color-background: var(--background-color-passive) !important;
-  --color-text-secondary: var(--text-color) !important);
+  --color-text-secondary: var(--text-color) !important;
 }
 
 .ce-block--selected .ce-block__content,

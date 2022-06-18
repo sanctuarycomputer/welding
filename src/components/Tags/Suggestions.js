@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import isEqual from 'lodash/isEqual';
-import escape from 'lodash/escape';
-import get from 'lodash/get';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import isEqual from "lodash/isEqual";
+import escape from "lodash/escape";
+import get from "lodash/get";
 
 const maybeScrollSuggestionIntoView = (suggestionEl, suggestionsContainer) => {
   const containerHeight = suggestionsContainer.offsetHeight;
@@ -71,11 +71,11 @@ class Suggestions extends Component {
   }
 
   markIt = (input, query) => {
-    const escapedRegex = query.trim().replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
+    const escapedRegex = query.trim().replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&");
     const labelValue = get(input, this.props.labelField);
 
     return {
-      __html: labelValue.replace(RegExp(escapedRegex, 'gi'), (x) => {
+      __html: labelValue.replace(RegExp(escapedRegex, "gi"), (x) => {
         return `<mark>${escape(x)}</mark>`;
       }),
     };
@@ -88,7 +88,7 @@ class Suggestions extends Component {
 
   renderSuggestion = (item, query) => {
     const { renderSuggestion } = this.props;
-    if (typeof renderSuggestion === 'function') {
+    if (typeof renderSuggestion === "function") {
       return renderSuggestion(item, query);
     }
     return <span dangerouslySetInnerHTML={this.markIt(item, query)} />;
@@ -98,7 +98,7 @@ class Suggestions extends Component {
     const { props } = this;
 
     const suggestions = props.suggestions.map(
-      function(item, i) {
+      function (item, i) {
         return (
           <li
             key={i}
@@ -106,8 +106,9 @@ class Suggestions extends Component {
             onTouchStart={props.handleClick.bind(null, i)}
             onMouseOver={props.handleHover.bind(null, i)}
             className={
-              i === props.selectedIndex ? props.classNames.activeSuggestion : ''
-            }>
+              i === props.selectedIndex ? props.classNames.activeSuggestion : ""
+            }
+          >
             {this.renderSuggestion(item, props.query)}
           </li>
         );
@@ -126,7 +127,8 @@ class Suggestions extends Component {
         ref={(elem) => {
           this.suggestionsContainer = elem;
         }}
-        className={this.props.classNames.suggestions}>
+        className={this.props.classNames.suggestions}
+      >
         <ul> {suggestions} </ul>
       </div>
     );

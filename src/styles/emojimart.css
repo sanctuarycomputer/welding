@@ -29,7 +29,9 @@
   display: flex;
 }
 
-.emoji-mart-anchor:hover, .emoji-mart-dark .emoji-mart-anchor:focus, .emoji-mart-dark .emoji-mart-anchor-selected {
+.emoji-mart-anchor:hover,
+.emoji-mart-dark .emoji-mart-anchor:focus,
+.emoji-mart-dark .emoji-mart-anchor-selected {
   color: var(--text-color-passive) !important;
 }
 

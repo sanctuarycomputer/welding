@@ -1,5 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import og from 'open-graph';
+import type { NextApiRequest, NextApiResponse } from "next";
+import og from "open-graph";
 
 export default async function handler(
   req: NextApiRequest,
@@ -8,23 +8,22 @@ export default async function handler(
   // TODO Cors
   try {
     const url = decodeURIComponent(
-      Array.isArray(req.query?.url)
-      ? req.query?.url[0]
-      : req.query.url);
-    og(url, function(e, meta) {
+      Array.isArray(req.query?.url) ? req.query?.url[0] : req.query.url
+    );
+    og(url, function (e, meta) {
       if (meta) {
         res.status(200).json({ success: 1, meta });
       } else {
         res.status(500).json({
-          error: ((e && e.message) || "Unexpected Error")
+          error: (e && e.message) || "Unexpected Error",
         });
       }
     });
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     if (e instanceof Error) {
-      return res.status(500).json({ error: e.message || "unexpected" })
+      return res.status(500).json({ error: e.message || "unexpected" });
     }
-    res.status(500).json({ error: "unexpected" })
+    res.status(500).json({ error: "unexpected" });
   }
 }

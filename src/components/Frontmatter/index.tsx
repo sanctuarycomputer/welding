@@ -1,7 +1,7 @@
-import { FC, useContext, useState } from 'react';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
-import { FormikProps } from 'formik';
-import { BaseNodeFormValues } from 'src/types';
+import { FC, useContext, useState } from "react";
+import { ModalContext, ModalType } from "src/hooks/useModal";
+import { FormikProps } from "formik";
+import { BaseNodeFormValues } from "src/types";
 
 type ReadOnlyProps = {
   formik: FormikProps<BaseNodeFormValues>;
@@ -16,7 +16,9 @@ const FrontmatterReadOnly: FC<ReadOnlyProps> = ({ formik }) => {
             {formik.values.emoji.native}
           </div>
           <div className="grow truncate">
-            <h1 className="text-3xl md:text-5xl font-bold">{formik.values.name}</h1>
+            <h1 className="text-3xl md:text-5xl font-bold">
+              {formik.values.name}
+            </h1>
           </div>
         </div>
 
@@ -35,11 +37,7 @@ type Props = {
   readOnly: boolean;
 };
 
-const Frontmatter: FC<Props> = ({
-  formik,
-  label,
-  readOnly
-}) => {
+const Frontmatter: FC<Props> = ({ formik, label, readOnly }) => {
   if (readOnly) return <FrontmatterReadOnly formik={formik} />;
   const { openModal, closeModal } = useContext(ModalContext);
 
@@ -49,15 +47,18 @@ const Frontmatter: FC<Props> = ({
         <div className="flex items-center mt-4 mb-2">
           <div
             className={`cursor-pointer text-3xl md:text-5xl mr-2`}
-            onClick={() => openModal({
-              type: ModalType.EMOJI_PICKER,
-              meta: {
-                didPickEmoji: (emoji: BaseEmoji) => {
-                  formik.setFieldValue('emoji', emoji);
-                  closeModal();
-                }
-              }
-            })}>
+            onClick={() =>
+              openModal({
+                type: ModalType.EMOJI_PICKER,
+                meta: {
+                  didPickEmoji: (emoji: BaseEmoji) => {
+                    formik.setFieldValue("emoji", emoji);
+                    closeModal();
+                  },
+                },
+              })
+            }
+          >
             {formik.values.emoji.native}
           </div>
           <div className="grow">

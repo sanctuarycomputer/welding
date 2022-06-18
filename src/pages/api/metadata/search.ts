@@ -1,11 +1,11 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import neo4j from 'neo4j-driver';
+import type { NextApiRequest, NextApiResponse } from "next";
+import neo4j from "neo4j-driver";
 
 const driver = neo4j.driver(
-  process.env.NEO4J_URI || '',
+  process.env.NEO4J_URI || "",
   neo4j.auth.basic(
-    process.env.NEO4J_USERNAME || '',
-    process.env.NEO4J_PASSWORD || '',
+    process.env.NEO4J_USERNAME || "",
+    process.env.NEO4J_PASSWORD || ""
   )
 );
 
@@ -16,20 +16,22 @@ export default async function handler(
   try {
     const session = driver.session();
     const { term } = req.query;
-    const results =
-      await session.readTransaction(tx =>
-        tx.run(`
+    const results = await session.readTransaction((tx) =>
+      tx.run(
+        `
           CALL db.index.fulltext.queryNodes("revisionContent", $term)
           YIELD node, score
           RETURN node, score
-        `, { term })
-      );
+        `,
+        { term }
+      )
+    );
     res.status(200).json({ term: term, results: results.records });
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     if (e instanceof Error) {
-      return res.status(500).json({ error: e.message || "unexpected" })
+      return res.status(500).json({ error: e.message || "unexpected" });
     }
-    res.status(500).json({ error: "unexpected" })
+    res.status(500).json({ error: "unexpected" });
   }
 }

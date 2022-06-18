@@ -1,0 +1,7 @@
+.DraggableDocumentLink .handle {
+  display: none;
+}
+
+.DraggableDocumentLink:hover .handle {
+  display: block;
+}

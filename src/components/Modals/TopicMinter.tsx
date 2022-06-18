@@ -1,16 +1,16 @@
-import { FC, useContext, useState, useRef } from 'react';
-import { GraphContext } from 'src/hooks/useGraphData';
-import { ModalContext, ModalType } from 'src/hooks/useModal';
-import Modal from 'react-modal';
-import ModalHeader from 'src/components/Modals/ModalHeader';
-import Button from 'src/components/Button';
-import Check from 'src/components/Icons/Check';
-import toast from 'react-hot-toast';
+import { FC, useContext, useState, useRef } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
+import { ModalContext, ModalType } from "src/hooks/useModal";
+import Modal from "react-modal";
+import ModalHeader from "src/components/Modals/ModalHeader";
+import Button from "src/components/Button";
+import Check from "src/components/Icons/Check";
+import toast from "react-hot-toast";
 
-import { useSigner } from 'wagmi';
-import Client from 'src/lib/Client';
-import Welding from 'src/lib/Welding';
-import { bgPassive, bgInverted } from 'src/utils/theme';
+import { useSigner } from "wagmi";
+import Client from "src/lib/Client";
+import Welding from "src/lib/Welding";
+import { bgPassive, bgInverted } from "src/utils/theme";
 
 export type TopicMinterMeta = {
   topics: BaseNode[];
@@ -33,16 +33,14 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
   setTopicId,
   setTopicDescription,
   openEmojiPicker,
-  currentlyMinting
+  currentlyMinting,
 }) => {
-  const {
-    loadShallowNodes
-  } = useContext(GraphContext);
+  const { loadShallowNodes } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { data: signer } = useSigner();
   const [mintState, setMintState] = useState<MintState>({
     progress: 0,
-    label: "Mint"
+    label: "Mint",
   });
 
   const mintTopic = async () => {
@@ -54,22 +52,28 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       if (!signer) throw new Error("no_signer_present");
 
       toastId = toast.loading(`Publishing metadata...`, {
-        className: 'toast'
+        className: "toast",
       });
       setMintState({
         progress: 0.3,
         label: "Publishing...",
       });
 
-      const { name, description, properties: { emoji }} =
-        topic.currentRevision.metadata;
-      const hash =
-        await Welding.publishMetadataToIPFS({ name, description, emoji });
+      const {
+        name,
+        description,
+        properties: { emoji },
+      } = topic.currentRevision.metadata;
+      const hash = await Welding.publishMetadataToIPFS({
+        name,
+        description,
+        emoji,
+      });
 
       if (!signer) throw new Error("no_signer_present");
 
       toast.loading(`Requesting signature...`, {
-        id: toastId
+        id: toastId,
       });
       setMintState({
         progress: 0.5,
@@ -85,7 +89,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       );
 
       toast.loading(`Minting...`, {
-        id: toastId
+        id: toastId,
       });
       setMintState({
         progress: 0.7,
@@ -95,28 +99,27 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       tx = await tx.wait();
 
       toast.loading(`Confirming...`, {
-        id: toastId
+        id: toastId,
       });
       setMintState({
         progress: 0.9,
         label: "Confirming...",
       });
 
-      const transferEvent =
-        tx.events.find((e: any) => e.event === "Transfer");
+      const transferEvent = tx.events.find((e: any) => e.event === "Transfer");
       if (!transferEvent) return;
       const topicId = transferEvent.args.tokenId;
       await Client.fastForward(tx.blockNumber);
       await loadShallowNodes();
-      toast.success('Success!', {
-        id: toastId
+      toast.success("Success!", {
+        id: toastId,
       });
       setTopicId(topic, topicId.toString());
-    } catch(e) {
+    } catch (e) {
       console.log(e);
-      toast.error('An error occured.', {
+      toast.error("An error occured.", {
         id: toastId,
-        className: 'toast'
+        className: "toast",
       });
     } finally {
       currentlyMinting.current.delete(tempId);
@@ -146,7 +149,9 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
             openEmojiPicker(topic);
           }}
         >
-          <div className={`${bgPassive} aspect-square p-1 mr-2 rounded-full w-8 text-center`}>
+          <div
+            className={`${bgPassive} aspect-square p-1 mr-2 rounded-full w-8 text-center`}
+          >
             {topic.currentRevision.metadata.properties.emoji.native}
           </div>
         </div>
@@ -155,8 +160,8 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
         </p>
         <input
           value={topic.currentRevision.metadata.description}
-          onChange={e => setTopicDescription(topic, e.target.value)}
-          className={`text-xs py-2 mr-4 ${isMinting ? 'cursor-wait' : ''}`}
+          onChange={(e) => setTopicDescription(topic, e.target.value)}
+          className={`text-xs py-2 mr-4 ${isMinting ? "cursor-wait" : ""}`}
           placeholder="Add a description"
           disabled={isMinting}
         />
@@ -170,11 +175,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
   );
 };
 
-const TopicMinter: FC<Props> = ({
-  isOpen,
-  onRequestClose,
-  meta
-}) => {
+const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
@@ -194,89 +195,92 @@ const TopicMinter: FC<Props> = ({
             type: ModalType.TOPIC_MINTER,
             meta: {
               topics: topics,
-              setTopics: setParentTopics
-            }
+              setTopics: setParentTopics,
+            },
           });
         },
         didPickEmoji: (emoji: BaseEmoji) => {
           const index = topics.indexOf(t);
-          if (index !== -1) topics[index] = {
-            ...t,
-            currentRevision: {
-              ...t.currentRevision,
-              metadata: {
-                ...t.currentRevision.metadata,
-                properties: {
-                  ...t.currentRevision.metadata.properties,
-                  emoji
-                }
-              }
-            }
-          };
+          if (index !== -1)
+            topics[index] = {
+              ...t,
+              currentRevision: {
+                ...t.currentRevision,
+                metadata: {
+                  ...t.currentRevision.metadata,
+                  properties: {
+                    ...t.currentRevision.metadata.properties,
+                    emoji,
+                  },
+                },
+              },
+            };
           setTopics([...topics]);
 
           openModal({
             type: ModalType.TOPIC_MINTER,
             meta: {
               topics: topics,
-              setTopics: setParentTopics
-            }
+              setTopics: setParentTopics,
+            },
           });
-        }
-      }
+        },
+      },
     });
   };
 
-  const newTopics = topics.filter(t => t.tokenId.startsWith('-'));
+  const newTopics = topics.filter((t) => t.tokenId.startsWith("-"));
 
   const attemptClose = () => {
-    if (currentlyMinting.current.size) return alert("Currently minting, please wait.");
+    if (currentlyMinting.current.size)
+      return alert("Currently minting, please wait.");
     if (!newTopics.length) return onRequestClose();
     if (confirm("Discard unminted topics?")) {
-      setTopics(topics.filter(t => !t.tokenId.startsWith('-')));
+      setTopics(topics.filter((t) => !t.tokenId.startsWith("-")));
       onRequestClose();
     }
   };
 
   const attemptBack = () => {
-    if (currentlyMinting.current.size) return alert("Currently minting, please wait.");
+    if (currentlyMinting.current.size)
+      return alert("Currently minting, please wait.");
     openModal({
       type: ModalType.TOPIC_CONNECTOR,
       meta: {
         topics,
-        setTopics: setParentTopics
-      }
+        setTopics: setParentTopics,
+      },
     });
   };
 
   const setTopicDescription = (t: BaseNode, description: string) => {
     const index = topics.indexOf(t);
-    if (index !== -1) topics[index] = {
-      ...t,
-      currentRevision: {
-        ...t.currentRevision,
-        metadata: {
-          ...t.currentRevision.metadata,
-          description
-        }
-      }
-    };
+    if (index !== -1)
+      topics[index] = {
+        ...t,
+        currentRevision: {
+          ...t.currentRevision,
+          metadata: {
+            ...t.currentRevision.metadata,
+            description,
+          },
+        },
+      };
     setTopics([...topics]);
   };
 
   const setTopicId = (t: BaseNode, newTokenId: string) => {
     const index = topics.indexOf(t);
-    if (index !== -1) topics[index] = {
-      ...t, tokenId: newTokenId
-    };
+    if (index !== -1)
+      topics[index] = {
+        ...t,
+        tokenId: newTokenId,
+      };
     setTopics([...topics]);
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={attemptClose}
-    >
+    <Modal isOpen={isOpen} onRequestClose={attemptClose}>
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
           onClickBack={attemptBack}
@@ -286,7 +290,7 @@ const TopicMinter: FC<Props> = ({
         />
 
         <div>
-          {newTopics.map(t =>
+          {newTopics.map((t) => (
             <IndividualTopicMinter
               key={t.tokenId}
               topic={t}
@@ -295,16 +299,13 @@ const TopicMinter: FC<Props> = ({
               currentlyMinting={currentlyMinting}
               openEmojiPicker={openEmojiPicker}
             />
-          )}
+          ))}
         </div>
 
         {newTopics.length === 0 && (
-          <div
-            className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+          <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
             <Check />
-            <p className="pt-2 font-semibold">
-              Finished minting your topics.
-            </p>
+            <p className="pt-2 font-semibold">Finished minting your topics.</p>
           </div>
         )}
 

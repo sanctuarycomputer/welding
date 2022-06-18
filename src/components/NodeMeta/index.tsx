@@ -1,18 +1,17 @@
-import Head from 'next/head';
-import Welding from 'src/lib/Welding';
+import Head from "next/head";
+import Welding from "src/lib/Welding";
 
-const NodeMeta = ({
-  formik
-}) => {
+const NodeMeta = ({ formik }) => {
   let imageSrc = null;
   if (formik.values.image) {
-    imageSrc =
-      `${Welding.ipfsGateways[0]}${formik.values.image.replace('ipfs://', '/ipfs/')}`;
+    imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(
+      "ipfs://",
+      "/ipfs/"
+    )}`;
   }
 
   const nameWithEmoji = `${formik.values.emoji.native} ${formik.values.name}`;
-  const emojiCDN =
-    `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${formik.values.emoji.unified}.png`
+  const emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${formik.values.emoji.unified}.png`;
 
   return (
     <Head>
