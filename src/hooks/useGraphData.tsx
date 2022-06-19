@@ -33,7 +33,6 @@ function GraphProvider({ children }) {
     if (shallowNodesSubscription.current === null) {
       const subscription = await Client.makeShallowNodesSubscription();
       subscription.subscribe(async ({ data, loading }) => {
-        console.log("STARTED LOADING SHALLOW NODES");
         setShallowNodesLoading(loading);
         const withRevisions = data.baseNodes.map(async (node: BaseNode) => {
           if (!node) return null;

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import neo4j from "neo4j-driver";
+import * as Sentry from '@sentry/nextjs';
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -29,6 +30,7 @@ export default async function handler(
     res.status(200).json({ term: term, results: results.records });
   } catch (e) {
     console.log(e);
+    Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
     }

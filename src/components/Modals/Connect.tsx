@@ -47,7 +47,7 @@ const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
           ))}
         </div>
 
-        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Wallet />
           <p className="pt-2 font-semibold">
             Connect a provider to get started.

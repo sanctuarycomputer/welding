@@ -3,51 +3,37 @@
 TODO
 
 - [ ] Royalties!
-- [ ] Who gets paid when the token is burnt? (post UI)
+- [ ] What happens when a token is burnt? (deletable)
 - [ ] Validation audit (security)
 - [ ] Rentrent guards? Buffer Overflows? (security)
-- [ ] If you own the first NFT, you can add fees and get paid, (and pause the system)
+- [ ] If you own the first NFT, you can add fees and get paid (platformOwner)
 - [ ] Support Donations
 - [ ] The last admin should not be able to renounce their role
 - [ ] fallback function
-- [ ] The last admin should not be able to renouce permissions
 
-Candy
+---
 
-- [ ] Global activity loader?
-- [ ] Drafts
-- [ ] Editor should extract welding links and ask for references
-- [ ] Editor should have a blocktune feature to link into blocks within revisions
-- [ ] Mobile Modals & Emoji Picker - Action bar & Title Bar in modals should not be scrollable
-- [ ] Image generator should match the final UI colors (or make PNGs?)
-- [ ] Links to welding docs & github
 - [ ] Better approach to SSR on /mint pages
 - [ ] Handle burning tokens (only owner)
-- [ ] Minting a new document appends ?nid=slug
-- [ ] Document Meta should include Subgraph title
+- [ ] Bug: Minting a new document appends ?nid=slug
+- [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 
 Before Deploy:
 
-- [ ] Autoformat code
-- [ ] Remove babel?
 - [ ] Cleanup env
-- [ ] Cleanup unused packages
-- [ ] Test for unnecessary rerenders
-- [ ] Cache accounts?
-- [ ] 404 & 500 pages
-- [ ] Select the correct chain
+- [ ] Select the correct chain from ENV
 - [ ] Page Caching & purges?
 - [ ] Deploys
 - [ ] Security - Alchemy settings, IPFS settings, etc
 - [ ] CORS
-- [ ] Console Logs
 - [ ] Re-add tsc check to Husky
 - [ ] Remove TS Lint?
-- [ ] Error Boundary
 
 Roadmap
 
-- [ ] Deprecate Welding.js
+- [ ] Sitemap.xml
+- [ ] Check Welding Balance?
+- [ ] Drafts
 - [ ] Iron Session? (Persisted Drafts)
 - [ ] Comments
 - [ ] Favorites
@@ -57,6 +43,15 @@ Roadmap
 - [ ] Add Rainbow Provider
 - [ ] Handle corrupt data cases on the UI
 - [ ] I should be able to view a revision for subgraph
+- [ ] Global activity loader?
+- [ ] Editor: Support in-page Image Uploads
+- [ ] Editor: Support callouts
+- [ ] Editor: Support Text Color
+- [ ] Editor: Support Deeplinks into Blocks
+- [ ] Editor: Sync'd blocks
+- [ ] When viewing a revision, I should see a message so that I realize
+- [ ] Ability to color your Node's background
+- [ ] Referenced documents should have backlinks
 
 Ideas for Writing:
 
@@ -64,6 +59,7 @@ Ideas for Writing:
 - [ ] How it Works
 - [ ] NFT Contracts as a Database
 - [ ] Smart Contract as Event Emitter
-- [ ] How to File Bugs
+- [ ] How to file bugs
 - [ ] Tradable Hyper Structures
-- [ ] Monetizing your Nodes
+- [ ] Monetizing your nodes
+- [ ] Open Source Shoutouts

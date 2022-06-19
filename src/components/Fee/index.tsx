@@ -11,6 +11,7 @@ import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
 import NProgress from "nprogress";
 import toast from "react-hot-toast";
+import * as Sentry from '@sentry/nextjs';
 
 // Can Edit?
 const Fee = ({ node, setLocked }) => {
@@ -65,6 +66,7 @@ const Fee = ({ node, setLocked }) => {
             id: toastId,
           });
           console.log(e);
+          Sentry.captureException(e);
         } finally {
           setLocked(false);
         }
@@ -132,7 +134,7 @@ const Fee = ({ node, setLocked }) => {
         </tbody>
       </table>
 
-      <div className="py-16 flex relative flex-grow justify-center items-center flex-col">
+      <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col">
         <FeeIcon />
         <p className="pt-2 font-semibold">
           This fee is applied when external users reference this node.

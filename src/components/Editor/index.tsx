@@ -8,17 +8,18 @@ import Paragraph from "@editorjs/paragraph";
 import Embed from "@editorjs/embed";
 import Table from "@editorjs/table";
 import List from "@editorjs/list";
-import Warning from "@editorjs/warning";
 import Code from "@editorjs/code";
 import LinkTool from "@editorjs/link";
-//import Image from '@editorjs/image';
-import Raw from "@editorjs/raw";
 import Quote from "@editorjs/quote";
 import Marker from "@editorjs/marker";
-import CheckList from "@editorjs/checklist";
 import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
 import SimpleImage from "@editorjs/simple-image";
+
+// import Raw from "@editorjs/raw";
+// import Warning from "@editorjs/warning";
+// import CheckList from "@editorjs/checklist";
+// import Image from '@editorjs/image';
 
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
@@ -31,6 +32,11 @@ const DEFAULT_CONTENT = {
 };
 
 const EDITOR_JS_TOOLS = {
+  // image: Image,
+  // checklist: CheckList,
+  // warning: Warning,
+  // raw: Raw,
+
   paragraph: {
     class: Paragraph,
     inlineToolbar: true,
@@ -38,14 +44,11 @@ const EDITOR_JS_TOOLS = {
   embed: Embed,
   table: Table,
   list: List,
-  warning: Warning,
   code: Code,
   linkTool: {
     class: LinkTool,
     config: { endpoint: "/api/og" },
   },
-  //image: Image,
-  raw: Raw,
   header: {
     class: Header,
     config: {
@@ -55,7 +58,6 @@ const EDITOR_JS_TOOLS = {
   },
   quote: Quote,
   marker: Marker,
-  checklist: CheckList,
   delimiter: Delimiter,
   inlineCode: InlineCode,
   simpleImage: SimpleImage,
@@ -81,6 +83,7 @@ const Editor: FC<Props> = ({ content, contentDidChange, readOnly }) => {
 
     const editor = new EditorJS({
       readOnly,
+      minHeight: 20,
       holder: holder.current,
       logLevel: "ERROR",
       data: content || DEFAULT_CONTENT,

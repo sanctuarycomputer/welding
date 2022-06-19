@@ -24,7 +24,6 @@ const NodeShow: FC<Props> = ({ node }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const q = context.resolvedUrl.split("?")[1];
-  console.log(q, context.resolvedUrl);
 
   let { nid } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
@@ -47,6 +46,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   if (nodeType === "Subgraph") {
+    const sortOrder =
+      node.currentRevision.metadata.properties.ui?.subgraphSidebarDocumentSortOrder || [];
+    const homepage = node.related.find(n => n.tokenId === sortOrder[0]);
+    if (homepage) {
+      return {
+        redirect: {
+          permanent: false,
+          destination: `/${slugifyNode(node)}/${slugifyNode(homepage)}`,
+        },
+      };
+    }
+
     const subgraphDocuments = getRelatedNodes(
       node,
       "incoming",

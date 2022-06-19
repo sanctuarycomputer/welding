@@ -8,23 +8,6 @@ import Hashtag from "src/components/Icons/Hashtag";
 import { WithOutContext as ReactTags } from "src/components/Tags";
 import { emojis } from "src/utils/defaultEmoji";
 
-import { gql } from "@apollo/client";
-
-const baseNodesShallowQuery = gql`
-  query BaseNodes {
-    baseNodes {
-      tokenId
-      labels
-      currentRevision {
-        hash
-        block
-        content
-        contentType
-      }
-    }
-  }
-`;
-
 export type TopicConnectorMeta = {
   topics: BaseNode[];
   setTopics: (topics: BaseNode[]) => void;
@@ -117,7 +100,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           />
         </div>
 
-        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Hashtag />
           <p className="pt-2 font-semibold">Loading Topics, please wait...</p>
         </div>
@@ -148,11 +131,11 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           />
         </div>
 
-        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Hashtag />
           <p className="pt-2 font-semibold">
             Topics improve discoverability of nodes, and reward the owner of the
-            Topic NFT.
+            Topic NFT whenever they're referenced.
           </p>
         </div>
 

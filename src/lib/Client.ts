@@ -1,11 +1,15 @@
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
-
 import { BaseNode, Metadata, Revision } from "src/types";
-
 import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
-
 import { fetchEnsName } from "@wagmi/core";
 import { emojiIndex, BaseEmoji } from "emoji-mart";
+
+let baseHostWithProtocol = process.env.NEXT_PUBLIC_BASE_HOST;
+if (baseHostWithProtocol === "localhost:3000") {
+  baseHostWithProtocol = `http://${baseHostWithProtocol}`;
+} else {
+  baseHostWithProtocol = `https://${baseHostWithProtocol}`;
+}
 
 const DEFAULT_EMOJI: BaseEmoji = Object.values(
   emojiIndex.emojis
@@ -88,7 +92,7 @@ const Client = {
     }
     Client._client = new ApolloClient({
       cache,
-      uri: "http://localhost:3000/api/graphql",
+      uri: `${baseHostWithProtocol}/api/graphql`,
     });
     return Client._client;
   },
@@ -109,14 +113,14 @@ const Client = {
   },
 
   fetchMetadataForHash: async function (hash: string): Promise<Metadata> {
-    const response = await fetch(`http://localhost:3000/api/metadata/${hash}`);
+    const response = await fetch(`${baseHostWithProtocol}/api/metadata/${hash}`);
     if (!response.ok) return Promise.resolve(ERROR_METADATA);
     return await response.json();
   },
 
   fastForward: async function (blockNumber: number): Promise<void> {
     const response = await fetch(
-      `http://localhost:3000/api/sync?ensure=${blockNumber}`
+      `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}`
     );
     if (!response.ok) throw new Error("could_not_fastforward");
   },

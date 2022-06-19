@@ -15,8 +15,13 @@ import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
-import getRelatedNodes from "src/utils/getRelatedNodes";
 import withPublisher from "src/hoc/withPublisher";
+import {
+  getRelatedNodes,
+  stageNodeRelations,
+} from "src/lib/makeBaseNodeFormik";
+import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
+import { textPassive } from 'src/utils/theme';
 
 import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("src/components/Editor"), {
@@ -32,7 +37,7 @@ const DocumentStashInfo = ({ subgraph }) => {
     const name = subgraph.currentRevision.metadata.name;
     const emoji = subgraph.currentRevision.metadata.properties.emoji.native;
     return (
-      <p>
+      <p className="pl-2 md:pl-0">
         <span className="opacity-50">Stashed from </span>
         <Link href={`/${slugifyNode(subgraph)}`}>
           <a className="opacity-50 hover:opacity-100">
@@ -60,21 +65,18 @@ const Document: FC<Props> = ({
 
   const { data: account } = useAccount();
   const { data: signer } = useSigner();
-  const { accountData, loadAccountData, canEditNode } =
-    useContext(GraphContext);
+  const {
+    accountData,
+    loadAccountData,
+    canEditNode,
+    shallowNodes
+  } = useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
 
   const canEdit = node.tokenId.startsWith("-") || canEditNode(node);
 
   const canAdd = !!accountData;
-
-  const documentTopics = getRelatedNodes(
-    node,
-    "incoming",
-    "Topic",
-    "DESCRIBES"
-  );
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -95,27 +97,42 @@ const Document: FC<Props> = ({
     }
   );
 
-  const triggerConnect = () => {
-    openModal({
-      type: ModalType.SUBGRAPH_CONNECTOR,
-      meta: { node },
-    });
-  };
+  // We assume that shallowNodes is always up to date.
+  useEffect(() => {
+    const tokenIds =
+      extractTokenIdsFromContentBlocks(formik.values.content?.blocks || []);
+    const referencedNodes =
+      (shallowNodes || []).filter((n) => tokenIds.includes(n.tokenId));
+    stageNodeRelations(
+      formik,
+      "incoming",
+      referencedNodes,
+      "REFERENCED_BY",
+      true
+    );
+  }, [formik.values.content, shallowNodes]);
+
+  const references = getRelatedNodes(
+    formik,
+    "incoming",
+    "BaseNode",
+    "REFERENCED_BY"
+  );
 
   const subgraphParent = getRelatedNodes(
-    node,
+    formik,
     "outgoing",
     "Subgraph",
     "BELONGS_TO"
   )[0];
-
-  const showStashInfo =
-    router.query.nid.split("-")[0] !== subgraphParent?.tokenId;
+  const showStashInfo = (
+    router.query.nid &&
+    router.query.nid.split("-")[0] !== subgraphParent?.tokenId
+  );
 
   return (
     <>
       <NodeMeta formik={formik} />
-
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div
@@ -153,6 +170,33 @@ const Document: FC<Props> = ({
               formik.setFieldValue("content", content)
             }
           />
+
+          {references.length > 0 && (
+            <>
+              <div className="flex justify-between ">
+                <p
+                  className={`${textPassive} pb-2 font-semibold tracking-wide uppercase`}
+                >
+                  In-Graph References
+                </p>
+              </div>
+              <ol className="list-decimal text-xs list-inside">
+                {references.map(n => {
+                  const name = n.currentRevision.metadata.name;
+                  const emoji = n.currentRevision.metadata.properties.emoji.native;
+                  return (
+                    <li key={n.tokenId}>
+                      <Link href={`/${slugifyNode(n)}`}>
+                        <a className="opacity-50 hover:opacity-100">
+                          {emoji} {name}
+                        </a>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </>
+          )}
         </div>
       </div>
     </>

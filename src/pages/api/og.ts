@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import og from "open-graph";
+import * as Sentry from '@sentry/nextjs';
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,6 +22,7 @@ export default async function handler(
     });
   } catch (e) {
     console.log(e);
+    Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
     }

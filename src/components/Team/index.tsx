@@ -13,6 +13,7 @@ import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
 import NProgress from "nprogress";
 import toast from "react-hot-toast";
+import * as Sentry from '@sentry/nextjs';
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { bg } from "src/utils/theme";
 
@@ -104,6 +105,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
             id: toastId,
           });
           console.log(e);
+          Sentry.captureException(e);
         } finally {
           setLocked(false);
           NProgress.done();
@@ -160,6 +162,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
             id: toastId,
           });
           console.log(e);
+          Sentry.captureException(e);
         } finally {
           setLocked(false);
           NProgress.done();
@@ -229,6 +232,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
       console.log(e);
+      Sentry.captureException(e);
     } finally {
       setLocked(false);
     }
@@ -270,6 +274,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
       console.log(e);
+      Sentry.captureException(e);
     } finally {
       setLocked(false);
     }
@@ -394,7 +399,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         </tbody>
       </table>
 
-      <div className="py-16 flex relative flex-grow justify-center items-center flex-col">
+      <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col">
         <Reflection />
         <p className="pt-2 font-semibold">
           Admins can edit and invite others. Editors can not manage roles.

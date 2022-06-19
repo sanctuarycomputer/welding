@@ -18,10 +18,6 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
   useEffect(() => {
     if (activeChain) {
       if (activeChain.network === process.env.NEXT_PUBLIC_NETWORK) {
-        console.log("Correct Network");
-        toast.success("Correct network selected!", {
-          className: "toast",
-        });
         onRequestClose();
       }
     } else {
@@ -46,7 +42,7 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
           onClickClose={() => alert(hint)}
         />
 
-        <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Network />
           <p className="pt-2 font-semibold">
             Select "{expectedChain?.name || "correct network"}" to get started.

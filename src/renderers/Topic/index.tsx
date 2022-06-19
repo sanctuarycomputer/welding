@@ -3,14 +3,13 @@ import { ModalContext, ModalType } from "src/hooks/useModal";
 import type { GetServerSideProps } from "next";
 import { GraphContext } from "src/hooks/useGraphData";
 import { NavContext } from "src/hooks/useNav";
-import slugifyNode from "src/utils/slugifyNode";
 import EditNav from "src/components/EditNav";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import TopicTile from "src/components/TopicTile";
 import type { BaseNode } from "src/types";
 import Client from "src/lib/Client";
-import Welding from "src/lib/Welding";
+import slugifyNode from "src/utils/slugifyNode";
 import Document from "src/components/Icons/Document";
 import Graph from "src/components/Icons/Graph";
 import Card from "src/components/Card";
@@ -194,7 +193,7 @@ const TopicsShow: FC<Props> = ({
                 return (
                   <Link
                     key={node.tokenId}
-                    href={`/${Welding.slugifyNode(node)}`}
+                    href={`/${slugifyNode(node)}`}
                   >
                     <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                       <div className="flex flex-row items-center py-1 flex-grow">
@@ -219,7 +218,7 @@ const TopicsShow: FC<Props> = ({
                 return (
                   <Link
                     key={node.tokenId}
-                    href={`/${Welding.slugifyNode(node)}`}
+                    href={`/${slugifyNode(node)}`}
                   >
                     <a>
                       <Card key={node.tokenId} node={node} />
@@ -248,5 +247,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return { props: { node } };
 };
 
-TopicsShow.whyDidYouRender = true;
 export default withPublisher("Topic", TopicsShow);

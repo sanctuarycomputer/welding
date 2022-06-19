@@ -5,7 +5,6 @@ import type { GetServerSideProps } from "next";
 import type { Account } from "src/types";
 import { NavContext } from "src/hooks/useNav";
 import Client from "src/lib/Client";
-import Welding from "src/lib/Welding";
 import Document from "src/components/Icons/Document";
 import Graph from "src/components/Icons/Graph";
 import Hashtag from "src/components/Icons/Hashtag";
@@ -13,6 +12,7 @@ import dynamic from "next/dynamic";
 import Card from "src/components/Card";
 import TopicTile from "src/components/TopicTile";
 import getRelatedNodes from "src/utils/getRelatedNodes";
+import slugifyNode from "src/utils/slugifyNode";
 
 import { useAccount } from "wagmi";
 import { fetchEnsAddress } from "@wagmi/core";
@@ -139,7 +139,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
             return (
               <Link
                 key={node.n.tokenId}
-                href={`/${Welding.slugifyNode(node.n)}`}
+                href={`/${slugifyNode(node.n)}`}
               >
                 <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                   <div className="flex flex-row items-center py-1 flex-grow">
@@ -164,7 +164,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
             return (
               <Link
                 key={node.n.tokenId}
-                href={`/${Welding.slugifyNode(node.n)}`}
+                href={`/${slugifyNode(node.n)}`}
               >
                 <a className="inline-block pb-2">
                   <TopicTile topic={node.n} />
@@ -185,11 +185,11 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
               "BELONGS_TO"
             );
 
-            let link = `/${Welding.slugifyNode(node.n)}`;
+            let link = `/${slugifyNode(node.n)}`;
             if (subgraphs.length === 1) {
-              link = `/${Welding.slugifyNode(
+              link = `/${slugifyNode(
                 subgraphs[0]
-              )}/${Welding.slugifyNode(node.n)}`;
+              )}/${slugifyNode(node.n)}`;
             } else if (subgraphs.length > 1) {
               debugger;
               const ownedSubgraphs = subgraphs.reduce((acc, subgraph) => {
@@ -199,9 +199,9 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
                 return acc;
               }, []);
               if (ownedSubgraphs.length === 1) {
-                link = `/${Welding.slugifyNode(
+                link = `/${slugifyNode(
                   ownedSubgraphs[0]
-                )}/${Welding.slugifyNode(node.n)}`;
+                )}/${slugifyNode(node.n)}`;
               }
             }
 

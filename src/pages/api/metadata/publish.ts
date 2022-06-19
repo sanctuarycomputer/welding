@@ -3,6 +3,7 @@ import { createCanvas, loadImage } from "canvas";
 import { NFTStorage, File } from "nft.storage";
 import { MetadataProperties } from "src/types";
 import { fileTypeFromBuffer } from "file-type";
+import * as Sentry from '@sentry/nextjs';
 
 type Data = {
   hash: string;
@@ -30,7 +31,13 @@ const makeImageFileForEmoji = async (emoji) => {
   const img = await loadImage(apple64);
   const canvas = createCanvas(1200, 630);
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#1f2937";
+
+  const gradient = ctx.createLinearGradient(0,0, 1200,630);
+  gradient.addColorStop(0, '#f5f5f5');
+  gradient.addColorStop(0.6, '#404040');
+  gradient.addColorStop(1, '#262626');
+  ctx.fillStyle = gradient;
+
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const xOffset = -30;
@@ -61,8 +68,6 @@ export default async function handler(
 ) {
   try {
     const { name, description, emoji, ui, content, image } = req.body;
-
-    console.log(ui);
 
     let coverImage = image;
     if (coverImage) {
@@ -110,6 +115,7 @@ export default async function handler(
     return res.status(200).json({ hash: data.ipnft });
   } catch (e) {
     console.log(e);
+    Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
     }

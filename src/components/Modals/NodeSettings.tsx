@@ -62,7 +62,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               onClick={() => !locked && setLevel(SettingsLevel.METADATA)}
             >
               <Data />
-              <p className="pl-2 font-semibold whitespace-nowrap">
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
                 NFT Metadata
               </p>
             </div>
@@ -73,7 +73,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               onClick={() => !locked && setLevel(SettingsLevel.TEAM)}
             >
               <TeamIcon />
-              <p className="pl-2 font-semibold whitespace-nowrap">
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
                 Permissions
               </p>
             </div>
@@ -84,7 +84,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               onClick={() => !locked && setLevel(SettingsLevel.HISTORY)}
             >
               <History />
-              <p className="pl-2 font-semibold whitespace-nowrap">
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
                 Revision History
               </p>
             </div>
@@ -95,7 +95,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               onClick={() => !locked && setLevel(SettingsLevel.FEE)}
             >
               <FeeIcon />
-              <p className="pl-2 font-semibold whitespace-nowrap">
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
                 Connection Fee
               </p>
             </div>
@@ -121,6 +121,10 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             )}
           </div>
         </div>
+
+        <div className="flex relative flex-grow justify-center items-center flex-col border-t sm:hidden">
+        </div>
+
       </div>
     </Modal>
   );

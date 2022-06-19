@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { useSigner } from "wagmi";
 import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
+import * as Sentry from '@sentry/nextjs';
 import { bgPassive, bgInverted } from "src/utils/theme";
 
 export type TopicMinterMeta = {
@@ -81,7 +82,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       });
 
       let tx = await Welding.Nodes.connect(signer).mint(
-        Welding.LABELS.topic,
+        "Topic",
         hash,
         [],
         [],
@@ -117,6 +118,7 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
       setTopicId(topic, topicId.toString());
     } catch (e) {
       console.log(e);
+      Sentry.captureException(e);
       toast.error("An error occured.", {
         id: toastId,
         className: "toast",
@@ -303,7 +305,7 @@ const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
         </div>
 
         {newTopics.length === 0 && (
-          <div className="py-16 flex relative flex-grow justify-center items-center flex-col border-b border-color">
+          <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
             <Check />
             <p className="pt-2 font-semibold">Finished minting your topics.</p>
           </div>

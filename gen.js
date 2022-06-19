@@ -7,7 +7,12 @@ const makeImageFileForEmoji = async () => {
   const img = await loadImage(apple64);
   const canvas = createCanvas(1200, 630);
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#1f2937";
+
+  const gradient = ctx.createLinearGradient(0,0, 1200,630);
+  gradient.addColorStop(0, '#f5f5f5');
+  gradient.addColorStop(0.6, '#404040');
+  gradient.addColorStop(1, '#262626');
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const xOffset = -30;

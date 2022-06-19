@@ -2,6 +2,7 @@ import { FC } from "react";
 import Modal from "react-modal";
 import ModalHeader from "src/components/Modals/ModalHeader";
 import { Picker, BaseEmoji } from "emoji-mart";
+import Uwu from 'src/components/Icons/Uwu';
 
 export type EmojiPickerMeta = {
   didPickEmoji: (emoji: BaseEmoji) => void;
@@ -20,16 +21,20 @@ const EmojiPicker: FC<Props> = ({ onRequestClose, meta }) => {
         <ModalHeader
           onClickBack={meta.back}
           title="Choose an Emoji"
-          hint="Mint to own the following topics"
+          hint="Select an emoji to represent this node"
           onClickClose={onRequestClose}
         />
-      </div>
-      <div>
         <Picker
           onSelect={meta.didPickEmoji}
           showSkinTones={false}
           showPreview={false}
         />
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-t sm:hidden">
+          <Uwu />
+          <p className="pt-2 font-semibold">
+            All nodes in Welding are represented by an emoji.
+          </p>
+        </div>
       </div>
     </Modal>
   );

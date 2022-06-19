@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Welding from "src/lib/Welding";
 import neo4j from "neo4j-driver";
+import * as Sentry from '@sentry/nextjs';
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -321,6 +322,7 @@ export default async function handler(
     res.status(200).json({ status: "synced", cursor: endAt });
   } catch (e) {
     console.log(e);
+    Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
     }

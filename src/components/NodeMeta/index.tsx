@@ -10,12 +10,21 @@ const NodeMeta = ({ formik }) => {
     )}`;
   }
 
-  const nameWithEmoji = `${formik.values.emoji.native} ${formik.values.name}`;
+  const belongsTo = formik.values.outgoing.find(
+    (e) => e.name === "BELONGS_TO"
+  );
+  const belongsToNode = formik.values.related.find(
+    (n) => n.tokenId === belongsTo?.tokenId
+  );
+
+  let name = `${formik.values.name}`;
+  if (belongsToNode) name = `${name} • ${belongsToNode.currentRevision.metadata.name}`;
+  const nameWithEmoji = `${formik.values.emoji.native} ${name}`;
   const emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${formik.values.emoji.unified}.png`;
 
   return (
     <Head>
-      <title>{formik.values.name}</title>
+      <title>{name}</title>
       <link rel="shortcut icon" href={emojiCDN} />
       <meta name="description" content={formik.values.description} />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />

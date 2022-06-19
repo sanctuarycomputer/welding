@@ -5,10 +5,13 @@ import NProgress from "nprogress";
 import Welding from "src/lib/Welding";
 import toast from "react-hot-toast";
 import Client from "src/lib/Client";
-import { detailedDiff } from "deep-object-diff";
+import { diff, detailedDiff } from "deep-object-diff";
 import { BigNumber } from "@ethersproject/bignumber";
+import onlyUnique from 'src/utils/onlyUnique';
+import * as Sentry from '@sentry/nextjs';
 
 enum PublishStep {
+  RESOLVE = "RESOLVE",
   FEES = "FEES",
   PUBLISH = "PUBLISH",
   REQUEST_SIG = "REQUEST_SIG",
@@ -68,7 +71,8 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       try {
         if (!signer) throw new Error("no_signer_present");
 
-        const incomingDiff = detailedDiff(node.incoming, values.incoming);
+        const incomingDiff =
+          detailedDiff(node.incoming, values.incoming);
         const hasConnectionChanges =
           Object.values(incomingDiff.added).length > 0 ||
           Object.values(incomingDiff.updated).length > 0 ||
@@ -171,6 +175,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
           toast.dismiss();
         } else {
           console.log(e);
+          Sentry.captureException(e);
           NProgress.done();
           toast.error("An error occured.", {
             id,
@@ -216,18 +221,21 @@ export const getRelatedNodes = (
     });
 };
 
-export const hasStagedRelations = (
-  formik,
-  relation: "incoming" | "outgoing",
-  nodes: BaseNode[],
-  name: string
-) => {
-  return nodes.every((n) => {
-    return !!formik.values[relation].find((e) => {
-      return e.name === name && e.tokenId === n.tokenId && e.active;
-    });
-  });
-};
+//export const hasStagedRelations = (
+//  formik,
+//  relation: "incoming" | "outgoing",
+//  nodes: BaseNode[],
+//  name: string,
+//  exclusive: boolean
+//) => {
+//  if (!exclusive) {
+//    return nodes.every((n) => {
+//      return !!formik.values[relation].find((e) => {
+//        return e.name === name && e.tokenId === n.tokenId && e.active;
+//      });
+//    });
+//  }
+//};
 
 export const stageNodeRelations = (
   formik,
@@ -284,12 +292,32 @@ export const stageNodeRelations = (
     })
     .filter((e) => e !== null);
 
-  formik.setFieldValue(relation, [...activatedExistingEdges, ...missingEdges]);
+  const newEdges = [...activatedExistingEdges, ...missingEdges];
+  if (Object.values(diff(formik.values[relation], newEdges)).length) {
+    formik.setFieldValue(relation, newEdges);
+  }
+
+  // Check to see if we actually need to update
+  // the related hash, as this will cause rerenders
+  const existingIds = formik
+    .values
+    .related
+    .map(n => n.tokenId)
+    .filter(onlyUnique);
 
   const otherRelatedNodes = formik.values.related.filter((n: BaseNode) => {
     return !nodeIds.includes(n.tokenId);
   });
-  formik.setFieldValue("related", [...otherRelatedNodes, ...nodes]);
+  const newRelated = [...otherRelatedNodes, ...nodes];
+  const newIds = newRelated
+    .map(n => n.tokenId)
+    .filter(onlyUnique)
+    .sort(function (a, b) {
+      return existingIds.indexOf(a) - existingIds.indexOf(b);
+    });
+  if (Object.values(diff(existingIds, newIds)).length) {
+    formik.setFieldValue("related", newRelated);
+  }
 };
 
 export const unstageNodeRelations = (

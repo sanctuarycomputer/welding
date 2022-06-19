@@ -17,16 +17,10 @@ const Welding = {
   ),
   fallbackProvider,
 
-  LABELS: {
-    subgraph: "subgraph",
-    document: "document",
-    topic: "topic",
-  },
-
   ipfsGateways: [
     "https://welding.infura-ipfs.io",
-    "https://ipfs.io",
-    "https://cloudflare-ipfs.com",
+    //"https://ipfs.io",
+    //"https://cloudflare-ipfs.com"
   ],
 
   getBlockNumber: async function (
@@ -44,11 +38,7 @@ const Welding = {
     const p = provider || fallbackProvider;
     endAt = endAt || (await p.getBlockNumber());
     const events = await Welding.queryEventsByBlockRange(startAt, endAt);
-    return {
-      endAt,
-      events,
-      //events.sort(function(a, b){ return a.blockNumber - b.blockNumber; })
-    };
+    return { endAt, events };
   },
 
   queryEventsByBlockRange: async function (
@@ -64,7 +54,6 @@ const Welding = {
     } catch (error: any) {
       // TODO: Better types for this error
       if (JSON.parse(error.body).error.code !== -32005) throw new Error(error);
-      console.log(fromBlock, toBlock);
       const midBlock = (fromBlock + toBlock) >> 1;
       const arr1 = await Welding.queryEventsByBlockRange(fromBlock, midBlock);
       const arr2 = await Welding.queryEventsByBlockRange(midBlock + 1, toBlock);
@@ -90,12 +79,6 @@ const Welding = {
     });
     const { hash } = await response.json();
     return hash;
-  },
-
-  slugifyNode: function (node: BaseNode) {
-    return slugify(`${node.tokenId} ${node.currentRevision.metadata.name}`, {
-      lower: true,
-    });
   },
 };
 

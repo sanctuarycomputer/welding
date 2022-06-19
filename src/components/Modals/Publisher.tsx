@@ -237,7 +237,7 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
             {removedConnections.length > 1 ? "s" : ""} removed
           </p>
         ) : (
-          <p>No connections removed</p>
+          <p className={textPassive}>No connections removed</p>
         )}
 
         <Button label="Confirm" onClick={resolve} />
@@ -265,8 +265,6 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
     Object.values(incomingDiff.updated).length > 0 ||
     Object.values(incomingDiff.deleted).length > 0;
 
-  console.log(incomingDiff, node.incoming, formik.values.incoming);
-
   return (
     <Modal isOpen={true} onRequestClose={attemptClose}>
       <div className="h-screen sm:h-auto flex flex-col">
@@ -280,7 +278,7 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
             <PublisherStep
               icon="①"
               title="Confirm New Connections"
-              description="Your node’s data is being published on the permanent internet."
+              description=""
               active={status === PublishStep.FEES}
               error={error}
             >
@@ -294,32 +292,32 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
 
           <PublisherStep
             icon={hasConnectionChanges ? "②" : "①"}
-            title="Publishing NFT Metadata to IPFS"
-            description="Your node’s data is being published on the permanent internet."
+            title="Publish Metadata to IPFS"
+            description="This usually takes ~30 seconds or so, but sometimes a few minutes."
             active={status === PublishStep.PUBLISH}
             error={error}
           />
 
           <PublisherStep
             icon={hasConnectionChanges ? "③" : "②"}
-            title="Confirm Transaction with your Wallet Provider"
-            description="Please confirm the transaction to publish."
+            title="Confirm Transaction"
+            description="Please confirm the transaction in your wallet provider."
             active={status === PublishStep.REQUEST_SIG}
             error={error}
           />
 
           <PublisherStep
             icon={hasConnectionChanges ? "④" : "③"}
-            title="Processing Transaction on the Blockchain"
-            description="Transaction processing. This usually takes ~30 seconds or so."
+            title="Process Transaction on the Blockchain"
+            description="This usually takes ~30 seconds or so, but sometimes a few minutes."
             active={status === PublishStep.TRANSACT}
             error={error}
           />
 
           <PublisherStep
             icon={hasConnectionChanges ? "⑤" : "④"}
-            title="Confirming & Caching Transaction"
-            description="We're caching your new NFT metadata for fast access."
+            title="Confirm & Cache Metadata"
+            description="We're caching your metadata for fast access."
             active={status === PublishStep.CONFIRM}
             error={error}
           />

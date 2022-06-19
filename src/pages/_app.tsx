@@ -1,4 +1,3 @@
-import "scripts/wdyr";
 import "emoji-mart/css/emoji-mart.css";
 import "src/styles/globals.css";
 import "src/styles/emojimart.css";
@@ -19,6 +18,9 @@ import { NavProvider } from "src/hooks/useNav";
 import { Toaster } from "react-hot-toast";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import ErrorBoundary from 'src/components/ErrorBoundary';
+import Link from 'next/link';
+import { bg, bgHover, textPassive } from 'src/utils/theme';
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -75,11 +77,18 @@ function MyApp({ Component, pageProps }: AppProps) {
           <DndProvider backend={HTML5Backend}>
             <ModalProvider>
               <NavProvider>
-                <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
-                  <Wallet />
-                </div>
-                <Component {...pageProps} />
-                <Toaster />
+                <ErrorBoundary>
+                  <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
+                    <Wallet />
+                  </div>
+                  <Component {...pageProps} />
+                  <Toaster />
+                  <Link href="/">
+                    <a className={`${bg} ${bgHover} ${textPassive} z-10 fixed bottom-0 right-0 aspect-square border rounded-full mr-2 mb-2 sm:mr-4 sm:mb-4 w-6 h-6 flex items-center justify-center`}>
+                      <p className="font-semibold">?</p>
+                    </a>
+                  </Link>
+                </ErrorBoundary>
               </NavProvider>
             </ModalProvider>
           </DndProvider>
