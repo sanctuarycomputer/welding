@@ -122,9 +122,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
           </div>
         </div>
 
-        <div className="flex relative flex-grow justify-center items-center flex-col border-t sm:hidden">
-        </div>
-
+        <div className="flex relative flex-grow justify-center items-center flex-col border-t sm:hidden"></div>
       </div>
     </Modal>
   );

@@ -3,7 +3,7 @@ import { createCanvas, loadImage } from "canvas";
 import { NFTStorage, File } from "nft.storage";
 import { MetadataProperties } from "src/types";
 import { fileTypeFromBuffer } from "file-type";
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 type Data = {
   hash: string;
@@ -32,10 +32,10 @@ const makeImageFileForEmoji = async (emoji) => {
   const canvas = createCanvas(1200, 630);
   const ctx = canvas.getContext("2d");
 
-  const gradient = ctx.createLinearGradient(0,0, 1200,630);
-  gradient.addColorStop(0, '#f5f5f5');
-  gradient.addColorStop(0.6, '#404040');
-  gradient.addColorStop(1, '#262626');
+  const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+  gradient.addColorStop(0, "#f5f5f5");
+  gradient.addColorStop(0.6, "#404040");
+  gradient.addColorStop(1, "#262626");
   ctx.fillStyle = gradient;
 
   ctx.fillRect(0, 0, canvas.width, canvas.height);

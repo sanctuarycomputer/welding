@@ -81,8 +81,7 @@
   margin-bottom: 0px;
 }
 .link-tool__content .link-tool__anchor,
-.link-tool__content .link-tool__description
-{
+.link-tool__content .link-tool__description {
   color: var(--text-color-passive) !important;
 }
 .link-tool__content .link-tool__anchor {
@@ -118,8 +117,7 @@
 }
 
 .ce-code__textarea.cdx-input,
-.ce-rawtool__textarea.cdx-input
-{
+.ce-rawtool__textarea.cdx-input {
   background-color: var(--background-color-passive) !important;
   color: var(--text-color--passive);
   border: none;

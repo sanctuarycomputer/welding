@@ -113,7 +113,9 @@ const Client = {
   },
 
   fetchMetadataForHash: async function (hash: string): Promise<Metadata> {
-    const response = await fetch(`${baseHostWithProtocol}/api/metadata/${hash}`);
+    const response = await fetch(
+      `${baseHostWithProtocol}/api/metadata/${hash}`
+    );
     if (!response.ok) return Promise.resolve(ERROR_METADATA);
     return await response.json();
   },

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import neo4j from "neo4j-driver";
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",

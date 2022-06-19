@@ -47,8 +47,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (nodeType === "Subgraph") {
     const sortOrder =
-      node.currentRevision.metadata.properties.ui?.subgraphSidebarDocumentSortOrder || [];
-    const homepage = node.related.find(n => n.tokenId === sortOrder[0]);
+      node.currentRevision.metadata.properties.ui
+        ?.subgraphSidebarDocumentSortOrder || [];
+    const homepage = node.related.find((n) => n.tokenId === sortOrder[0]);
     if (homepage) {
       return {
         redirect: {

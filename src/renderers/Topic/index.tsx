@@ -191,10 +191,7 @@ const TopicsShow: FC<Props> = ({
             <div className="">
               {nodes.map((node) => {
                 return (
-                  <Link
-                    key={node.tokenId}
-                    href={`/${slugifyNode(node)}`}
-                  >
+                  <Link key={node.tokenId} href={`/${slugifyNode(node)}`}>
                     <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                       <div className="flex flex-row items-center py-1 flex-grow">
                         <p className="pr-2 font-semibold w-32 truncate">
@@ -216,10 +213,7 @@ const TopicsShow: FC<Props> = ({
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
               {nodes.map((node) => {
                 return (
-                  <Link
-                    key={node.tokenId}
-                    href={`/${slugifyNode(node)}`}
-                  >
+                  <Link key={node.tokenId} href={`/${slugifyNode(node)}`}>
                     <a>
                       <Card key={node.tokenId} node={node} />
                     </a>

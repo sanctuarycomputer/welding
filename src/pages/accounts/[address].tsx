@@ -137,10 +137,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         <div className="">
           {nodes.map((node) => {
             return (
-              <Link
-                key={node.n.tokenId}
-                href={`/${slugifyNode(node.n)}`}
-              >
+              <Link key={node.n.tokenId} href={`/${slugifyNode(node.n)}`}>
                 <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                   <div className="flex flex-row items-center py-1 flex-grow">
                     <p className="pr-2 font-semibold w-32 truncate">
@@ -162,10 +159,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         <div className="pt-4 px-4 sm:px-0">
           {nodes.map((node) => {
             return (
-              <Link
-                key={node.n.tokenId}
-                href={`/${slugifyNode(node.n)}`}
-              >
+              <Link key={node.n.tokenId} href={`/${slugifyNode(node.n)}`}>
                 <a className="inline-block pb-2">
                   <TopicTile topic={node.n} />
                 </a>
@@ -187,9 +181,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
 
             let link = `/${slugifyNode(node.n)}`;
             if (subgraphs.length === 1) {
-              link = `/${slugifyNode(
-                subgraphs[0]
-              )}/${slugifyNode(node.n)}`;
+              link = `/${slugifyNode(subgraphs[0])}/${slugifyNode(node.n)}`;
             } else if (subgraphs.length > 1) {
               debugger;
               const ownedSubgraphs = subgraphs.reduce((acc, subgraph) => {
@@ -199,9 +191,9 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
                 return acc;
               }, []);
               if (ownedSubgraphs.length === 1) {
-                link = `/${slugifyNode(
-                  ownedSubgraphs[0]
-                )}/${slugifyNode(node.n)}`;
+                link = `/${slugifyNode(ownedSubgraphs[0])}/${slugifyNode(
+                  node.n
+                )}`;
               }
             }
 

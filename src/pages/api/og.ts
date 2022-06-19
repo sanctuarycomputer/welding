@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import og from "open-graph";
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 export default async function handler(
   req: NextApiRequest,

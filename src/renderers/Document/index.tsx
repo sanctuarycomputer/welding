@@ -21,7 +21,7 @@ import {
   stageNodeRelations,
 } from "src/lib/makeBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
-import { textPassive } from 'src/utils/theme';
+import { textPassive } from "src/utils/theme";
 
 import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("src/components/Editor"), {
@@ -65,12 +65,8 @@ const Document: FC<Props> = ({
 
   const { data: account } = useAccount();
   const { data: signer } = useSigner();
-  const {
-    accountData,
-    loadAccountData,
-    canEditNode,
-    shallowNodes
-  } = useContext(GraphContext);
+  const { accountData, loadAccountData, canEditNode, shallowNodes } =
+    useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
 
@@ -99,10 +95,12 @@ const Document: FC<Props> = ({
 
   // We assume that shallowNodes is always up to date.
   useEffect(() => {
-    const tokenIds =
-      extractTokenIdsFromContentBlocks(formik.values.content?.blocks || []);
-    const referencedNodes =
-      (shallowNodes || []).filter((n) => tokenIds.includes(n.tokenId));
+    const tokenIds = extractTokenIdsFromContentBlocks(
+      formik.values.content?.blocks || []
+    );
+    const referencedNodes = (shallowNodes || []).filter((n) =>
+      tokenIds.includes(n.tokenId)
+    );
     stageNodeRelations(
       formik,
       "incoming",
@@ -125,10 +123,9 @@ const Document: FC<Props> = ({
     "Subgraph",
     "BELONGS_TO"
   )[0];
-  const showStashInfo = (
+  const showStashInfo =
     router.query.nid &&
-    router.query.nid.split("-")[0] !== subgraphParent?.tokenId
-  );
+    router.query.nid.split("-")[0] !== subgraphParent?.tokenId;
 
   return (
     <>
@@ -181,9 +178,10 @@ const Document: FC<Props> = ({
                 </p>
               </div>
               <ol className="list-decimal text-xs list-inside">
-                {references.map(n => {
+                {references.map((n) => {
                   const name = n.currentRevision.metadata.name;
-                  const emoji = n.currentRevision.metadata.properties.emoji.native;
+                  const emoji =
+                    n.currentRevision.metadata.properties.emoji.native;
                   return (
                     <li key={n.tokenId}>
                       <Link href={`/${slugifyNode(n)}`}>

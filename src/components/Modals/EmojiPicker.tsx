@@ -2,7 +2,7 @@ import { FC } from "react";
 import Modal from "react-modal";
 import ModalHeader from "src/components/Modals/ModalHeader";
 import { Picker, BaseEmoji } from "emoji-mart";
-import Uwu from 'src/components/Icons/Uwu';
+import Uwu from "src/components/Icons/Uwu";
 
 export type EmojiPickerMeta = {
   didPickEmoji: (emoji: BaseEmoji) => void;

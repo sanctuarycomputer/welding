@@ -13,7 +13,7 @@ import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
 import NProgress from "nprogress";
 import toast from "react-hot-toast";
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { bg } from "src/utils/theme";
 

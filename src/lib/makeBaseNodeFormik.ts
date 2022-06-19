@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 import Client from "src/lib/Client";
 import { diff, detailedDiff } from "deep-object-diff";
 import { BigNumber } from "@ethersproject/bignumber";
-import onlyUnique from 'src/utils/onlyUnique';
-import * as Sentry from '@sentry/nextjs';
+import onlyUnique from "src/utils/onlyUnique";
+import * as Sentry from "@sentry/nextjs";
 
 enum PublishStep {
   RESOLVE = "RESOLVE",
@@ -71,8 +71,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       try {
         if (!signer) throw new Error("no_signer_present");
 
-        const incomingDiff =
-          detailedDiff(node.incoming, values.incoming);
+        const incomingDiff = detailedDiff(node.incoming, values.incoming);
         const hasConnectionChanges =
           Object.values(incomingDiff.added).length > 0 ||
           Object.values(incomingDiff.updated).length > 0 ||
@@ -299,10 +298,8 @@ export const stageNodeRelations = (
 
   // Check to see if we actually need to update
   // the related hash, as this will cause rerenders
-  const existingIds = formik
-    .values
-    .related
-    .map(n => n.tokenId)
+  const existingIds = formik.values.related
+    .map((n) => n.tokenId)
     .filter(onlyUnique);
 
   const otherRelatedNodes = formik.values.related.filter((n: BaseNode) => {
@@ -310,7 +307,7 @@ export const stageNodeRelations = (
   });
   const newRelated = [...otherRelatedNodes, ...nodes];
   const newIds = newRelated
-    .map(n => n.tokenId)
+    .map((n) => n.tokenId)
     .filter(onlyUnique)
     .sort(function (a, b) {
       return existingIds.indexOf(a) - existingIds.indexOf(b);

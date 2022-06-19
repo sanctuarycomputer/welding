@@ -15,8 +15,9 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const subgraph =
-    await Client.fetchBaseNodeByTokenId(WELDING_DOCS_SUBGRAPH_TOKEN_ID);
+  const subgraph = await Client.fetchBaseNodeByTokenId(
+    WELDING_DOCS_SUBGRAPH_TOKEN_ID
+  );
   if (!subgraph) return { notFound: true };
   if (subgraph.labels.filter((l) => l !== "BaseNode")[0] !== "Subgraph") {
     return {
@@ -27,8 +28,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const document =
-    await Client.fetchBaseNodeByTokenId(WELDING_DOCS_INTRO_DOC_TOKEN_ID);
+  const document = await Client.fetchBaseNodeByTokenId(
+    WELDING_DOCS_INTRO_DOC_TOKEN_ID
+  );
   if (!document) return { notFound: true };
   if (document.labels.filter((l) => l !== "BaseNode")[0] !== "Document") {
     return {
