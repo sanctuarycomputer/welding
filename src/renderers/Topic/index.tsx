@@ -83,9 +83,13 @@ const TopicsShow: FC<Props> = ({
 
       <div className="pt-12 md:pt-20">
         <div className="content py-4 mx-auto">
-          <div className={`flex justify-${node.burnt ? "between" : "end"} pb-2`}>
+          <div
+            className={`flex justify-${node.burnt ? "between" : "end"} pb-2`}
+          >
             {node.burnt && (
-              <p className="text-red-500 pl-2 md:pl-0">This node was burnt and can no longer be used.</p>
+              <p className="text-red-500 pl-2 md:pl-0">
+                This node was burnt and can no longer be used.
+              </p>
             )}
             <Actions
               imageDidChange={imageDidChange}

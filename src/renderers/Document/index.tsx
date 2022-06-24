@@ -134,10 +134,14 @@ const Document: FC<Props> = ({
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div
-            className={`flex justify-${(showStashInfo || node.burnt) ? "between" : "end"} pb-2`}
+            className={`flex justify-${
+              showStashInfo || node.burnt ? "between" : "end"
+            } pb-2`}
           >
             {node.burnt && (
-              <p className="text-red-500">This node was burnt and can no longer be used.</p>
+              <p className="text-red-500">
+                This node was burnt and can no longer be used.
+              </p>
             )}
             {showStashInfo && <DocumentStashInfo subgraph={subgraphParent} />}
             <Actions

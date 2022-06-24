@@ -42,15 +42,16 @@ Router.events.on("routeChangeError", () => NProgress.done());
 
 Modal.setAppElement("#__next");
 
-const targetChain =
-  Object.values(chain).find(c => c.network === process.env.NEXT_PUBLIC_NETWORK);
+const targetChain = Object.values(chain).find(
+  (c) => c.network === process.env.NEXT_PUBLIC_NETWORK
+);
 const { chains, provider, webSocketProvider } = configureChains(
   [targetChain, chain.mainnet],
   [
     alchemyProvider({
-      alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID
+      alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID,
     }),
-    publicProvider()
+    publicProvider(),
   ]
 );
 

@@ -13,11 +13,7 @@ import NProgress from "nprogress";
 import toast from "react-hot-toast";
 import * as Sentry from "@sentry/nextjs";
 
-const Burn = ({
-  node,
-  setLocked,
-  reloadData
-}) => {
+const Burn = ({ node, setLocked, reloadData }) => {
   const provider = useProvider();
   const { data: signer } = useSigner();
   const { purgeCache, doesOwnNode, loadShallowNodes } =
@@ -35,9 +31,7 @@ const Burn = ({
       toastId = toast.loading("Requesting signature...", {
         className: "toast",
       });
-      let tx = await Welding.Nodes.connect(signer).burnNode(
-        node.tokenId
-      );
+      let tx = await Welding.Nodes.connect(signer).burnNode(node.tokenId);
 
       toast.loading("Burning node...", {
         id: toastId,
@@ -70,11 +64,14 @@ const Burn = ({
     <>
       <table className="table-auto w-full">
         <tbody>
-            <tr className="border-b border-color border-dashed">
-              {doesOwnNode(node) ? (
-                <>
+          <tr className="border-b border-color border-dashed">
+            {doesOwnNode(node) ? (
+              <>
                 <td className="py-4 px-2">
-                  <p className="text-red-500"><span className="font-semibold">⚠️ Danger!</span> Burning a node is irreversible.</p>
+                  <p className="text-red-500">
+                    <span className="font-semibold">⚠️ Danger!</span> Burning a
+                    node is irreversible.
+                  </p>
                 </td>
                 <td className="text-right pr-2">
                   <Button
@@ -83,20 +80,21 @@ const Burn = ({
                     onClick={() => triggerBurn()}
                   />
                 </td>
-                </>
-              ) : (
-                <td className="py-4 text-center">
-                  <p>You don't have permission to burn this node.</p>
-                </td>
-              )}
-            </tr>
+              </>
+            ) : (
+              <td className="py-4 text-center">
+                <p>You don't have permission to burn this node.</p>
+              </td>
+            )}
+          </tr>
         </tbody>
       </table>
 
       <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col">
         <BurnIcon />
         <p className="pt-2 font-semibold">
-          Burning a node will disconnect it from all other nodes, and make it permanently uneditable.
+          Burning a node will disconnect it from all other nodes, and make it
+          permanently uneditable.
         </p>
       </div>
     </>

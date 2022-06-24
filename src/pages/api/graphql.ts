@@ -19,7 +19,9 @@ const typeDefs = gql`
       @cypher(statement: "MATCH (this) RETURN distinct labels(this)")
 
     burnt: Boolean!
-      @cypher(statement: "MATCH (this)<-[:_OWNS]-(a:Account) RETURN a.address = '0x0000000000000000000000000000000000000000'")
+      @cypher(
+        statement: "MATCH (this)<-[:_OWNS]-(a:Account) RETURN a.address = '0x0000000000000000000000000000000000000000'"
+      )
 
     currentRevision: Revision!
       @cypher(
