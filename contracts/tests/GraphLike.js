@@ -89,10 +89,40 @@ describe("Behavior: GraphLike", function () {
     ).to.be.revertedWith("invalid_string")
   });
 
+  it("should not be able to mint a node with an empty label starting with _", async function() {
+    await expect(
+      contract.connect(addr1).mint('_', '123', [], [], [])
+    ).to.be.revertedWith("reserved_string")
+  });
+
   it("should not be able to mint a node with an empty hash", async function() {
     await expect(
       contract.connect(addr1).mint('subgraph', '', [], [], [])
     ).to.be.revertedWith("invalid_string");
+  });
+
+  it("should not allow edge names that begin with _", async function () {
+    let tx = await contract.connect(addr1).mint('subgraph', '123', [], [], []);
+    let transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+    const subgraphId = transferEvent.args.tokenId;
+
+    tx = await contract.connect(addr2).mint('topic', '123', [], [], []);
+    transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+    const topicId = transferEvent.args.tokenId;
+
+    await expect(
+      contract.connect(addr1).merge(subgraphId, '123', [{
+        tokenId: topicId,
+        name: "_DESCRIBES"
+      }], [])
+    ).to.be.revertedWith("reserved_string");
+
+    await expect(
+      contract.connect(addr1).merge(subgraphId, '123', [{
+        tokenId: topicId,
+        name: "DESCRIBES_x"
+      }], [])
+    ).to.not.be.reverted;
   });
 
   it("should not be able to connect nonexistent nodes", async function () {

@@ -116,6 +116,8 @@ function GraphProvider({ children }) {
   }
 
   const canEditNode = (baseNode) => {
+    if (baseNode.burnt) return false;
+
     const directPermissions = !!accountData?.roles.find((r) => {
       return r.tokenId === baseNode.tokenId && r.role !== null;
     });
@@ -130,6 +132,8 @@ function GraphProvider({ children }) {
   };
 
   const canAdministerNode = (baseNode) => {
+    if (baseNode.burnt) return false;
+
     const directPermissions = !!accountData?.roles.find((r) => {
       return r.tokenId === baseNode.tokenId && r.role === "0";
     });
@@ -140,6 +144,13 @@ function GraphProvider({ children }) {
       return !!accountData?.roles.find((r) => {
         return r.tokenId === e.tokenId && r.role === "0";
       });
+    });
+  };
+
+  const doesOwnNode = (baseNode) => {
+    if (baseNode.burnt) return false;
+    return !!accountData?.roles.find((r) => {
+      return r.tokenId === baseNode.tokenId && !r.role;
     });
   };
 
@@ -158,6 +169,7 @@ function GraphProvider({ children }) {
         loadRevisionsForBaseNode,
         canEditNode,
         canAdministerNode,
+        doesOwnNode,
       }}
     >
       {children}

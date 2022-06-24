@@ -1,44 +1,28 @@
 # Ref
 
-TODO
-
-- [ ] Royalties!
-- [ ] What happens when a token is burnt? (deletable)
-- [ ] Validation audit (security)
-- [ ] Rentrent guards? Buffer Overflows? (security)
-- [ ] If you own the first NFT, you can add fees and get paid (platformOwner)
-- [ ] Support Donations
-- [ ] The last admin should not be able to renounce their role
-- [ ] fallback function
-
----
-
-- [ ] Better approach to SSR on /mint pages
-- [ ] Handle burning tokens (only owner)
-- [ ] Bug: Minting a new document appends ?nid=slug
-- [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
-
 Before Deploy:
 
-- [ ] Cleanup env
-- [ ] Select the correct chain from ENV
-- [ ] Page Caching & purges?
 - [ ] Deploys
-- [ ] Security - Alchemy settings, IPFS settings, etc
+- [ ] Security - Alchemy settings
 - [ ] CORS
 - [ ] Re-add tsc check to Husky
 - [ ] Remove TS Lint?
 
 Roadmap
 
+- [ ] Raw URLs in text should trigger references
+- [ ] Better approach to SSR on /mint pages
+- [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
+- [ ] Reorderable Topics
+- [ ] Page Caching & purges?
 - [ ] Sitemap.xml
-- [ ] Check Welding Balance?
+- [ ] Welding Balance?
 - [ ] Drafts
 - [ ] Iron Session? (Persisted Drafts)
 - [ ] Comments
 - [ ] Favorites
 - [ ] i18n (chinese)
-- [ ] Custom domains
+- [ ] Custom subdomains
 - [ ] Test on the FE wether publishing to IPFS is necessary
 - [ ] Add Rainbow Provider
 - [ ] Handle corrupt data cases on the UI
@@ -56,6 +40,7 @@ Roadmap
 Ideas for Writing:
 
 - [ ] What is Welding
+- [ ] How to get MATIC
 - [ ] How it Works
 - [ ] NFT Contracts as a Database
 - [ ] Smart Contract as Event Emitter

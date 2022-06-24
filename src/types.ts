@@ -72,6 +72,7 @@ type BaseNode = {
   fee: string;
   currentRevision: Revision;
   labels: Array<BaseNodeLabel | NodeLabel>;
+  burnt: boolean;
   revisions?: Revision[];
   related: BaseNode[];
   incoming: Edge[];

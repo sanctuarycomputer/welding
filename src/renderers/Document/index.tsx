@@ -124,6 +124,7 @@ const Document: FC<Props> = ({
     "BELONGS_TO"
   )[0];
   const showStashInfo =
+    !node.burnt &&
     router.query.nid &&
     router.query.nid.split("-")[0] !== subgraphParent?.tokenId;
 
@@ -133,14 +134,17 @@ const Document: FC<Props> = ({
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div
-            className={`flex justify-${showStashInfo ? "between" : "end"} pb-2`}
+            className={`flex justify-${(showStashInfo || node.burnt) ? "between" : "end"} pb-2`}
           >
+            {node.burnt && (
+              <p className="text-red-500">This node was burnt and can no longer be used.</p>
+            )}
             {showStashInfo && <DocumentStashInfo subgraph={subgraphParent} />}
             <Actions
               imageDidChange={imageDidChange}
               node={node}
               canEdit={canEdit}
-              allowConnect={!node.tokenId.startsWith("-")}
+              allowConnect={!node.tokenId.startsWith("-") && !node.burnt}
               allowSettings={!node.tokenId.startsWith("-")}
               reloadData={reloadData}
             />

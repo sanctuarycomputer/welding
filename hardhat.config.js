@@ -9,12 +9,12 @@ module.exports = {
   networks: {
     hardhat: {},
     PolygonMumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_PROJECT_ID}`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID}`,
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
     },
   },
   solidity: {
-    version: "0.8.12",
+    version: "0.8.7",
     settings: {
       optimizer: {
         enabled: true,

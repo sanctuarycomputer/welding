@@ -23,7 +23,11 @@ const NodeShow: FC<Props> = ({ node }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const q = context.resolvedUrl.split("?")[1];
+  const q = Object.keys(context.query).reduce((acc, k) => {
+    if (k === 'nid') return acc;
+    if (acc === '') return context.query[k];
+    return `${acc}&${context.query[k]}`;
+  }, '');
 
   let { nid } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
@@ -37,6 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   givenNidSlug =
     (Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || "";
   if (givenNidSlug !== slugifyNode(node)) {
+    console.log("BING!!", q, context);
     return {
       redirect: {
         permanent: false,
@@ -93,6 +98,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     );
     // TODO: Reference the "Belongs To" Subgraph
     if (documentSubgraphs.length === 1)
+      console.log("BONG!!", q, context);
       return {
         redirect: {
           permanent: false,

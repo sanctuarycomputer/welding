@@ -13,8 +13,7 @@ import NProgress from "nprogress";
 import toast from "react-hot-toast";
 import * as Sentry from "@sentry/nextjs";
 
-// Can Edit?
-const Fee = ({ node, setLocked }) => {
+const Fee = ({ node, setLocked, reloadData }) => {
   const provider = useProvider();
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
@@ -54,7 +53,7 @@ const Fee = ({ node, setLocked }) => {
           NProgress.done();
           await Client.fastForward(tx.blockNumber);
           await purgeCache();
-          await loadShallowNodes();
+          await Promise.all([loadShallowNodes(), reloadData()]);
           toast.success("Success!", {
             id: toastId,
           });

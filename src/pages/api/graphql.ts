@@ -18,21 +18,24 @@ const typeDefs = gql`
     labels: [String!]
       @cypher(statement: "MATCH (this) RETURN distinct labels(this)")
 
+    burnt: Boolean!
+      @cypher(statement: "MATCH (this)<-[:_OWNS]-(a:Account) RETURN a.address = '0x0000000000000000000000000000000000000000'")
+
     currentRevision: Revision!
       @cypher(
-        statement: "MATCH (this)<-[r:REVISES]-(rev:Revision) RETURN rev ORDER BY r.block DESC LIMIT 1"
+        statement: "MATCH (this)<-[r:_REVISES]-(rev:Revision) RETURN rev ORDER BY r.block DESC LIMIT 1"
       )
-    revisions: [Revision!]! @relationship(type: "REVISES", direction: IN)
+    revisions: [Revision!]! @relationship(type: "_REVISES", direction: IN)
 
     owner: Account!
-      @cypher(statement: "MATCH (this)<-[:OWNS]-(a:Account) RETURN a")
+      @cypher(statement: "MATCH (this)<-[:_OWNS]-(a:Account) RETURN a")
     admins: [Account!]!
       @cypher(
-        statement: "MATCH (this)<-[:CAN {role: '0'}]-(a:Account) RETURN a"
+        statement: "MATCH (this)<-[:_CAN {role: '0'}]-(a:Account) RETURN a"
       )
     editors: [Account!]!
       @cypher(
-        statement: "MATCH (this)<-[:CAN {role: '1'}]-(a:Account) RETURN a"
+        statement: "MATCH (this)<-[:_CAN {role: '1'}]-(a:Account) RETURN a"
       )
 
     related: [BaseNode!]!
@@ -58,7 +61,7 @@ const typeDefs = gql`
     address: String!
     roles: [Role!]!
       @cypher(
-        statement: "MATCH (this)-[r:CAN|OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }"
+        statement: "MATCH (this)-[r:_CAN|_OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }"
       )
     related: [BaseNode!]!
       @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN n")
@@ -74,7 +77,7 @@ const typeDefs = gql`
     block: Int!
     content: String
     contentType: String
-    baseNodes: [BaseNode!]! @relationship(type: "REVISES", direction: OUT)
+    baseNodes: [BaseNode!]! @relationship(type: "_REVISES", direction: OUT)
   }
 `;
 

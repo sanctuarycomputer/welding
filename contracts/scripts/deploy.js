@@ -1,5 +1,3 @@
-const HUGH_SUBGRAPH_METADATA =
-  'bafyreidxcii7rpfkibdd2o27tpgyjrumfjwyp7sewhueoaeay4njhvfu5q';
 const WELDING_SUBGRAPH_METADATA =
   'bafyreic2cpdw3fqxwtpasvokrf5tkozk2bk63gb7scaojvlief2iazmpbe';
 const INTRO_DOC_METADATA =
@@ -12,9 +10,14 @@ const WELDING_TOPIC_METADATA =
   'bafyreihss6dihabqagwi2vgevgkndxmt2tjjayj7rtwatmhdsbctzoqgeu';
 
 async function seed(contract) {
+  console.log(`Seeding initial nodes...`);
   let tx, transferEvent;
 
   // Seed Topics
+  tx = await contract.mint('topic', WELDING_TOPIC_METADATA, [], [], []);
+  transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
+  const weldingId = transferEvent.args.tokenId;
+
   tx = await contract.mint('topic', ETH_TOPIC_METADATA, [], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ethId = transferEvent.args.tokenId;
@@ -23,13 +26,12 @@ async function seed(contract) {
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const ipfsId = transferEvent.args.tokenId;
 
-  tx = await contract.mint('topic', WELDING_TOPIC_METADATA, [], [], []);
-  transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
-  const weldingId = transferEvent.args.tokenId;
-
   // Seed Subgraph
   tx = await contract.mint('subgraph', WELDING_SUBGRAPH_METADATA, [{
-    tokenId: weldingId,
+    tokenId: ethId,
+    name: "DESCRIBES"
+  }, {
+    tokenId: ipfsId,
     name: "DESCRIBES"
   }], [], []);
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
@@ -39,12 +41,6 @@ async function seed(contract) {
   tx = await contract.mint('document', INTRO_DOC_METADATA, [{
     tokenId: weldingId,
     name: "DESCRIBES"
-  }, {
-    tokenId: ethId,
-    name: "DESCRIBES"
-  }, {
-    tokenId: ipfsId,
-    name: "DESCRIBES"
   }], [{
     tokenId: weldingSubgraphId,
     name: "BELONGS_TO"
@@ -52,13 +48,7 @@ async function seed(contract) {
   transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
   const documentId = transferEvent.args.tokenId;
 
-  tx = await contract.mint('subgraph', HUGH_SUBGRAPH_METADATA, [{
-    tokenId: weldingId,
-    name: "DESCRIBES"
-  }], [], []);
-
-  transferEvent = (await tx.wait()).events.find(e => e.event === "Transfer");
-  const hughSubgraphId = transferEvent.args.tokenId;
+  console.log(`Seeding complete!`);
 };
 
 async function deploy(name, args) {

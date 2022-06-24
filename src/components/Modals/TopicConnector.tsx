@@ -28,7 +28,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
   const newTopics = topics.filter((t) => t.tokenId.startsWith("-"));
 
   const suggestions = shallowNodes
-    ? shallowNodes.filter((n) => n.labels.includes("Topic"))
+    ? shallowNodes.filter((n) => n.labels.includes("Topic") && !n.burnt)
     : [];
 
   const setTopics = (topics) => {

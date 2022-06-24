@@ -41,6 +41,7 @@ pivotTokenId
 const baseNodeShape = `
 tokenId
 labels
+burnt
 fee
 currentRevision {
   ${revisionShape}
@@ -135,6 +136,7 @@ const Client = {
         query BaseNodes {
           baseNodes {
             tokenId
+            burnt
             labels
             fee
             currentRevision {

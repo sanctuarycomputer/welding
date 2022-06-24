@@ -200,6 +200,10 @@ const SubgraphSidebar: FC<Props> = ({
             clearImage={clearImage}
           />
 
+          {subgraph.burnt && (
+            <p className="text-red-500 px-2">This node was burnt.</p>
+          )}
+
           {(descriptionPresent || canEdit) && (
             <div className={`border-b ${border}`}>
               <textarea

@@ -27,7 +27,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
+          MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           `;
 
       q = args.incomingEdges.reduce((acc, edge) => {
@@ -76,7 +76,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
+          MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           `;
 
       await session.writeTransaction((tx) =>
@@ -99,7 +99,7 @@ const merge = async (e, session) => {
           ON CREATE
             SET rev.block = $block
           MERGE (sender:Account {address: $sender})
-          MERGE (sender)-[:PUBLISHES]->(rev)-[:REVISES {block: $block}]->(n)
+          MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           WITH n
           OPTIONAL MATCH (n)-[r {pivotTokenId: $tokenId}]-(:BaseNode)
             WHERE NOT type(r) STARTS WITH '_'
@@ -149,8 +149,16 @@ const merge = async (e, session) => {
           MERGE (from:Account {address: $fromAddress})
           MERGE (to:Account {address: $toAddress})
           MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
-          MERGE (to)-[:OWNS]->(n)
-          WITH from, n OPTIONAL MATCH (from)-[r:OWNS]->(n) DELETE r`;
+          MERGE (to)-[:_OWNS]->(n)
+          WITH from, n OPTIONAL MATCH (from)-[r:_OWNS]->(n) DELETE r
+          MERGE (z:Account {address: '0x0000000000000000000000000000000000000000'})
+          WITH z
+          OPTIONAL MATCH (z)-[:_OWNS]->(:BaseNode)-[r]-(:BaseNode)
+            WHERE NOT type(r) STARTS WITH '_'
+            DELETE r
+          WITH z
+          OPTIONAL MATCH (z)-[:_OWNS]->(:BaseNode)<-[r:_CAN]-(:Account)
+            DELETE r`;
       await session.writeTransaction((tx) => {
         tx.run(q, {
           tokenId: args.tokenId.toString(),
@@ -165,7 +173,7 @@ const merge = async (e, session) => {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         MERGE (recipient)-[:CAN {role: $role}]->(n)
+         MERGE (recipient)-[:_CAN {role: $role}]->(n)
          `;
       await session.writeTransaction((tx) => {
         tx.run(q, {
@@ -182,7 +190,7 @@ const merge = async (e, session) => {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
-         WITH recipient, n OPTIONAL MATCH (recipient)-[r:CAN {role: $role}]->(n) DELETE r
+         WITH recipient, n OPTIONAL MATCH (recipient)-[r:_CAN {role: $role}]->(n) DELETE r
          `;
       await session.writeTransaction((tx) => {
         tx.run(q, {

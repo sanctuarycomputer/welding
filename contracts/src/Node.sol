@@ -1,20 +1,83 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/utils/escrow/Escrow.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/escrow/Escrow.sol";
 
-contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
+contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, ReentrancyGuard {
+    using Address for address payable;
+    using Strings for uint256;
+
+    /* Behavior: Protocol Stewardship */
+    uint256 private _protocolMintFee = 0;
+
+    fallback() external payable {
+        _escrow.deposit{value: msg.value}(protocolSteward());
+    }
+
+    receive() external payable {
+        _escrow.deposit{value: msg.value}(protocolSteward());
+    }
+
+    modifier onlyProtocolSteward() {
+        _checkProtocolSteward();
+        _;
+    }
+
+    function protocolSteward() public view returns (address) {
+        return ownerOf(1);
+    }
+
+    function _checkProtocolSteward() internal view {
+        require(protocolSteward() == _msgSender(), ERR_PROTOCOL_STEWARD_ONLY);
+    }
+
+    function setProtocolMintFee(uint256 protocolMintFee) external onlyProtocolSteward {
+        _protocolMintFee = protocolMintFee;
+    }
+
+    function getProtocolMintFee() external view returns (uint256) {
+        return _protocolMintFee;
+    }
+
+    function depositProtocolBalance() external onlyProtocolSteward {
+        _escrow.deposit{value: address(this).balance}(protocolSteward());
+    }
+
+    /* Royalties */
+
+    function setDefaultRoyalty(address receiver, uint96 feeNumerator) external onlyProtocolSteward {
+        _setDefaultRoyalty(receiver, feeNumerator);
+    }
+
+    function resetDefaultRoyalty() external onlyProtocolSteward {
+        _deleteDefaultRoyalty();
+    }
+
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external onlyOwner(tokenId) {
+        _setTokenRoyalty(tokenId, receiver, feeNumerator);
+    }
+
+    function resetTokenRoyalty(uint256 tokenId) external onlyOwner(tokenId) {
+        _resetTokenRoyalty(tokenId);
+    }
+
+    /* Errors & Structs */
+
     struct Edge {
         uint256 tokenId;
         string name;
     }
 
+    string public constant ERR_RESERVED_STRING = 'reserved_string';
+    string public constant ERR_PROTOCOL_STEWARD_ONLY = 'only_protocol_steward';
     string public constant ERR_RECURSIVE_DELEGATION = 'recursive_delegation';
     string public constant ERR_NODE_NONEXISTENT = 'node_nonexistent';
     string public constant ERR_INSUFFICIENT_PERMISSIONS = 'insufficient_permissions';
@@ -26,6 +89,23 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
+
+    modifier stringDoesNotStartWith(string memory str, string memory what) {
+      require(!_stringStartsWith(str, what), ERR_RESERVED_STRING);
+      _;
+    }
+
+    function _stringStartsWith(string memory str, string memory what) private pure returns(bool) {
+      bytes memory whatBytes = bytes(what);
+      bytes memory strBytes = bytes(str);
+      require(strBytes.length >= whatBytes.length, 'invalid_string');
+
+      bool startsWith = true;
+      for (uint256 i = 0; i < whatBytes.length; i++) {
+          if (strBytes[i] != whatBytes[i]) startsWith = false;
+      }
+      return startsWith;
+    }
 
     function _ensureStringPresent(string memory str) private pure {
         require(bytes(str).length > 0, "invalid_string");
@@ -46,7 +126,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage, ERC721Royalty) {
         super._burn(tokenId);
     }
 
@@ -62,7 +142,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable)
+        override(ERC721, ERC721Enumerable, ERC721Royalty)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -70,11 +150,11 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
 
     Escrow private immutable _escrow;
 
-    function withdrawPayments(address payable payee) public nonReentrant {
+    function withdrawPayments(address payable payee) external nonReentrant {
         _escrow.withdraw(payee);
     }
 
-    function payments(address dest) public view returns (uint256) {
+    function payments(address dest) external view returns (uint256) {
         return _escrow.depositsOf(dest);
     }
 
@@ -115,7 +195,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
       Edge[] memory incomingEdges,
       Edge[] memory outgoingEdges,
       uint256[] memory delegatePermissionsTokenIds
-    ) public payable {
+    ) external payable stringDoesNotStartWith(label, '_') {
         _ensureStringPresent(label);
         _ensureStringPresent(hash);
 
@@ -131,6 +211,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
           _msgSender()
         );
 
+        /* Actually mint */
         _safeMint(_msgSender(), tokenId);
         _setTokenURI(tokenId, hash);
 
@@ -141,22 +222,27 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         _roles[tokenId][ADMIN_ROLE][_msgSender()] = true;
         emit RoleGranted(tokenId, ADMIN_ROLE, _msgSender(), _msgSender());
 
-        /* Handle edges */
-        _handleEdges(tokenId, incomingEdges, outgoingEdges);
-
         /* Deletegate permissions */
-        for (uint256 i; i < delegatePermissionsTokenIds.length; i++) {
+        for (uint256 i = 0; i < delegatePermissionsTokenIds.length; i++) {
           delegatePermissions(
             tokenId,
             delegatePermissionsTokenIds[i]
           );
         }
+
+        /* Pay the Protocol Steward if they've implemented a Fee */
+        if (_protocolMintFee > 0) {
+          _escrow.deposit{value: _protocolMintFee}(protocolSteward());
+        }
+
+        /* Handle edges */
+        _handleEdges(tokenId, incomingEdges, outgoingEdges);
     }
 
     function revise(
       uint256 tokenId,
       string memory hash
-    ) public
+    ) external
       existentNode(tokenId)
       onlyEditors(tokenId)
     {
@@ -170,14 +256,12 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
       string memory hash,
       Edge[] memory incomingEdges,
       Edge[] memory outgoingEdges
-    ) public payable
+    ) external payable
       existentNode(tokenId)
       onlyEditors(tokenId)
     {
         _ensureStringPresent(hash);
         _setTokenURI(tokenId, hash);
-        _handleEdges(tokenId, incomingEdges, outgoingEdges);
-
         emit Merge(
           tokenId,
           hash,
@@ -185,6 +269,8 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
           outgoingEdges,
           _msgSender()
         );
+
+        _handleEdges(tokenId, incomingEdges, outgoingEdges);
     }
 
     function _handleEdges(
@@ -198,9 +284,10 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         //   has paid that one-time fee, they can use that node as many
         //   times as they'd like in as many different edges as they'd
         //   like.
-        for (uint256 i; i < incomingEdges.length; i++) {
+        for (uint256 i = 0; i < incomingEdges.length; i++) {
             Edge memory edge = incomingEdges[i];
             require(_exists(edge.tokenId), ERR_NODE_NONEXISTENT);
+            require(!_stringStartsWith(edge.name, '_'), ERR_RESERVED_STRING);
             uint256 connectionFee = getConnectionFee(edge.tokenId);
             if (
                 !_isApprovedOrOwner(_msgSender(), edge.tokenId) &&
@@ -222,12 +309,12 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         Edge[] memory currentOutgoingEdges = _currentOutgoingEdges[tokenId];
         delete _currentOutgoingEdges[tokenId];
 
-        for (uint256 i; i < outgoingEdges.length; i++) {
+        for (uint256 i = 0; i < outgoingEdges.length; i++) {
             Edge memory newEdge = outgoingEdges[i];
             require(_exists(newEdge.tokenId), ERR_NODE_NONEXISTENT);
 
             bool found = false;
-            for (uint256 n; n < currentOutgoingEdges.length; n++) {
+            for (uint256 n = 0; n < currentOutgoingEdges.length; n++) {
                 Edge memory connectedEdge = currentOutgoingEdges[n];
                 if (
                     connectedEdge.tokenId == newEdge.tokenId &&
@@ -250,11 +337,11 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
         }
 
         // Test for Removed Edges
-        for (uint256 i; i < currentOutgoingEdges.length; i++) {
+        for (uint256 i = 0; i < currentOutgoingEdges.length; i++) {
             Edge memory connectedEdge = currentOutgoingEdges[i];
 
             bool found = false;
-            for (uint256 n; n < outgoingEdges.length; n++) {
+            for (uint256 n = 0; n < outgoingEdges.length; n++) {
                 Edge memory newEdge = outgoingEdges[n];
                 if (
                     connectedEdge.tokenId == newEdge.tokenId &&
@@ -277,9 +364,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
 
     function burnNode(uint256 tokenId)
       existentNode(tokenId)
-      public
+      onlyOwner(tokenId)
+      external
     {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), ERR_INSUFFICIENT_PERMISSIONS);
         _burn(tokenId);
     }
 
@@ -298,7 +385,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     }
 
     function setConnectionFee(uint256 tokenId, uint256 connectionFee)
-      public
+      external
       onlyRole(tokenId, ADMIN_ROLE)
     {
         _connectionFees[tokenId] = connectionFee;
@@ -325,9 +412,8 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     );
 
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) private _roles;
-    mapping(uint256 => mapping(uint256 => EnumerableSet.AddressSet)) private _roleMembers;
 
-    function exists(uint256 tokenId) public view returns (bool) {
+    function exists(uint256 tokenId) external view returns (bool) {
         return _exists(tokenId);
     }
 
@@ -341,13 +427,20 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
           require(hasRole(tokenId, role, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
           _;
         }
+        _;
+    }
+
+    modifier onlyOwner(uint256 tokenId) {
+        require(ownerOf(tokenId) == _msgSender(), ERR_INSUFFICIENT_PERMISSIONS);
+        _;
     }
 
     modifier onlyEditors(uint256 tokenId) {
         if (!hasPermissionsBypass(tokenId)) {
-          require(canEdit(tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
-          _;
+            require(canEdit(tokenId, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);
+            _;
         }
+        _;
     }
 
     function hasRole(uint256 tokenId, uint256 role, address account)
@@ -371,7 +464,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     }
 
     function grantRole(uint256 tokenId, uint256 role, address account)
-      public
+      external
       existentNode(tokenId)
       onlyRole(tokenId, ADMIN_ROLE)
     {
@@ -379,22 +472,20 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
             _roles[tokenId][role][account] = true;
             emit RoleGranted(tokenId, role, account, _msgSender());
         }
-        _roleMembers[tokenId][role].add(account);
     }
 
     function renounceRole(uint256 tokenId, uint256 role)
-      public
+      external
       existentNode(tokenId)
     {
         if (hasRole(tokenId, role, _msgSender())) {
             _roles[tokenId][role][_msgSender()] = false;
             emit RoleRevoked(tokenId, role, _msgSender(), _msgSender());
         }
-        _roleMembers[tokenId][role].remove(_msgSender());
     }
 
     function revokeRole(uint256 tokenId, uint256 role, address account)
-      public
+      external
       existentNode(tokenId)
       onlyRole(tokenId, ADMIN_ROLE)
     {
@@ -402,7 +493,6 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
             _roles[tokenId][role][account] = false;
             emit RoleRevoked(tokenId, role, account, _msgSender());
         }
-        _roleMembers[tokenId][role].remove(account);
     }
 
     /* Delegatable Role Management */
@@ -438,7 +528,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     }
 
     function renounceDelegatePermissions(uint256 forTokenId, uint256 toTokenId)
-      public
+      external
       existentNode(forTokenId)
       existentNode(toTokenId)
       onlyRole(forTokenId, ADMIN_ROLE)
@@ -459,7 +549,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ReentrancyGuard {
     mapping(uint256 => bool) private _shouldBypassPermissions;
 
     function setPermissionsBypass(uint256 tokenId, bool shouldBypassPermissions)
-      public
+      external
     {
         // The onlyRole modifier bypasses permissions, so we use the underlying method
         require(hasRole(tokenId, ADMIN_ROLE, _msgSender()), ERR_INSUFFICIENT_PERMISSIONS);

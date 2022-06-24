@@ -8,11 +8,13 @@ import Data from "src/components/Icons/Data";
 import TeamIcon from "src/components/Icons/Team";
 import History from "src/components/Icons/History";
 import FeeIcon from "src/components/Icons/Fee";
+import BurnIcon from "src/components/Icons/Burn";
 
 import Metadata from "src/components/Metadata";
 import Revisions from "src/components/Revisions";
 import Fee from "src/components/Fee";
 import Team from "src/components/Team";
+import Burn from "src/components/Burn";
 import { bgPassive } from "src/utils/theme";
 
 export type NodeSettingsMeta = {
@@ -31,6 +33,7 @@ enum SettingsLevel {
   HISTORY = "HISTORY",
   METADATA = "METADATA",
   FEE = "FEE",
+  BURN = "BURN",
 }
 
 const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
@@ -99,6 +102,17 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
                 Connection Fee
               </p>
             </div>
+            <div
+              className={`flex border-b border-color p-4 ${
+                level === SettingsLevel.BURN ? bgPassive : ""
+              } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+              onClick={() => !locked && setLevel(SettingsLevel.BURN)}
+            >
+              <BurnIcon />
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                Burn
+              </p>
+            </div>
           </nav>
 
           <div className="border-l border-color grow">
@@ -114,6 +128,13 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             {level === SettingsLevel.HISTORY && <Revisions node={meta.node} />}
             {level === SettingsLevel.FEE && (
               <Fee
+                node={meta.node}
+                setLocked={setLocked}
+                reloadData={meta.reloadData}
+              />
+            )}
+            {level === SettingsLevel.BURN && (
+              <Burn
                 node={meta.node}
                 setLocked={setLocked}
                 reloadData={meta.reloadData}

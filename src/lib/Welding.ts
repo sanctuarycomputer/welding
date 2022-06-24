@@ -4,7 +4,6 @@ import Node from "artifacts/contracts/src/Node.sol/Node.json";
 import slugify from "slugify";
 import { BaseNode } from "src/types";
 
-// TODO: Use private API key if it's avail (ie, on the server)
 const fallbackProvider = new ethers.providers.AlchemyProvider(
   process.env.NEXT_PUBLIC_NETWORK,
   process.env.NEXT_PUBLIC_ALCHEMY_PROJECT_ID
@@ -15,13 +14,10 @@ const Welding = {
     process.env.NEXT_PUBLIC_NODE_ADDRESS || "no_address_given",
     Node.abi
   ),
+
   fallbackProvider,
 
-  ipfsGateways: [
-    "https://welding.infura-ipfs.io",
-    //"https://ipfs.io",
-    //"https://cloudflare-ipfs.com"
-  ],
+  ipfsGateways: ["https://gateway.ipfs.io"],
 
   getBlockNumber: async function (
     provider: BaseProvider | null

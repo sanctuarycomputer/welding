@@ -24,4 +24,11 @@ describe("Behavior: Basics", function () {
     await contract.connect(addr1).mint('document', '123', [], [], []);
     expect(await contract.balanceOf(addr1.address)).to.equal(1);
   });
+
+  it("It should not be able to mint a new Graph when the label starts with an underscore", async function () {
+    expect(await contract.balanceOf(addr1.address)).to.equal(0);
+    await expect(
+      contract.connect(addr1).mint('_document', '123', [], [], [])
+    ).to.be.revertedWith('reserved_string');
+  });
 });

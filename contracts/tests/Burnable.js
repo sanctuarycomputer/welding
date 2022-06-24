@@ -34,5 +34,9 @@ describe("Behavior: Burnable", function () {
     tx = await tx.wait();
     transferEvent = tx.events.find(e => e.event === "Transfer");
     expect(transferEvent.args.to).to.equal('0x0000000000000000000000000000000000000000');
+
+    await expect(
+      contract.revise(nodeId, '456')
+    ).to.be.revertedWith("node_nonexistent");
   });
 });
