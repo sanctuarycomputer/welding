@@ -26,7 +26,7 @@ const makeDummyNode = (label: string): BaseNode => {
     related: [],
     owner: { address: "0x0" },
     admins: [],
-    editors: []
+    editors: [],
   };
 };
 

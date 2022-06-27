@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect, useRef } from "react";
-import { BaseNode } from 'src/types';
+import { BaseNode } from "src/types";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import VerticalDots from "src/components/Icons/VerticalDots";
@@ -105,7 +105,9 @@ const Actions = ({
   }, [formik.values.incoming]);
 
   const belongsTo = node.outgoing.find((e) => e.name === "BELONGS_TO");
-  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"] || {})
+  const subgraphs = Object.values(
+    accountNodesByCollectionType["Subgraph"] || {}
+  )
     .filter((item) => {
       // Don't allow subgraphs to stash themselves
       return item.node.tokenId !== node.tokenId;

@@ -18,10 +18,10 @@ interface IGraphData {
   accountNodesByCollectionType: {
     [nodeLabel: string]: {
       [tokenId: string]: {
-        node: BaseNode
-      }
-    }
-  },
+        node: BaseNode;
+      };
+    };
+  };
   loadAccountData: (address: string) => void;
   shallowNodes: BaseNode[];
   shallowNodesLoading: boolean;
@@ -32,7 +32,7 @@ interface IGraphData {
   doesOwnNode: (n: BaseNode) => boolean;
   canAdministerNode: (n: BaseNode) => boolean;
   canEditNode: (n: BaseNode) => boolean;
-};
+}
 
 const GraphContext = createContext<IGraphData>({
   accountData: null,
@@ -53,7 +53,9 @@ const { Provider } = GraphContext;
 
 function GraphProvider({ children }) {
   const { data: account } = useAccount();
-  const shallowNodesSubscription = useRef<ObservableQuery<{ baseNodes: BaseNode[] }> | null>(null);
+  const shallowNodesSubscription = useRef<ObservableQuery<{
+    baseNodes: BaseNode[];
+  }> | null>(null);
 
   const [accountDataLoading, setAccountDataLoading] = useState<boolean>(false);
   const [accountData, setAccountData] = useState<Account | null>(null);

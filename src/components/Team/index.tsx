@@ -49,11 +49,11 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
     [address: string]: Roles[];
   } = {};
   roles[node.owner.address] = roles[node.owner.address] || [Roles.OWNER];
-  node.admins.forEach(a => {
+  node.admins.forEach((a) => {
     roles[a.address] = roles[a.address] || [];
     roles[a.address].push(Roles.ADMIN);
   });
-  node.editors.forEach(a => {
+  node.editors.forEach((a) => {
     roles[a.address] = roles[a.address] || [];
     roles[a.address].push(Roles.EDITOR);
   });
@@ -66,64 +66,62 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
     "_DELEGATES_PERMISSIONS_TO"
   );
 
-  const formik: FormikProps<FormikInviteProps> = useFormik<FormikInviteProps>(
-    {
-      enableReinitialize: true,
-      initialValues: {
-        address: "",
-        role: 1,
-      },
-      onSubmit: async (values) => {
-        if (!signer) return;
+  const formik: FormikProps<FormikInviteProps> = useFormik<FormikInviteProps>({
+    enableReinitialize: true,
+    initialValues: {
+      address: "",
+      role: 1,
+    },
+    onSubmit: async (values) => {
+      if (!signer) return;
 
-        let toastId;
-        const { role, address } = values;
+      let toastId;
+      const { role, address } = values;
 
-        try {
-          setLocked(true);
-          NProgress.start();
-          toastId = toast.loading("Requesting signature...", {
-            className: "toast",
-          });
-          let tx = await Welding.Nodes.connect(signer).grantRole(
-            node.tokenId,
-            role,
-            address
-          );
+      try {
+        setLocked(true);
+        NProgress.start();
+        toastId = toast.loading("Requesting signature...", {
+          className: "toast",
+        });
+        let tx = await Welding.Nodes.connect(signer).grantRole(
+          node.tokenId,
+          role,
+          address
+        );
 
-          toast.loading("Granting role...", {
-            id: toastId,
-          });
-          tx = await tx.wait();
+        toast.loading("Granting role...", {
+          id: toastId,
+        });
+        tx = await tx.wait();
 
-          toast.loading("Confirming transaction...", {
-            id: toastId,
-          });
-          await Client.fastForward(tx.blockNumber);
-          await reloadData();
-          toast.success("Success!", {
-            id: toastId,
-          });
-        } catch (e) {
-          toast.error("An error occured.", {
-            id: toastId,
-          });
-          console.log(e);
-          Sentry.captureException(e);
-        } finally {
-          setLocked(false);
-          NProgress.done();
-        }
-      },
-      validationSchema: yup.object({
-        address: yup
-          .string()
-          .trim()
-          .required("A valid address is required")
-          .matches(/0x[a-fA-F0-9]{40}/, "Must be a valid address"),
-      }),
-    }
-  );
+        toast.loading("Confirming transaction...", {
+          id: toastId,
+        });
+        await Client.fastForward(tx.blockNumber);
+        await reloadData();
+        toast.success("Success!", {
+          id: toastId,
+        });
+      } catch (e) {
+        toast.error("An error occured.", {
+          id: toastId,
+        });
+        console.log(e);
+        Sentry.captureException(e);
+      } finally {
+        setLocked(false);
+        NProgress.done();
+      }
+    },
+    validationSchema: yup.object({
+      address: yup
+        .string()
+        .trim()
+        .required("A valid address is required")
+        .matches(/0x[a-fA-F0-9]{40}/, "Must be a valid address"),
+    }),
+  });
 
   const delegateFormik: FormikProps<FormikDelegateProps> =
     useFormik<FormikDelegateProps>({
@@ -180,11 +178,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
       }),
     });
 
-  const triggerRoleRemoval = async (
-    address,
-    role,
-    method
-  ) => {
+  const triggerRoleRemoval = async (address, role, method) => {
     if (!signer) return;
 
     let toastId;
@@ -322,10 +316,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
 
           {Object.entries(roles).map(([k, v]) => {
             return (
-              <tr
-                key={k}
-                className="border-b border-color border-dashed"
-              >
+              <tr key={k} className="border-b border-color border-dashed">
                 <td className="px-2 py-3">
                   <Address address={k} />
                 </td>

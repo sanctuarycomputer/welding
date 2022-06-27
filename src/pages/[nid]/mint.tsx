@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       name: "BELONGS_TO",
       tokenId: node.tokenId,
       active: true,
-      pivotTokenId: document.tokenId
+      pivotTokenId: document.tokenId,
     },
   ];
   document.related = [node];

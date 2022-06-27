@@ -19,10 +19,10 @@ type Props = {
 };
 
 interface DragItem {
-  index: number
-  id: string
-  type: string
-};
+  index: number;
+  id: string;
+  type: string;
+}
 
 const DraggableDocumentLink: FC<Props> = ({
   id,

@@ -70,7 +70,9 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           description: "",
           image: "",
           properties: {
-            emoji: (emojis[Math.floor(Math.random() * emojis.length)] as BaseEmoji),
+            emoji: emojis[
+              Math.floor(Math.random() * emojis.length)
+            ] as BaseEmoji,
           },
         },
       },

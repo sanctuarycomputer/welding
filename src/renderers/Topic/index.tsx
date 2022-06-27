@@ -18,26 +18,20 @@ import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import { bg, border } from "src/utils/theme";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
-import withPublisher  from "src/hooks/withPublisher";
+import withPublisher from "src/hooks/withPublisher";
 import { BaseEmoji } from "emoji-mart";
 
 interface Props {
   node: BaseNode;
 }
 
-const Topic: FC<Props> = ({
-  node
-}) => {
-  const {
-    formik,
-    imagePreview,
-    imageDidChange,
-    clearImage,
-    reloadData, 
-  } = withPublisher(node);
+const Topic: FC<Props> = ({ node }) => {
+  const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
+    withPublisher(node);
   const router = useRouter();
   let { collection } = router.query;
-  collection = (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
+  collection =
+    (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
 
   const { canEditNode } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);

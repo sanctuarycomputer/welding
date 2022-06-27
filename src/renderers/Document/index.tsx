@@ -27,7 +27,7 @@ const Editor = dynamic(() => import("src/components/Editor"), {
 
 interface Props {
   node: BaseNode;
-};
+}
 
 const DocumentStashInfo = ({ subgraph }) => {
   if (subgraph) {
@@ -50,23 +50,15 @@ const DocumentStashInfo = ({ subgraph }) => {
   }
 };
 
-const Document: FC<Props> = ({
-  node
-}) => {
-  const {
-    formik,
-    imagePreview,
-    imageDidChange,
-    clearImage,
-    reloadData, 
-  } = withPublisher(node);
+const Document: FC<Props> = ({ node }) => {
+  const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
+    withPublisher(node);
 
   const router = useRouter();
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { canEditNode, shallowNodes } =
-    useContext(GraphContext);
+  const { canEditNode, shallowNodes } = useContext(GraphContext);
   const { setContent } = useContext(NavContext);
   const canEdit = node.tokenId.startsWith("-") || canEditNode(node);
 
@@ -120,9 +112,7 @@ const Document: FC<Props> = ({
     "BELONGS_TO"
   )[0];
   const showStashInfo =
-    !node.burnt &&
-    nid &&
-    nid.split("-")[0] !== subgraphParent?.tokenId;
+    !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
   return (
     <>

@@ -2,7 +2,10 @@ import { Component, ReactNode } from "react";
 import Custom500 from "src/pages/500";
 import * as Sentry from "@sentry/nextjs";
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; }> {
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
   constructor(props) {
     super(props);
     this.state = { hasError: false };

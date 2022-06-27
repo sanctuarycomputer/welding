@@ -40,7 +40,9 @@ const Wallet = () => {
     setDropDownOpen(false);
   });
 
-  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"] || {});
+  const subgraphs = Object.values(
+    accountNodesByCollectionType["Subgraph"] || {}
+  );
 
   if (account?.address) {
     return (

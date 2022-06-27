@@ -1,4 +1,10 @@
-import { ApolloClient, InMemoryCache, gql, NormalizedCacheObject, ObservableQuery } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  gql,
+  NormalizedCacheObject,
+  ObservableQuery,
+} from "@apollo/client";
 import { Account, BaseNode, Metadata, Revision } from "src/types";
 import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
 import { fetchEnsName } from "@wagmi/core";
@@ -132,7 +138,9 @@ const Client = {
     if (!response.ok) throw new Error("could_not_fastforward");
   },
 
-  makeShallowNodesSubscription: async function (): Promise<ObservableQuery<{ baseNodes: BaseNode[] }>> {
+  makeShallowNodesSubscription: async function (): Promise<
+    ObservableQuery<{ baseNodes: BaseNode[] }>
+  > {
     const client = await Client.getClient();
     return client.watchQuery<{ baseNodes: BaseNode[] }>({
       fetchPolicy: "cache-and-network",

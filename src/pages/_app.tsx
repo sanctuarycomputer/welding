@@ -42,9 +42,10 @@ Router.events.on("routeChangeError", () => NProgress.done());
 
 Modal.setAppElement("#__next");
 
-const targetChain = Object.values(chain).find(
-  (c) => c.network === process.env.NEXT_PUBLIC_NETWORK
-) || chain.polygon;
+const targetChain =
+  Object.values(chain).find(
+    (c) => c.network === process.env.NEXT_PUBLIC_NETWORK
+  ) || chain.polygon;
 const { chains, provider, webSocketProvider } = configureChains(
   [targetChain, chain.mainnet],
   [

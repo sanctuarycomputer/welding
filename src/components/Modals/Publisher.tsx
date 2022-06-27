@@ -41,14 +41,7 @@ const PublisherStep: FC<{
   active: boolean;
   error?: any;
   children?: ReactNode;
-}> = ({ 
-  icon,
-  title,
-  description,
-  active,
-  error,
-  children,
-}) => {
+}> = ({ icon, title, description, active, error, children }) => {
   return (
     <div>
       <p className="flex items-center text-base">

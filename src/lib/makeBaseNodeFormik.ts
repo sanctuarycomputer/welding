@@ -51,7 +51,7 @@ const makeFormikForBaseNode = (
   node: BaseNode
 ): FormikProps<BaseNodeFormValues> => {
   const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
- 
+
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
     initialValues: {
@@ -220,7 +220,8 @@ export const getRelatedNodes = (
       uniqueTokenIds.add(n.tokenId);
       if (!dupe) return true;
       return false;
-    }).filter(notEmpty);
+    })
+    .filter(notEmpty);
 };
 
 //export const hasStagedRelations = (

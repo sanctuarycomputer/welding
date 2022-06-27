@@ -3,11 +3,11 @@ import React, { useState, createContext, ReactChild } from "react";
 interface INavContext {
   content: ReactChild | null;
   setContent: (c: ReactChild | null) => void;
-};
+}
 
 const NavContext = createContext<INavContext>({
   content: null,
-  setContent: () => undefined
+  setContent: () => undefined,
 });
 const { Provider } = NavContext;
 

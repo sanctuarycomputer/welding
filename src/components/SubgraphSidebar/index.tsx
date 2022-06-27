@@ -211,7 +211,7 @@ const SubgraphSidebar: FC<Props> = ({
                 className={`${
                   canEdit ? "cursor-edit" : "pointer-events-none"
                 } block pb-4 w-full bg-transparent text-xs px-2`}
-                 name="description"
+                name="description"
                 placeholder="Add a description"
                 value={formik.values.description}
                 onChange={formik.handleChange}

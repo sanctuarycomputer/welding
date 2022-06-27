@@ -24,57 +24,55 @@ const Fee = ({ node, setLocked, reloadData }) => {
     useContext(GraphContext);
   const [USDEstimate, setUSDEstimate] = useState<string | null>(null);
 
-  const formik: FormikProps<FeeFormValues> = useFormik<FeeFormValues>(
-    {
-      initialValues: {
-        fee: parseFloat(formatUnits(node.fee, "ether").toString()),
-      },
-      onSubmit: async (values) => {
-        let toastId;
-        const { fee } = values;
-        try {
-          if (!signer) throw new Error("no_signer_present");
-          setLocked(true);
+  const formik: FormikProps<FeeFormValues> = useFormik<FeeFormValues>({
+    initialValues: {
+      fee: parseFloat(formatUnits(node.fee, "ether").toString()),
+    },
+    onSubmit: async (values) => {
+      let toastId;
+      const { fee } = values;
+      try {
+        if (!signer) throw new Error("no_signer_present");
+        setLocked(true);
 
-          NProgress.start();
-          toastId = toast.loading("Requesting signature...", {
-            className: "toast",
-          });
-          let tx = await Welding.Nodes.connect(signer).setConnectionFee(
-            node.tokenId,
-            parseUnits(`${fee}`, "ether")
-          );
+        NProgress.start();
+        toastId = toast.loading("Requesting signature...", {
+          className: "toast",
+        });
+        let tx = await Welding.Nodes.connect(signer).setConnectionFee(
+          node.tokenId,
+          parseUnits(`${fee}`, "ether")
+        );
 
-          toast.loading("Setting fee...", {
-            id: toastId,
-          });
-          tx = await tx.wait();
+        toast.loading("Setting fee...", {
+          id: toastId,
+        });
+        tx = await tx.wait();
 
-          toast.loading("Confirming transaction...", {
-            id: toastId,
-          });
-          NProgress.done();
-          await Client.fastForward(tx.blockNumber);
-          await purgeCache();
-          await Promise.all([loadShallowNodes(), reloadData()]);
-          toast.success("Success!", {
-            id: toastId,
-          });
+        toast.loading("Confirming transaction...", {
+          id: toastId,
+        });
+        NProgress.done();
+        await Client.fastForward(tx.blockNumber);
+        await purgeCache();
+        await Promise.all([loadShallowNodes(), reloadData()]);
+        toast.success("Success!", {
+          id: toastId,
+        });
 
-          formik.resetForm({ values });
-        } catch (e) {
-          NProgress.done();
-          toast.error("An error occured.", {
-            id: toastId,
-          });
-          console.log(e);
-          Sentry.captureException(e);
-        } finally {
-          setLocked(false);
-        }
-      },
-    }
-  );
+        formik.resetForm({ values });
+      } catch (e) {
+        NProgress.done();
+        toast.error("An error occured.", {
+          id: toastId,
+        });
+        console.log(e);
+        Sentry.captureException(e);
+      } finally {
+        setLocked(false);
+      }
+    },
+  });
 
   useEffect(() => {
     if (formik.values.fee && exchangeRate) {

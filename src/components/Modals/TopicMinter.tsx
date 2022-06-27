@@ -31,7 +31,7 @@ type Props = {
   meta: TopicMinterMeta;
 };
 
-const IndividualTopicMinter: FC<{ 
+const IndividualTopicMinter: FC<{
   topic: BaseNode;
   setTopicId: Function;
   setTopicDescription: Function;

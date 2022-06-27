@@ -32,7 +32,8 @@ type Props = {
 const AccountsShow: FC<Props> = ({ accountData, address }) => {
   const router = useRouter();
   let { collection } = router.query;
-  collection = (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
+  collection =
+    (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
 
   const { data: account } = useAccount();
   const { setContent } = useContext(NavContext);
@@ -66,7 +67,9 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
       accountNodesByCollectionType
     );
   }
-  const nodes: BaseNode[] = Object.values(accountNodesByCollectionType[collection] || {});
+  const nodes: BaseNode[] = Object.values(
+    accountNodesByCollectionType[collection] || {}
+  );
 
   return (
     <div className="content py-4 mt-24 mx-auto">
@@ -86,7 +89,10 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           >
             <p>
               Subgraphs •{" "}
-              {Object.values(accountNodesByCollectionType["Subgraph"] || {}).length}
+              {
+                Object.values(accountNodesByCollectionType["Subgraph"] || {})
+                  .length
+              }
             </p>
           </a>
         </Link>
@@ -99,7 +105,10 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           >
             <p>
               Documents •{" "}
-              {Object.values(accountNodesByCollectionType["Document"] || {}).length}
+              {
+                Object.values(accountNodesByCollectionType["Document"] || {})
+                  .length
+              }
             </p>
           </a>
         </Link>
@@ -111,7 +120,11 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
             }`}
           >
             <p>
-              Topics • {Object.values(accountNodesByCollectionType["Topic"] || {}).length}
+              Topics •{" "}
+              {
+                Object.values(accountNodesByCollectionType["Topic"] || {})
+                  .length
+              }
             </p>
           </a>
         </Link>

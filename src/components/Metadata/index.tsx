@@ -30,9 +30,7 @@ const Metadata = ({ node }) => {
             <p>{truncate(CONTRACT_ADDRESS, 30)}</p>
           </td>
           <td
-            onClick={() =>
-              copyToClipboard(CONTRACT_ADDRESS)
-            }
+            onClick={() => copyToClipboard(CONTRACT_ADDRESS)}
             className="pr-2 py-4 cursor-pointer whitespace-nowrap"
           >
             <Copy />

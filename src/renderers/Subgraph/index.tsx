@@ -20,17 +20,9 @@ interface Props {
   document?: BaseNode;
 }
 
-const Subgraph: FC<Props> = ({
-  node,
-  document,
-}) => {
-  const {
-    formik,
-    imagePreview,
-    imageDidChange,
-    clearImage,
-    reloadData, 
-  } = withPublisher(node);
+const Subgraph: FC<Props> = ({ node, document }) => {
+  const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
+    withPublisher(node);
 
   const { data: account } = useAccount();
   const { canEditNode } = useContext(GraphContext);

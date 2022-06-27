@@ -10,11 +10,7 @@ type Props = {
   onClick?: Function;
 };
 
-const EditNav: FC<Props> = ({
-  formik,
-  buttonLabel,
-  onClick,
-}) => {
+const EditNav: FC<Props> = ({ formik, buttonLabel, onClick }) => {
   return (
     <div className="flex pr-2 items-center border-r border-color mr-2">
       {formik.dirty ? (

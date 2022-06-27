@@ -16,17 +16,13 @@ const Avatar: FC<Props> = ({ address, width }) => {
   if (!width) width = 4;
   return ensAvatar ? (
     <img
-      className={`${bgPassive} aspect-square w-${
-        width
-      } rounded-full inline-block`}
+      className={`${bgPassive} aspect-square w-${width} rounded-full inline-block`}
       src={ensAvatar}
       alt="ENS Avatar"
     />
   ) : width > 4 ? (
     <div
-      className={`${bgPassive} aspect-square w-${
-        width
-      } rounded-full inline-block flex items-center justify-center`}
+      className={`${bgPassive} aspect-square w-${width} rounded-full inline-block flex items-center justify-center`}
     >
       <UnknownUser />
     </div>

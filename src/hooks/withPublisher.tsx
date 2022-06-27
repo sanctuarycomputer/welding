@@ -16,7 +16,7 @@ export interface PublisherUtils {
   imageDidChange: (e: ChangeEvent<HTMLInputElement>) => void;
   clearImage: Function;
   reloadData: Function;
-};
+}
 
 export default function withPublisher(initialNode: BaseNode): PublisherUtils {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function withPublisher(initialNode: BaseNode): PublisherUtils {
         router.reload();
       }
     } else {
-      const reloadedNode = await Client.fetchBaseNodeByTokenId(node.tokenId)
+      const reloadedNode = await Client.fetchBaseNodeByTokenId(node.tokenId);
       if (reloadedNode) setNode(reloadedNode);
     }
     NProgress.done();
