@@ -1,34 +1,29 @@
 import { BaseEmoji } from "emoji-mart";
 
-enum Roles {
-  OWNER = "Owner",
-  ADMIN = "Admin",
-  EDITOR = "Editor",
-}
-
-type BaseNodeFormValues = {
+export type BaseNodeFormValues = {
   name: string;
   description: string;
   emoji: BaseEmoji;
+  ui: {
+  },
   content?: any;
+  image: any;
+  related: BaseNode[];
+  outgoing: Edge[];
+  incoming: Edge[];
+  __node__: BaseNode;
 };
 
-type MintState = {
-  tokenId: string;
-  label: string;
-  progress: number;
-  disabled: boolean;
-};
-
-type Role = {
-  role: string | null;
+export type Role = {
+  role: null | "0" | "1";
   tokenId: string;
 };
 
-type Account = {
+export type Account = {
   address: string;
   roles: Role[];
   related: BaseNode[];
+  ensName?: string | null;
 };
 
 type MetadataProperties = {
@@ -39,42 +34,39 @@ type MetadataProperties = {
   };
 };
 
-type Metadata = {
+export type Metadata = {
   name: string;
   description: string;
   image: string;
   properties: MetadataProperties;
 };
 
-type Revision = {
+export type Revision = {
   hash: string;
   block: number;
-  metadata: Metadata | string | null;
+  metadata: Metadata;
   content: string | null;
   contentType: string | null;
 };
 
-type BaseNodeLabel = "BaseNode";
-type SubgraphLabel = "Subgraph";
-type DocumentLabel = "Document";
-type TopicLabel = "Topic";
-type NodeLabel = SubgraphLabel | DocumentLabel | TopicLabel;
-
-type Edge = {
+export type Edge = {
   name: string;
   tokenId: string;
   pivotTokenId: string;
   active: boolean;
 };
 
-type BaseNode = {
+export type BaseNode = {
   tokenId: string;
   fee: string;
   currentRevision: Revision;
-  labels: Array<BaseNodeLabel | NodeLabel>;
+  labels: string[];
   burnt: boolean;
   revisions?: Revision[];
   related: BaseNode[];
   incoming: Edge[];
   outgoing: Edge[];
+  owner: { address: string };
+  admins: { address: string }[];
+  editors: { address: string }[];
 };

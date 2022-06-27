@@ -1,4 +1,4 @@
-import { FC, useEffect, useContext, useState } from "react";
+import { FC, useEffect, useContext, useState, ReactNode } from "react";
 import { GraphContext } from "src/hooks/useGraphData";
 import { ExchangeRateContext } from "src/hooks/useExchangeRates";
 import { detailedDiff } from "deep-object-diff";
@@ -11,12 +11,15 @@ import ModalHeader from "src/components/Modals/ModalHeader";
 import Spinner from "src/components/Icons/Spinner";
 import Warning from "src/components/Icons/Warning";
 import { bgPassive, text, textPassive } from "src/utils/theme";
+import { BaseNode, BaseNodeFormValues } from "src/types";
+import { FormikProps } from "formik";
 
 export type PublisherMeta = {
-  formik: BaseNode;
+  formik: FormikProps<BaseNodeFormValues>;
 };
 
 type Props = {
+  isOpen: boolean;
   onRequestClose: Function;
   meta: PublisherMeta;
 };
@@ -31,7 +34,14 @@ enum PublishStep {
   ERROR = "ERROR",
 }
 
-const PublisherStep = ({
+const PublisherStep: FC<{
+  icon: string;
+  title: string;
+  description: string;
+  active: boolean;
+  error?: any;
+  children?: ReactNode;
+}> = ({ 
   icon,
   title,
   description,
@@ -108,10 +118,10 @@ const EdgeTile = ({ edge }) => {
 
 const ConnectionTile = ({ to, from, edge, prevConnected, owned }) => {
   const { activeChain } = useNetwork();
-  const symbol = activeChain?.nativeCurrency.symbol || "";
+  const symbol = activeChain?.nativeCurrency?.symbol || "";
 
   const { exchangeRate } = useContext(ExchangeRateContext);
-  const [USDEstimate, setUSDEstimate] = useState(null);
+  const [USDEstimate, setUSDEstimate] = useState<string | null>(null);
 
   useEffect(() => {
     if (from.fee && exchangeRate) {
@@ -156,14 +166,13 @@ const ConnectionTile = ({ to, from, edge, prevConnected, owned }) => {
 const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
   const { accountData } = useContext(GraphContext);
   const node = formik.values.__node__;
-
   const addedConnections = Object.values(incomingDiff.added);
   const toggledOnConnections = Object.values(incomingDiff.updated).filter(
-    (d) => d.active
+    (d: any) => d.active
   );
   const removedConnections = [
     ...Object.values(incomingDiff.deleted),
-    ...Object.values(incomingDiff.updated).filter((d) => !d.active),
+    ...Object.values(incomingDiff.updated).filter((d: any) => !d.active),
   ];
 
   return (
@@ -240,7 +249,7 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
           <p className={textPassive}>No connections removed</p>
         )}
 
-        <Button label="Confirm" onClick={resolve} />
+        <Button label="Confirm" onClick={resolve} disabled={false} />
       </div>
     </div>
   );
@@ -259,7 +268,7 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
   };
 
   const node = formik.values.__node__;
-  const incomingDiff = detailedDiff(node.incoming, formik.values.incoming);
+  const incomingDiff: any = detailedDiff(node.incoming, formik.values.incoming);
   const hasConnectionChanges =
     Object.values(incomingDiff.added).length > 0 ||
     Object.values(incomingDiff.updated).length > 0 ||
@@ -273,6 +282,7 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
           hint="Publish on-chain updates to this node"
           onClickClose={attemptClose}
         />
+
         <div className="p-4">
           {hasConnectionChanges && (
             <PublisherStep

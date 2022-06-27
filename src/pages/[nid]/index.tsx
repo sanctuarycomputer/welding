@@ -4,6 +4,9 @@ import Subgraph from "src/renderers/Subgraph";
 import Topic from "src/renderers/Topic";
 import slugifyNode from "src/utils/slugifyNode";
 import getRelatedNodes from "src/utils/getRelatedNodes";
+import { BaseNode } from "src/types";
+import { GetServerSideProps } from "next";
+import { FC } from "react";
 
 type Props = {
   node: BaseNode;
@@ -23,13 +26,13 @@ const NodeShow: FC<Props> = ({ node }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const q = Object.keys(context.query).reduce((acc, k) => {
-    if (k === "nid") return acc;
-    if (acc === "") return context.query[k];
+  const q = Object.keys(context.query).reduce<string>((acc, k) => {
+    if (k === "nid") return `${acc}`;
+    if (acc === "") return `${context.query[k]}`;
     return `${acc}&${context.query[k]}`;
   }, "");
 
-  let { nid } = context.query;
+  let { nid, hash } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
   const node = await Client.fetchBaseNodeByTokenId(nid);
   if (!node) return { notFound: true };
@@ -108,9 +111,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  let revision = null;
-  if (context.query.hash) {
-    const rev = await Client.fetchRevisionByHash(context.query.hash);
+  if (hash) {
+    hash = (Array.isArray(hash) ? hash[0] : hash) || "subgraphs";
+    const rev = await Client.fetchRevisionByHash(hash);
     if (rev) node.currentRevision = rev;
   }
 

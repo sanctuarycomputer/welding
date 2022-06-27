@@ -1,5 +1,4 @@
-import { FC, useContext, useState } from "react";
-import { ModalContext } from "src/hooks/useModal";
+import { FC, useState } from "react";
 import Modal from "react-modal";
 import ModalHeader from "src/components/Modals/ModalHeader";
 import { useAccount } from "wagmi";
@@ -16,6 +15,7 @@ import Fee from "src/components/Fee";
 import Team from "src/components/Team";
 import Burn from "src/components/Burn";
 import { bgPassive } from "src/utils/theme";
+import { BaseNode } from "src/types";
 
 export type NodeSettingsMeta = {
   node: BaseNode;
@@ -24,6 +24,7 @@ export type NodeSettingsMeta = {
 };
 
 type Props = {
+  isOpen: boolean;
   onRequestClose: Function;
   meta: NodeSettingsMeta;
 };
@@ -37,7 +38,6 @@ enum SettingsLevel {
 }
 
 const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
-  const { openModal, closeModal } = useContext(ModalContext);
   const { data: account } = useAccount();
   const [level, setLevel] = useState(SettingsLevel.METADATA);
   const [locked, setLocked] = useState(false);
@@ -120,7 +120,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             {level === SettingsLevel.TEAM && (
               <Team
                 node={meta.node}
-                currentAddress={account?.address}
+                currentAddress={account?.address || ""}
                 setLocked={setLocked}
                 reloadData={meta.reloadData}
               />

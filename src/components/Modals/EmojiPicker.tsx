@@ -10,16 +10,17 @@ export type EmojiPickerMeta = {
 };
 
 type Props = {
+  isOpen: boolean;
   onRequestClose: Function;
   meta: EmojiPickerMeta;
 };
 
 const EmojiPicker: FC<Props> = ({ onRequestClose, meta }) => {
   return (
-    <Modal isOpen={true} onRequestClose={onRequestClose}>
+    <Modal isOpen={true} onRequestClose={() => onRequestClose()}>
       <div className="h-screen sm:h-auto flex flex-col">
         <ModalHeader
-          onClickBack={meta.back}
+          onClickBack={() => meta.back && meta.back()}
           title="Choose an Emoji"
           hint="Select an emoji to represent this node"
           onClickClose={onRequestClose}

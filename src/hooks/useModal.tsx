@@ -17,7 +17,7 @@ import NodeSettingsModal, {
 import PublisherModal, { PublisherMeta } from "src/components/Modals/Publisher";
 
 interface IModalContext {
-  openModal: (type: ModalType) => void;
+  openModal: (currentModal: CurrentModal) => void;
   closeModal: () => void;
 }
 
@@ -29,7 +29,6 @@ export enum ModalType {
   EMOJI_PICKER = "EMOJI_PICKER",
   NODE_SETTINGS = "NODE_SETTINGS",
   PUBLISHER = "PUBLISHER",
-  SUBGRAPH_CONNECTOR = "SUBGRAPH_CONNECTOR",
 }
 
 type CurrentModal =
@@ -58,17 +57,16 @@ type CurrentModal =
   | {
       type: ModalType.PUBLISHER;
       meta: PublisherMeta;
-    }
-  | {
-      type: ModalType.SUBGRAPH_CONNECTOR;
-      meta: SubgraphConnectorMeta;
     };
 
-const ModalContext = createContext<IModalContext>();
+const ModalContext = createContext<IModalContext>({
+  openModal: () => undefined,
+  closeModal: () => undefined,
+});
 const { Provider } = ModalContext;
 
 const ModalProvider = ({ children }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [, setIsOpen] = useState<boolean>(false);
   const [currentModal, setCurrentModal] = useState<CurrentModal | null>(null);
 
   function openModal(currentModal: CurrentModal) {

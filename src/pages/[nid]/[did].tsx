@@ -1,5 +1,8 @@
+import { GetServerSideProps } from "next";
+import { FC } from "react";
 import Client from "src/lib/Client";
 import Subgraph from "src/renderers/Subgraph";
+import { BaseNode } from "src/types";
 import slugifyNode from "src/utils/slugifyNode";
 
 type Props = {
@@ -12,7 +15,7 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { nid } = context.query;
+  let { nid, hash } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
   const subgraph = await Client.fetchBaseNodeByTokenId(nid);
   if (!subgraph) return { notFound: true };
@@ -55,9 +58,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  let revision = null;
-  if (context.query.hash) {
-    const rev = await Client.fetchRevisionByHash(context.query.hash);
+  if (hash) {
+    hash = (Array.isArray(hash) ? hash[0] : hash) || "subgraphs";
+    const rev = await Client.fetchRevisionByHash(hash);
     if (rev) document.currentRevision = rev;
   }
 

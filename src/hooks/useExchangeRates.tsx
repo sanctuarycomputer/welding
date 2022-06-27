@@ -7,7 +7,11 @@ interface IExchangeRateContext {
   loadExchangeRate: Function;
 }
 
-const ExchangeRateContext = createContext<IExchangeRateContext>();
+const ExchangeRateContext = createContext<IExchangeRateContext>({
+  exchangeRate: null,
+  exchangeRateLoading: true,
+  loadExchangeRate: () => undefined,
+});
 const { Provider } = ExchangeRateContext;
 
 function ExchangeRateProvider({ children }) {

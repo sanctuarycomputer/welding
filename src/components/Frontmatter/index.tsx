@@ -1,7 +1,8 @@
-import { FC, useContext, useState } from "react";
+import { FC, useContext } from "react";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { FormikProps } from "formik";
 import { BaseNodeFormValues } from "src/types";
+import { BaseEmoji } from "emoji-mart";
 
 type ReadOnlyProps = {
   formik: FormikProps<BaseNodeFormValues>;

@@ -3,7 +3,6 @@
 Before Deploy:
 
 - [ ] Deploys
-- [ ] Security - Alchemy settings
 - [ ] CORS
 - [ ] Re-add tsc check to Husky
 - [ ] Remove TS Lint?

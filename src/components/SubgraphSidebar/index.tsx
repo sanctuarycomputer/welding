@@ -20,9 +20,9 @@ import Actions from "src/components/Actions";
 import useEditableImage from "src/hooks/useEditableImage";
 import NodeImage from "src/components/NodeImage";
 import TopicManager from "src/components/TopicManager";
-import VerticalDots from "src/components/Icons/VerticalDots";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { bg, border, textPassive } from "src/utils/theme";
+import { BaseEmoji } from "emoji-mart";
 
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
@@ -41,7 +41,6 @@ const SubgraphSidebar: FC<Props> = ({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const emoji = formik.values.emoji.native;
-  const name = formik.values.name;
   const subgraph = formik.values.__node__;
 
   const topics = getRelatedNodes(subgraph, "incoming", "Topic", "DESCRIBES");
@@ -212,8 +211,7 @@ const SubgraphSidebar: FC<Props> = ({
                 className={`${
                   canEdit ? "cursor-edit" : "pointer-events-none"
                 } block pb-4 w-full bg-transparent text-xs px-2`}
-                type="text"
-                name="description"
+                 name="description"
                 placeholder="Add a description"
                 value={formik.values.description}
                 onChange={formik.handleChange}

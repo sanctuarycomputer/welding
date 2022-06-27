@@ -1,32 +1,65 @@
 import { useState, useEffect, useRef, createContext } from "react";
-import type { Account } from "src/types";
+import type { Account, BaseNode, Revision, Role } from "src/types";
 import Client from "src/lib/Client";
 import { useAccount } from "wagmi";
+import { ObservableQuery } from "@apollo/client";
+import { notEmpty } from "src/utils/predicates";
 
-interface IAccountContext {
-  account: Account | null;
-  isLoading: boolean;
-}
+type RevisionLoadingData = {
+  [tokenId: string]: {
+    status: string;
+    revisions: Revision[];
+  };
+};
 
-const GraphContext = createContext<IAccountContext>();
+interface IGraphData {
+  accountData: Account | null;
+  accountDataLoading: boolean;
+  accountNodesByCollectionType: {
+    [nodeLabel: string]: {
+      [tokenId: string]: {
+        node: BaseNode
+      }
+    }
+  },
+  loadAccountData: (address: string) => void;
+  shallowNodes: BaseNode[];
+  shallowNodesLoading: boolean;
+  loadShallowNodes: () => void;
+  purgeCache: () => void;
+  loadRevisionsForBaseNode: (tokenId: string) => void;
+  revisionData: RevisionLoadingData;
+  doesOwnNode: (n: BaseNode) => boolean;
+  canAdministerNode: (n: BaseNode) => boolean;
+  canEditNode: (n: BaseNode) => boolean;
+};
+
+const GraphContext = createContext<IGraphData>({
+  accountData: null,
+  accountNodesByCollectionType: {},
+  accountDataLoading: true,
+  loadAccountData: (address: string) => undefined,
+  shallowNodes: [],
+  shallowNodesLoading: true,
+  loadShallowNodes: () => null,
+  purgeCache: () => null,
+  revisionData: {},
+  loadRevisionsForBaseNode: (tokenId: string) => undefined,
+  canEditNode: (n: BaseNode) => false,
+  canAdministerNode: (n: BaseNode) => false,
+  doesOwnNode: (n: BaseNode) => false,
+});
 const { Provider } = GraphContext;
 
 function GraphProvider({ children }) {
   const { data: account } = useAccount();
+  const shallowNodesSubscription = useRef<ObservableQuery<{ baseNodes: BaseNode[] }> | null>(null);
 
   const [accountDataLoading, setAccountDataLoading] = useState<boolean>(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
-
-  const [shallowNodesLoading, setShallowNodesLoading] = useState(null);
-  const [shallowNodes, setShallowNodes] = useState(null);
-  const shallowNodesSubscription = useRef(null);
-
-  const [revisionData, setRevisionData] = useState<{
-    [tokenId: string]: {
-      status: string;
-      revisions: Revision[];
-    };
-  }>({});
+  const [shallowNodesLoading, setShallowNodesLoading] = useState(false);
+  const [shallowNodes, setShallowNodes] = useState<BaseNode[]>([]);
+  const [revisionData, setRevisionData] = useState<RevisionLoadingData>({});
 
   const loadShallowNodes = async () => {
     if (shallowNodesLoading === true) return;
@@ -40,7 +73,7 @@ function GraphProvider({ children }) {
           await Client.processRevision(node.currentRevision);
           return node;
         });
-        setShallowNodes(await Promise.all(withRevisions));
+        setShallowNodes((await Promise.all(withRevisions)).filter(notEmpty));
       });
       shallowNodesSubscription.current = subscription;
     } else {
@@ -55,7 +88,8 @@ function GraphProvider({ children }) {
   const loadAccountData = async (address) => {
     if (!address) {
       setAccountDataLoading(false);
-      return setAccountData(null);
+      setAccountData(null);
+      return;
     }
 
     setAccountDataLoading(true);
@@ -90,14 +124,7 @@ function GraphProvider({ children }) {
     loadAccountData(account?.address);
   }, [account]);
 
-  let accountNodesByCollectionType = {
-    Subgraph: {},
-    Document: {},
-    Topic: {},
-  };
-
-  let accountNodesByTokenId = {};
-
+  let accountNodesByCollectionType = {};
   if (accountData) {
     accountNodesByCollectionType = accountData.roles.reduce(
       (acc: object, role: Role) => {
@@ -106,6 +133,7 @@ function GraphProvider({ children }) {
         });
         if (!n) return acc;
         const collectionType = n.labels.filter((l) => l !== "BaseNode")[0];
+        acc[collectionType] = acc[collectionType] || {};
         acc[collectionType][n.tokenId] = acc[collectionType][n.tokenId] || {
           node: n,
         };

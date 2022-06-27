@@ -1,17 +1,11 @@
 import { FC, useContext } from "react";
-import NodeMeta from "src/components/NodeMeta";
-
-import { GraphContext } from "src/hooks/useGraphData";
-import { ModalContext } from "src/hooks/useModal";
-import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
-import getRelatedNodes from "src/utils/getRelatedNodes";
-
 import type { BaseNode } from "src/types";
-
-import { useSigner, useConnect, useAccount } from "wagmi";
+import NodeMeta from "src/components/NodeMeta";
+import { GraphContext } from "src/hooks/useGraphData";
+import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
+import { useAccount } from "wagmi";
 import Document from "src/renderers/Document";
-
-import withPublisher from "src/hoc/withPublisher";
+import withPublisher from "src/hooks/withPublisher";
 
 import dynamic from "next/dynamic";
 const SubgraphSidebar = dynamic(
@@ -21,41 +15,26 @@ const SubgraphSidebar = dynamic(
   }
 );
 
-interface Props extends WithPublisherProps {
+interface Props {
   node: BaseNode;
   document?: BaseNode;
 }
 
 const Subgraph: FC<Props> = ({
+  node,
   document,
-  formik,
-  imageDidChange,
-  imagePreview,
-  clearImage,
-  reloadData,
 }) => {
-  const node = formik.values.__node__;
-  const { isConnecting } = useConnect();
-  const { data: signer } = useSigner();
+  const {
+    formik,
+    imagePreview,
+    imageDidChange,
+    clearImage,
+    reloadData, 
+  } = withPublisher(node);
+
   const { data: account } = useAccount();
-  const { accountData, loadAccountData, canEditNode } =
-    useContext(GraphContext);
-  const { openModal } = useContext(ModalContext);
-
+  const { canEditNode } = useContext(GraphContext);
   const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node);
-
-  const canEditDocument = document ? canEditNode(document) : canEditSubgraph;
-
-  const subgraphTopics = getRelatedNodes(
-    node,
-    "incoming",
-    "Topic",
-    "DESCRIBES"
-  );
-
-  const documentTopics = document
-    ? getRelatedNodes(document, "incoming", "Topic", "DESCRIBES")
-    : [];
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -125,4 +104,4 @@ const Subgraph: FC<Props> = ({
   );
 };
 
-export default withPublisher("Subgraph", Subgraph);
+export default Subgraph;

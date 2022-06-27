@@ -1,10 +1,11 @@
+import { FC } from "react";
 import { bg } from "src/utils/theme";
 
 type Props = {
   title: string;
   hint: string;
   onClickClose: Function;
-  onClickBack: Function | null;
+  onClickBack?: Function;
 };
 
 const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {
@@ -16,7 +17,7 @@ const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {
         <div>
           {onClickBack && (
             <p
-              onClick={onClickBack}
+              onClick={() => onClickBack()}
               className="text-xs flex items-center inline-block cursor-pointer pb-1"
             >
               ← Back
@@ -26,7 +27,7 @@ const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {
           <p>{hint}</p>
         </div>
         <span
-          onClick={onClickClose}
+          onClick={() => onClickClose()}
           className="cursor-pointer flex items-center pl-8"
         >
           ✕
@@ -40,7 +41,7 @@ const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {
         <div>
           {onClickBack && (
             <p
-              onClick={onClickBack}
+              onClick={() => onClickBack()}
               className="text-xs flex items-center inline-block cursor-pointer pb-1"
             >
               ← Back

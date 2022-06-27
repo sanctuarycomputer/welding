@@ -1,3 +1,4 @@
+import { FC } from "react";
 import { useEnsAvatar } from "wagmi";
 import UnknownUser from "src/components/Icons/UnknownUser";
 import { bgPassive } from "src/utils/theme";
@@ -12,10 +13,11 @@ const Avatar: FC<Props> = ({ address, width }) => {
     addressOrName: address,
     chainId: 1,
   });
+  if (!width) width = 4;
   return ensAvatar ? (
     <img
       className={`${bgPassive} aspect-square w-${
-        width || 4
+        width
       } rounded-full inline-block`}
       src={ensAvatar}
       alt="ENS Avatar"
@@ -23,7 +25,7 @@ const Avatar: FC<Props> = ({ address, width }) => {
   ) : width > 4 ? (
     <div
       className={`${bgPassive} aspect-square w-${
-        width || 4
+        width
       } rounded-full inline-block flex items-center justify-center`}
     >
       <UnknownUser />

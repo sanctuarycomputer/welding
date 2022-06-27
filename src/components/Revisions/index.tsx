@@ -67,7 +67,7 @@ const Revisions = ({ node }) => {
                 return r.hash !== node.currentRevision.hash;
               })
               .map((r) => {
-                return <Revision key={r.hash} node={node} revision={r} />;
+                return <Revision key={r.hash} node={node} revision={r} current={false} />;
               })}
         </tbody>
       </table>

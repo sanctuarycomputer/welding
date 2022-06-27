@@ -1,12 +1,8 @@
 import { FC, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-
-import { useAccount, useSigner } from "wagmi";
 import { GraphContext } from "src/hooks/useGraphData";
 import { NavContext } from "src/hooks/useNav";
-import { ModalContext, ModalType } from "src/hooks/useModal";
-
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import slugifyNode from "src/utils/slugifyNode";
 import EditNav from "src/components/EditNav";
@@ -15,7 +11,7 @@ import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
-import withPublisher from "src/hoc/withPublisher";
+import withPublisher from "src/hooks/withPublisher";
 import {
   getRelatedNodes,
   stageNodeRelations,
@@ -24,13 +20,14 @@ import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromConte
 import { textPassive } from "src/utils/theme";
 
 import dynamic from "next/dynamic";
+import { BaseNode } from "src/types";
 const Editor = dynamic(() => import("src/components/Editor"), {
   ssr: false,
 });
 
-interface Props extends WithPublisherProps {
+interface Props {
   node: BaseNode;
-}
+};
 
 const DocumentStashInfo = ({ subgraph }) => {
   if (subgraph) {
@@ -54,25 +51,24 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({
-  formik,
-  imageDidChange,
-  imagePreview,
-  clearImage,
-  reloadData,
+  node
 }) => {
-  const node = formik.values.__node__;
+  const {
+    formik,
+    imagePreview,
+    imageDidChange,
+    clearImage,
+    reloadData, 
+  } = withPublisher(node);
+
   const router = useRouter();
+  let nid = router.query.nid;
+  nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { data: account } = useAccount();
-  const { data: signer } = useSigner();
-  const { accountData, loadAccountData, canEditNode, shallowNodes } =
+  const { canEditNode, shallowNodes } =
     useContext(GraphContext);
-  const { openModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
-
   const canEdit = node.tokenId.startsWith("-") || canEditNode(node);
-
-  const canAdd = !!accountData;
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -125,8 +121,8 @@ const Document: FC<Props> = ({
   )[0];
   const showStashInfo =
     !node.burnt &&
-    router.query.nid &&
-    router.query.nid.split("-")[0] !== subgraphParent?.tokenId;
+    nid &&
+    nid.split("-")[0] !== subgraphParent?.tokenId;
 
   return (
     <>
@@ -209,4 +205,4 @@ const Document: FC<Props> = ({
   );
 };
 
-export default withPublisher("Document", Document);
+export default Document;

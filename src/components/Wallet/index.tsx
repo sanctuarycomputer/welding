@@ -1,14 +1,13 @@
 import { useContext, useState, useEffect, useRef } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
-import { useAccount, useSigner, useDisconnect, useNetwork } from "wagmi";
+import { useAccount, useDisconnect, useNetwork } from "wagmi";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
 import Button from "src/components/Button";
 import { NavContext } from "src/hooks/useNav";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import slugifyNode from "src/utils/slugifyNode";
-import { bg, bgHover, border } from "src/utils/theme";
+import { bg, bgHover } from "src/utils/theme";
 
 import dynamic from "next/dynamic";
 const Address = dynamic(() => import("src/components/Address"), {
@@ -22,11 +21,9 @@ const Wallet = () => {
     useContext(GraphContext);
 
   const { data: account } = useAccount();
-  const { data: signer } = useSigner();
   const { activeChain } = useNetwork();
 
   const { disconnect } = useDisconnect();
-  const router = useRouter();
   const [dropDownOpen, setDropDownOpen] = useState(false);
 
   useEffect(() => {
@@ -43,7 +40,7 @@ const Wallet = () => {
     setDropDownOpen(false);
   });
 
-  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"]);
+  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"] || {});
 
   if (account?.address) {
     return (
@@ -93,7 +90,7 @@ const Wallet = () => {
 
               <button
                 className="text-center flex flex-row items-center flex-grow"
-                onClick={disconnect}
+                onClick={() => disconnect()}
               >
                 <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
                   Disconnect

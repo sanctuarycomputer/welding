@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect, useRef } from "react";
+import { BaseNode } from 'src/types';
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import VerticalDots from "src/components/Icons/VerticalDots";
@@ -7,7 +8,6 @@ import Upload from "src/components/Icons/Upload";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
 import Graph from "src/components/Icons/Graph";
 import { useSigner } from "wagmi";
-import { useRouter } from "next/router";
 import makeFormikForBaseNode, {
   stageNodeRelations,
   unstageNodeRelations,
@@ -47,13 +47,15 @@ const Actions = ({
   allowSettings,
   reloadData,
 }) => {
-  const router = useRouter();
   const { data: signer } = useSigner();
   const { openModal, closeModal } = useContext(ModalContext);
   const { accountData, accountNodesByCollectionType } =
     useContext(GraphContext);
   const [subgraphPickerOpen, setSubgraphPickerOpen] = useState(false);
-  const [focus, setFocus] = useState(null);
+  const [focus, setFocus] = useState<{
+    node: BaseNode;
+    shouldStash: boolean;
+  } | null>(null);
 
   const pickerRef = useRef(null);
   useOutsideAlerter(pickerRef, () => {
@@ -63,7 +65,6 @@ const Actions = ({
   const formik = makeFormikForBaseNode(
     signer,
     accountData,
-    "Subgraph",
     (focus && focus.node) || node
   );
 
@@ -72,7 +73,7 @@ const Actions = ({
       closeModal();
       return;
     }
-    const { status, tx } = formik.status;
+    const { status } = formik.status;
     if (status === "COMPLETE") {
       setFocus(null);
       reloadData();
@@ -104,7 +105,7 @@ const Actions = ({
   }, [formik.values.incoming]);
 
   const belongsTo = node.outgoing.find((e) => e.name === "BELONGS_TO");
-  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"])
+  const subgraphs = Object.values(accountNodesByCollectionType["Subgraph"] || {})
     .filter((item) => {
       // Don't allow subgraphs to stash themselves
       return item.node.tokenId !== node.tokenId;

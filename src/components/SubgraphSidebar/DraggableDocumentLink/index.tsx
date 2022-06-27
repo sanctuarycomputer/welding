@@ -6,8 +6,25 @@ import Link from "next/link";
 import slugifyNode from "src/utils/slugifyNode";
 import VerticalDots from "src/components/Icons/VerticalDots";
 import styles from "./styles.module.css";
+import { BaseNode } from "src/types";
 
-const DraggableDocumentLink: FC<CardProps> = ({
+type Props = {
+  id: string;
+  node: BaseNode;
+  subgraph: BaseNode;
+  isStashed: boolean;
+  isCurrent: boolean;
+  index: number;
+  move: Function;
+};
+
+interface DragItem {
+  index: number
+  id: string
+  type: string
+};
+
+const DraggableDocumentLink: FC<Props> = ({
   id,
   node,
   subgraph,
@@ -78,7 +95,7 @@ const DraggableDocumentLink: FC<CardProps> = ({
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [, drag] = useDrag({
     type: "DraggableDocumentLink",
     item: () => {
       return { id, index };

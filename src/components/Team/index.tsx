@@ -1,8 +1,7 @@
 import { FC } from "react";
-import { useRouter } from "next/router";
-import { Account } from "src/types";
+import { BaseNode } from "src/types";
 import Tile from "src/components/Tile";
-import { useSigner, useAccount } from "wagmi";
+import { useSigner } from "wagmi";
 import { useFormik, FormikProps } from "formik";
 import * as yup from "yup";
 import Reflection from "src/components/Icons/Reflection";
@@ -34,26 +33,31 @@ type Props = {
   reloadData: Function;
 };
 
+type FormikInviteProps = {
+  address: string;
+  role: 0 | 1;
+};
+
+type FormikDelegateProps = {
+  toTokenId: string;
+};
+
 const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
-  const router = useRouter();
-  const { data: account } = useAccount();
   const { data: signer } = useSigner();
 
-  const roles = {};
-  roles[node.owner.address] = roles[node.owner.address] || {
-    account: node.owner,
-    roles: [Roles.OWNER],
-  };
-  node.admins.forEach((a: Account) => {
-    roles[a.address] = roles[a.address] || { account: a, roles: [] };
-    roles[a.address].roles.push(Roles.ADMIN);
+  const roles: {
+    [address: string]: Roles[];
+  } = {};
+  roles[node.owner.address] = roles[node.owner.address] || [Roles.OWNER];
+  node.admins.forEach(a => {
+    roles[a.address] = roles[a.address] || [];
+    roles[a.address].push(Roles.ADMIN);
   });
-  node.editors.forEach((a: Account) => {
-    roles[a.address] = roles[a.address] || { account: a, roles: [] };
-    roles[a.address].roles.push(Roles.EDITOR);
+  node.editors.forEach(a => {
+    roles[a.address] = roles[a.address] || [];
+    roles[a.address].push(Roles.EDITOR);
   });
-
-  const isAdmin = roles[currentAddress]?.roles.includes(Roles.ADMIN);
+  const isAdmin = roles[currentAddress]?.includes(Roles.ADMIN);
 
   const permissionDelegates = getRelatedNodes(
     node,
@@ -62,7 +66,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
     "_DELEGATES_PERMISSIONS_TO"
   );
 
-  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>(
+  const formik: FormikProps<FormikInviteProps> = useFormik<FormikInviteProps>(
     {
       enableReinitialize: true,
       initialValues: {
@@ -121,8 +125,8 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
     }
   );
 
-  const delegateFormik: FormikProps<BaseNodeFormValues> =
-    useFormik<BaseNodeFormValues>({
+  const delegateFormik: FormikProps<FormikDelegateProps> =
+    useFormik<FormikDelegateProps>({
       enableReinitialize: true,
       initialValues: {
         toTokenId: "",
@@ -179,7 +183,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
   const triggerRoleRemoval = async (
     address,
     role,
-    method = "revoke" | "renounce"
+    method
   ) => {
     if (!signer) return;
 
@@ -309,28 +313,28 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                   <Tile
                     key={n.tokenId}
                     label={`${n.currentRevision.metadata.properties.emoji.native} ${n.currentRevision.metadata.name}`}
-                    onClick={onClickHandlerForDelegate(n)}
+                    onClick={() => onClickHandlerForDelegate(n)}
                   />
                 ))}
               </td>
             </tr>
           )}
 
-          {Object.values(roles).map((v) => {
+          {Object.entries(roles).map(([k, v]) => {
             return (
               <tr
-                key={v.account.address}
+                key={k}
                 className="border-b border-color border-dashed"
               >
                 <td className="px-2 py-3">
-                  <Address address={v.account.address} />
+                  <Address address={k} />
                 </td>
                 <td className="pr-2 text-right">
-                  {v.roles.map((r) => (
+                  {v.map((r) => (
                     <Tile
                       key={r}
                       label={r}
-                      onClick={onClickHandlerForRole(v.account.address, r)}
+                      onClick={() => onClickHandlerForRole(k, r)}
                     />
                   ))}
                 </td>
@@ -364,7 +368,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                 <Button
                   label="+ Add Member"
                   disabled={
-                    formik.isSubmitting || !(formik.isValid && !formik.isDirty)
+                    formik.isSubmitting || !(formik.isValid && !formik.dirty)
                   }
                   onClick={formik.handleSubmit}
                 />
@@ -389,7 +393,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                   label="+ Add Delegate"
                   disabled={
                     delegateFormik.isSubmitting ||
-                    !(delegateFormik.isValid && !delegateFormik.isDirty)
+                    !(delegateFormik.isValid && !delegateFormik.dirty)
                   }
                   onClick={delegateFormik.handleSubmit}
                 />

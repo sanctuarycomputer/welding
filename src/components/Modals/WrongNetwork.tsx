@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import ModalHeader from "src/components/Modals/ModalHeader";
 import Network from "src/components/Icons/Network";
 import Button from "src/components/Button";
-import toast from "react-hot-toast";
 
 import { useNetwork, chain } from "wagmi";
 

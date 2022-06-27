@@ -7,9 +7,12 @@ import {
   getRelatedNodes,
   stageNodeRelations,
 } from "src/lib/makeBaseNodeFormik";
+import { FormikProps } from "formik";
+import { BaseNodeFormValues } from "src/types";
 
 type Props = {
   readOnly: boolean;
+  formik: FormikProps<BaseNodeFormValues>;
 };
 
 const TopicManager: FC<Props> = ({ formik, readOnly }) => {

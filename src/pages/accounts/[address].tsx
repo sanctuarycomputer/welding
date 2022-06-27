@@ -2,7 +2,7 @@ import { FC, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import type { GetServerSideProps } from "next";
-import type { Account } from "src/types";
+import type { Account, BaseNode, Role } from "src/types";
 import { NavContext } from "src/hooks/useNav";
 import Client from "src/lib/Client";
 import Document from "src/components/Icons/Document";
@@ -32,13 +32,7 @@ type Props = {
 const AccountsShow: FC<Props> = ({ accountData, address }) => {
   const router = useRouter();
   let { collection } = router.query;
-  if (!collection) collection = "subgraphs";
-
-  let nodesByCollectionType = {
-    subgraphs: {},
-    documents: {},
-    topics: {},
-  };
+  collection = (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
 
   const { data: account } = useAccount();
   const { setContent } = useContext(NavContext);
@@ -54,26 +48,25 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
     );
   }, [account?.address]);
 
+  let accountNodesByCollectionType = {};
   if (accountData) {
-    nodesByCollectionType = accountData.roles.reduce(
+    accountNodesByCollectionType = accountData.roles.reduce(
       (acc: object, role: Role) => {
         const n = accountData.related.find((node: BaseNode) => {
           return node.tokenId === role.tokenId;
         });
         if (!n) return acc;
-        const collectionType = `${n.labels
-          .filter((l) => l !== "BaseNode")[0]
-          .toLowerCase()}s`;
+        const collectionType = n.labels.filter((l) => l !== "BaseNode")[0];
+        acc[collectionType] = acc[collectionType] || {};
         acc[collectionType][n.tokenId] = acc[collectionType][n.tokenId] || {
-          n: n,
+          node: n,
         };
         return acc;
       },
-      nodesByCollectionType
+      accountNodesByCollectionType
     );
   }
-
-  const nodes: BaseNode[] = Object.values(nodesByCollectionType[collection]);
+  const nodes: BaseNode[] = Object.values(accountNodesByCollectionType[collection] || {});
 
   return (
     <div className="content py-4 mt-24 mx-auto">
@@ -93,7 +86,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           >
             <p>
               Subgraphs •{" "}
-              {Object.values(nodesByCollectionType["subgraphs"]).length}
+              {Object.values(accountNodesByCollectionType["Subgraph"] || {}).length}
             </p>
           </a>
         </Link>
@@ -106,7 +99,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           >
             <p>
               Documents •{" "}
-              {Object.values(nodesByCollectionType["documents"]).length}
+              {Object.values(accountNodesByCollectionType["Document"] || {}).length}
             </p>
           </a>
         </Link>
@@ -118,7 +111,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
             }`}
           >
             <p>
-              Topics • {Object.values(nodesByCollectionType["topics"]).length}
+              Topics • {Object.values(accountNodesByCollectionType["Topic"] || {}).length}
             </p>
           </a>
         </Link>
@@ -213,12 +206,9 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   let { address } = context.query;
-
   address = (Array.isArray(address) ? address[0] : address) || "";
-
   const resolvedAddress = await fetchEnsAddress({ chainId: 1, name: address });
   if (resolvedAddress) address = resolvedAddress;
-
   const accountData = await Client.fetchAccount(address);
   return {
     props: { accountData, address },

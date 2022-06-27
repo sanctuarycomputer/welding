@@ -1,9 +1,12 @@
+import { BaseNode } from "src/types";
 import DEFAULT_EMOJI from "src/utils/defaultEmoji";
 
-const makeDummyNode = (label: string) => {
+const makeDummyNode = (label: string): BaseNode => {
   return {
     tokenId: "-1",
     labels: ["BaseNode", label],
+    burnt: false,
+    fee: "0",
     currentRevision: {
       hash: "",
       block: 0,
@@ -21,6 +24,9 @@ const makeDummyNode = (label: string) => {
     outgoing: [],
     incoming: [],
     related: [],
+    owner: { address: "0x0" },
+    admins: [],
+    editors: []
   };
 };
 

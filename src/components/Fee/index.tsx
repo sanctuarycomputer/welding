@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useProvider, useSigner } from "wagmi";
+import { useSigner } from "wagmi";
 import { useFormik, FormikProps } from "formik";
 import { ExchangeRateContext } from "src/hooks/useExchangeRates";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -13,18 +13,21 @@ import NProgress from "nprogress";
 import toast from "react-hot-toast";
 import * as Sentry from "@sentry/nextjs";
 
+type FeeFormValues = {
+  fee: number;
+};
+
 const Fee = ({ node, setLocked, reloadData }) => {
-  const provider = useProvider();
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
   const { purgeCache, canAdministerNode, loadShallowNodes } =
     useContext(GraphContext);
-  const [USDEstimate, setUSDEstimate] = useState(null);
+  const [USDEstimate, setUSDEstimate] = useState<string | null>(null);
 
-  const formik: FormikProps<BaseNodeFormValues> = useFormik<BaseNodeFormValues>(
+  const formik: FormikProps<FeeFormValues> = useFormik<FeeFormValues>(
     {
       initialValues: {
-        fee: formatUnits(node.fee, "ether"),
+        fee: parseFloat(formatUnits(node.fee, "ether").toString()),
       },
       onSubmit: async (values) => {
         let toastId;
@@ -122,7 +125,7 @@ const Fee = ({ node, setLocked, reloadData }) => {
                     disabled={
                       !canAdministerNode(node) ||
                       formik.isSubmitting ||
-                      !(formik.isValid && !formik.isDirty)
+                      !(formik.isValid && !formik.dirty)
                     }
                     onClick={formik.handleSubmit}
                   />

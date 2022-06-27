@@ -7,14 +7,12 @@ import { textPassive } from "src/utils/theme";
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
   buttonLabel: string;
-  coverImageFileDidChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClick?: Function;
 };
 
 const EditNav: FC<Props> = ({
   formik,
   buttonLabel,
-  coverImageFileDidChange,
   onClick,
 }) => {
   return (

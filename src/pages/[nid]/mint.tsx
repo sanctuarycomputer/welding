@@ -1,12 +1,17 @@
 import Subgraph from "src/renderers/Subgraph";
 import slugifyNode from "src/utils/slugifyNode";
 import Client from "src/lib/Client";
-import makeDummyNode from "src/lib/makeDummyNode";
+import makeDummyNode from "src/utils/makeDummyNode";
+import { FC } from "react";
+import { GetServerSideProps } from "next";
+import { BaseNode } from "src/types";
 
-type Props = {};
+type Props = {
+  node: BaseNode;
+};
 
-const NodeShow: FC<Props> = ({ node, document }) => {
-  return <Subgraph node={node} document={document} />;
+const NodeShow: FC<Props> = ({ node }) => {
+  return <Subgraph node={node} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -32,6 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       name: "BELONGS_TO",
       tokenId: node.tokenId,
       active: true,
+      pivotTokenId: document.tokenId
     },
   ];
   document.related = [node];

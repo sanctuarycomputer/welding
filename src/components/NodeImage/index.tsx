@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { ChangeEvent, FC, ReactNode } from "react";
 import Upload from "src/components/Icons/Upload";
 import RemoveImage from "src/components/Icons/RemoveImage";
 import { bg, bgPassive } from "src/utils/theme";
@@ -7,8 +7,9 @@ type Props = {
   showDefault?: boolean;
   readOnly: boolean;
   imagePreview: string | null;
-  imageDidChange: Function;
+  imageDidChange: (event: ChangeEvent<HTMLInputElement>) => void;
   clearImage: Function;
+  children?: ReactNode;
 };
 
 const NodeImage: FC<Props> = ({
@@ -49,7 +50,7 @@ const NodeImage: FC<Props> = ({
 
             {!isDefault && (
               <div
-                onClick={clearImage}
+                onClick={() => clearImage()}
                 className="cursor-pointer top-2 right-2 absolute p-1 rounded-full z-10"
               >
                 <RemoveImage />

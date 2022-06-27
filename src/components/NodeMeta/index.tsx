@@ -2,7 +2,7 @@ import Head from "next/head";
 import Welding from "src/lib/Welding";
 
 const NodeMeta = ({ formik }) => {
-  let imageSrc = null;
+  let imageSrc = ``;
   if (formik.values.image) {
     imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(
       "ipfs://",

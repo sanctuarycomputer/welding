@@ -1,5 +1,5 @@
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
-import { BaseNode, Metadata, Revision } from "src/types";
+import { ApolloClient, InMemoryCache, gql, NormalizedCacheObject, ObservableQuery } from "@apollo/client";
+import { Account, BaseNode, Metadata, Revision } from "src/types";
 import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
 import { fetchEnsName } from "@wagmi/core";
 import { emojiIndex, BaseEmoji } from "emoji-mart";
@@ -80,8 +80,8 @@ owner {
 const Client = {
   _client: null,
 
-  getClient: async function () {
-    if (Client._client) return Client._client;
+  async getClient(): Promise<ApolloClient<NormalizedCacheObject>> {
+    //if (Client._client) return Client._client;
     const cache = new InMemoryCache();
     if (typeof window !== "undefined") {
       await persistCache({
@@ -91,11 +91,15 @@ const Client = {
         trigger: "write",
       });
     }
-    Client._client = new ApolloClient({
+    return new ApolloClient({
       cache,
       uri: `${baseHostWithProtocol}/api/graphql`,
     });
-    return Client._client;
+    //Client._client = new ApolloClient({
+    //  cache,
+    //  uri: `${baseHostWithProtocol}/api/graphql`,
+    //});
+    //return Client._client;
   },
 
   resetStore: async function (): Promise<void> {
@@ -109,7 +113,7 @@ const Client = {
       revision.metadata = await Client.fetchMetadataForHash(revision.hash);
     }
     if (revision.contentType === "application/json") {
-      revision.metadata = JSON.parse(revision.content);
+      revision.metadata = JSON.parse(revision.content || "");
     }
   },
 
@@ -128,9 +132,9 @@ const Client = {
     if (!response.ok) throw new Error("could_not_fastforward");
   },
 
-  makeShallowNodesSubscription: async function () {
+  makeShallowNodesSubscription: async function (): Promise<ObservableQuery<{ baseNodes: BaseNode[] }>> {
     const client = await Client.getClient();
-    return client.watchQuery({
+    return client.watchQuery<{ baseNodes: BaseNode[] }>({
       fetchPolicy: "cache-and-network",
       query: gql`
         query BaseNodes {

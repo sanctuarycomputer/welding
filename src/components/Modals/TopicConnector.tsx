@@ -7,6 +7,8 @@ import Button from "src/components/Button";
 import Hashtag from "src/components/Icons/Hashtag";
 import { WithOutContext as ReactTags } from "src/components/Tags";
 import { emojis } from "src/utils/defaultEmoji";
+import { BaseNode } from "src/types";
+import { BaseEmoji } from "emoji-mart";
 
 export type TopicConnectorMeta = {
   topics: BaseNode[];
@@ -20,7 +22,7 @@ type Props = {
 };
 
 const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
-  const { shallowNodes, shallowNodesLoading, loadShallowNodes } =
+  const { accountData, shallowNodes, shallowNodesLoading } =
     useContext(GraphContext);
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
@@ -48,13 +50,16 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
       return setTopics([...topics, tag]);
 
     const newTopic: BaseNode = {
-      __typename: "BaseNode",
       tokenId: `-${newTopics.length + 1}`,
       labels: ["BaseNode", "Topic"],
       related: [],
       outgoing: [],
       incoming: [],
+      burnt: false,
       fee: "0",
+      owner: { address: accountData?.address || "0x0" },
+      admins: [{ address: accountData?.address || "0x0" }],
+      editors: [],
       currentRevision: {
         hash: "",
         block: 0,
@@ -65,7 +70,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           description: "",
           image: "",
           properties: {
-            emoji: emojis[Math.floor(Math.random() * emojis.length)],
+            emoji: (emojis[Math.floor(Math.random() * emojis.length)] as BaseEmoji),
           },
         },
       },

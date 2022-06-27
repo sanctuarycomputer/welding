@@ -1,12 +1,8 @@
-import { useEffect, useState, useContext } from "react";
-import { useProvider, useSigner } from "wagmi";
-import { useFormik, FormikProps } from "formik";
-import { ExchangeRateContext } from "src/hooks/useExchangeRates";
+import { useState, useContext } from "react";
+import { useSigner } from "wagmi";
 import { GraphContext } from "src/hooks/useGraphData";
 import BurnIcon from "src/components/Icons/Burn";
 import Button from "src/components/Button";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
-
 import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
 import NProgress from "nprogress";
@@ -14,7 +10,6 @@ import toast from "react-hot-toast";
 import * as Sentry from "@sentry/nextjs";
 
 const Burn = ({ node, setLocked, reloadData }) => {
-  const provider = useProvider();
   const { data: signer } = useSigner();
   const { purgeCache, doesOwnNode, loadShallowNodes } =
     useContext(GraphContext);

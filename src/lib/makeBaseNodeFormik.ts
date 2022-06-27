@@ -1,5 +1,5 @@
 import { useFormik, FormikProps } from "formik";
-import type { Label, BaseNodeFormValues, BaseNode } from "src/types";
+import type { BaseNodeFormValues, BaseNode, Edge } from "src/types";
 import * as yup from "yup";
 import NProgress from "nprogress";
 import Welding from "src/lib/Welding";
@@ -9,6 +9,7 @@ import { diff, detailedDiff } from "deep-object-diff";
 import { BigNumber } from "@ethersproject/bignumber";
 import onlyUnique from "src/utils/onlyUnique";
 import * as Sentry from "@sentry/nextjs";
+import { notEmpty } from "src/utils/predicates";
 
 enum PublishStep {
   RESOLVE = "RESOLVE",
@@ -23,7 +24,7 @@ enum PublishStep {
 
 const feesRequired = (formik, accountData) => {
   const node = formik.values.__node__;
-  const incomingDiff = detailedDiff(node.incoming, formik.values.incoming);
+  const incomingDiff: any = detailedDiff(node.incoming, formik.values.incoming);
 
   return Object.keys(incomingDiff.added).reduce((acc, key) => {
     if (!incomingDiff.added[key].active) return acc;
@@ -44,12 +45,13 @@ const feesRequired = (formik, accountData) => {
   }, BigNumber.from(0));
 };
 
-const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
+const makeFormikForBaseNode = (
   signer,
   accountData,
-  label: Label,
   node: BaseNode
-) => {
+): FormikProps<BaseNodeFormValues> => {
+  const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
+ 
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
     initialValues: {
@@ -71,7 +73,7 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
       try {
         if (!signer) throw new Error("no_signer_present");
 
-        const incomingDiff = detailedDiff(node.incoming, values.incoming);
+        const incomingDiff: any = detailedDiff(node.incoming, values.incoming);
         const hasConnectionChanges =
           Object.values(incomingDiff.added).length > 0 ||
           Object.values(incomingDiff.updated).length > 0 ||
@@ -169,8 +171,8 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
         formik.setStatus({ status, tx });
         toast.success("Success!", { id });
         return;
-      } catch (e) {
-        if (e.message === "user_rejected") {
+      } catch (e: any) {
+        if (e && e?.message === "user_rejected") {
           toast.dismiss();
         } else {
           console.log(e);
@@ -192,9 +194,10 @@ const makeFormikForBaseNode: FormikProps<BaseNodeFormValues> = (
 
   return formik;
 };
+export default makeFormikForBaseNode;
 
 export const getRelatedNodes = (
-  formik: BaseNode,
+  formik: FormikProps<BaseNodeFormValues>,
   relation: "incoming" | "outgoing",
   label: string,
   name: string
@@ -217,7 +220,7 @@ export const getRelatedNodes = (
       uniqueTokenIds.add(n.tokenId);
       if (!dupe) return true;
       return false;
-    });
+    }).filter(notEmpty);
 };
 
 //export const hasStagedRelations = (
@@ -338,5 +341,3 @@ export const unstageNodeRelations = (
 
   formik.setFieldValue(relation, [...deactivatedExistingEdges]);
 };
-
-export default makeFormikForBaseNode;

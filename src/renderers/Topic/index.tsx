@@ -7,7 +7,7 @@ import EditNav from "src/components/EditNav";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import TopicTile from "src/components/TopicTile";
-import type { BaseNode } from "src/types";
+import type { BaseNode, Edge } from "src/types";
 import Client from "src/lib/Client";
 import slugifyNode from "src/utils/slugifyNode";
 import Document from "src/components/Icons/Document";
@@ -18,24 +18,32 @@ import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import { bg, border } from "src/utils/theme";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
+import withPublisher  from "src/hooks/withPublisher";
+import { BaseEmoji } from "emoji-mart";
 
-import withPublisher from "src/hoc/withPublisher";
-
-interface Props extends WithPublisherProps {
+interface Props {
   node: BaseNode;
 }
 
-const TopicsShow: FC<Props> = ({
-  formik,
-  imageDidChange,
-  imagePreview,
-  clearImage,
-  reloadData,
+const Topic: FC<Props> = ({
+  node
 }) => {
-  const node = formik.values.__node__;
+  const {
+    formik,
+    imagePreview,
+    imageDidChange,
+    clearImage,
+    reloadData, 
+  } = withPublisher(node);
+  const router = useRouter();
+  let { collection } = router.query;
+  collection = (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
+
   const { canEditNode } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
-  const { content, setContent } = useContext(NavContext);
+  const { setContent } = useContext(NavContext);
+
+  const canEdit = canEditNode(node);
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -46,12 +54,6 @@ const TopicsShow: FC<Props> = ({
     }
   );
 
-  const router = useRouter();
-  let { collection } = router.query;
-  if (!collection) collection = "subgraphs";
-  const canEdit = canEditNode(node);
-
-  /* Content */
   useEffect(() => {
     setContent(
       <EditNav
@@ -74,7 +76,6 @@ const TopicsShow: FC<Props> = ({
     if (!["subgraphs", "documents"].includes(collectionType)) return;
     nodesByCollectionType[collectionType][n.tokenId] = n;
   });
-
   const nodes: BaseNode[] = Object.values(nodesByCollectionType[collection]);
 
   return (
@@ -144,7 +145,6 @@ const TopicsShow: FC<Props> = ({
             {canEdit ? (
               <textarea
                 className="pb-4 w-full bg-transparent text-xs px-2 pt-2"
-                type="text"
                 name="description"
                 placeholder="Add a description"
                 value={formik.values.description}
@@ -248,4 +248,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return { props: { node } };
 };
 
-export default withPublisher("Topic", TopicsShow);
+export default Topic;

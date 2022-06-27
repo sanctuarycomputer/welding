@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useRef } from "react";
+import { FC, useContext, useState, useRef, MutableRefObject } from "react";
 import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Modal from "react-modal";
@@ -12,10 +12,12 @@ import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
 import * as Sentry from "@sentry/nextjs";
 import { bgPassive, bgInverted } from "src/utils/theme";
+import { BaseNode } from "src/types";
+import { BaseEmoji } from "emoji-mart";
 
 export type TopicMinterMeta = {
   topics: BaseNode[];
-  setTopics: Function;
+  setTopics: (n: BaseNode[]) => void;
 };
 
 type MintState = {
@@ -29,7 +31,13 @@ type Props = {
   meta: TopicMinterMeta;
 };
 
-const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
+const IndividualTopicMinter: FC<{ 
+  topic: BaseNode;
+  setTopicId: Function;
+  setTopicDescription: Function;
+  openEmojiPicker: Function;
+  currentlyMinting: MutableRefObject<Set<string>>;
+}> = ({
   topic,
   setTopicId,
   setTopicDescription,
@@ -37,7 +45,6 @@ const IndividualTopicMinter: FC<{ topic: BaseNode }> = ({
   currentlyMinting,
 }) => {
   const { loadShallowNodes } = useContext(GraphContext);
-  const { openModal } = useContext(ModalContext);
   const { data: signer } = useSigner();
   const [mintState, setMintState] = useState<MintState>({
     progress: 0,
@@ -181,7 +188,7 @@ const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
-  const currentlyMinting = useRef(new Set());
+  const currentlyMinting = useRef<Set<string>>(new Set());
 
   const setTopics = (topics) => {
     setInternalTopics(topics);

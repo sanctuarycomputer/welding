@@ -3,12 +3,13 @@ import copyToClipboard from "src/utils/copyToClipboard";
 import Copy from "src/components/Icons/Copy";
 
 import { useNetwork } from "wagmi";
+import { CONTRACT_ADDRESS } from "src/utils/constants";
 
 const Metadata = ({ node }) => {
   const { activeChain } = useNetwork();
-  const explorer = activeChain?.blockExplorers.default.url;
+  const explorer = activeChain?.blockExplorers?.default.url;
   const ipfsLink = `https://ipfs.io/ipfs/${node.currentRevision.hash}/metadata.json`;
-  const scanLink = `${explorer}/token/${process.env.NEXT_PUBLIC_NODE_ADDRESS}?a=${node.tokenId}`;
+  const scanLink = `${explorer}/token/${CONTRACT_ADDRESS}?a=${node.tokenId}`;
   return (
     <table className="table-auto w-full">
       <tbody>
@@ -26,11 +27,11 @@ const Metadata = ({ node }) => {
             <p className="font-semibold">ERC721 Address</p>
           </td>
           <td className="px-2 py-4 text-right whitespace-nowrap truncate">
-            <p>{truncate(process.env.NEXT_PUBLIC_NODE_ADDRESS, 30)}</p>
+            <p>{truncate(CONTRACT_ADDRESS, 30)}</p>
           </td>
           <td
             onClick={() =>
-              copyToClipboard(process.env.NEXT_PUBLIC_NODE_ADDRESS)
+              copyToClipboard(CONTRACT_ADDRESS)
             }
             className="pr-2 py-4 cursor-pointer whitespace-nowrap"
           >

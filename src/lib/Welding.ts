@@ -1,8 +1,6 @@
 import { ethers } from "ethers";
 import type { BaseProvider, EventType } from "@ethersproject/providers";
 import Node from "artifacts/contracts/src/Node.sol/Node.json";
-import slugify from "slugify";
-import { BaseNode } from "src/types";
 
 const fallbackProvider = new ethers.providers.AlchemyProvider(
   process.env.NEXT_PUBLIC_NETWORK,
@@ -30,7 +28,7 @@ const Welding = {
     provider: BaseProvider | null,
     startAt: number,
     endAt: number | undefined
-  ): Promise<{ latestBlock: number; events: EventType[] }> {
+  ): Promise<{ endAt: number; events: EventType[] }> {
     const p = provider || fallbackProvider;
     endAt = endAt || (await p.getBlockNumber());
     const events = await Welding.queryEventsByBlockRange(startAt, endAt);
@@ -43,6 +41,7 @@ const Welding = {
   ): Promise<EventType[]> {
     try {
       return await Welding.Nodes.connect(fallbackProvider).queryFilter(
+        // @ts-ignore
         "*",
         fromBlock,
         toBlock
