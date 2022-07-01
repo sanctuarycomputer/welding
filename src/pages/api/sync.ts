@@ -301,14 +301,13 @@ export default async function handler(
 
     // If we're ensuring that our cursor is up to a point
     const { ensure } = req.query;
-    let ensureInt = cursor;
+    let ensureInt = latestBlock;
     if (ensure) {
       ensureInt = parseInt(Array.isArray(ensure) ? ensure[0] : ensure);
+      if (ensureInt > latestBlock) throw new Error("invalid_ensure_block_given");
+      if (cursor >= ensureInt)
+        return res.status(200).json({ status: "already_processed", cursor });
     }
-
-    if (ensureInt > latestBlock) throw new Error("invalid_ensure_block_given");
-    if (cursor >= ensureInt)
-      return res.status(200).json({ status: "already_processed", cursor });
 
     const { endAt, events } = await Welding.queryEvents(
       null,
