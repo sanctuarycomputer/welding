@@ -160,8 +160,9 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
   const { accountData } = useContext(GraphContext);
   const node = formik.values.__node__;
   const addedConnections = Object.values(incomingDiff.added);
-  const toggledOnConnections = Object.values(incomingDiff.updated)
-    .filter((d: any) => d.active);
+  const toggledOnConnections = Object.values(incomingDiff.updated).filter(
+    (d: any) => d.active
+  );
 
   const removedConnections = [
     ...Object.values(incomingDiff.deleted),

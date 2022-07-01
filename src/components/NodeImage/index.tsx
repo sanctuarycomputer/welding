@@ -21,7 +21,9 @@ const NodeImage: FC<Props> = ({
   children,
 }) => {
   const isDefault =
-    (imagePreview || "").endsWith("emoji.jpg") || (imagePreview || "").length === 0 || imagePreview === null;
+    (imagePreview || "").endsWith("emoji.jpg") ||
+    (imagePreview || "").length === 0 ||
+    imagePreview === null;
   if (!showDefault && isDefault) return null;
 
   return (

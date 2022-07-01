@@ -79,7 +79,9 @@ const Topic: FC<Props> = ({ node }) => {
       <div className="pt-12 md:pt-20">
         <div className="content py-4 mx-auto">
           <div
-            className={`flex ${node.burnt ? "justify-between" : "justify-end"} pb-2`}
+            className={`flex ${
+              node.burnt ? "justify-between" : "justify-end"
+            } pb-2`}
           >
             {node.burnt && (
               <p className="text-red-500 pl-2 md:pl-0">

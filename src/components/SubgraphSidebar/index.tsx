@@ -281,11 +281,9 @@ const SubgraphSidebar: FC<Props> = ({
               <div className="flex flex-col items-center py-8 opacity-50">
                 <Document />
                 <p className="pt-1 text-center">
-                  {subgraph.tokenId.startsWith("-") ? (
-                    "Publish this subgraph to start writing."
-                  ) : (
-                    "No documents (yet)"
-                  )}
+                  {subgraph.tokenId.startsWith("-")
+                    ? "Publish this subgraph to start writing."
+                    : "No documents (yet)"}
                 </p>
               </div>
             )}

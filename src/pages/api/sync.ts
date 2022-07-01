@@ -313,7 +313,7 @@ export default async function handler(
     const { endAt, events } = await Welding.queryEvents(
       null,
       cursor + 1,
-      ensureInt 
+      ensureInt
     );
     events.sort(function (a, b) {
       // @ts-ignore

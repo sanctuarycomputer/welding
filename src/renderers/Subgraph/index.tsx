@@ -6,9 +6,9 @@ import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import { useAccount } from "wagmi";
 import Document from "src/renderers/Document";
 import withPublisher from "src/hooks/withPublisher";
-import Link from 'next/link';
-import cx from 'classnames';
-import Graph from 'src/components/Icons/Graph';
+import Link from "next/link";
+import cx from "classnames";
+import Graph from "src/components/Icons/Graph";
 
 import dynamic from "next/dynamic";
 const SubgraphSidebar = dynamic(
@@ -57,17 +57,18 @@ const Subgraph: FC<Props> = ({ node, document }) => {
         />
       )}
 
-      {(document) ? (
+      {document ? (
         <div className="md:pl-4 md:ml-64 pt-14">
           <Document node={document} />
         </div>
       ) : (
-        <div className={cx(`pt-14 flex h-screen items-center justify-center`, {
-          'md:pl-4 md:ml-64': showSubgraph
-        })}>
+        <div
+          className={cx(`pt-14 flex h-screen items-center justify-center`, {
+            "md:pl-4 md:ml-64": showSubgraph,
+          })}
+        >
           {account?.address ? (
-            <div
-              className="pt-14 absolute left-0 md:left-64 top-0 pointer-events-none">
+            <div className="pt-14 absolute left-0 md:left-64 top-0 pointer-events-none">
               <div className="ml-4 p-4 border border-dashed border-color rounded inline-block mr-4 background-color pulse">
                 <p className="font-semibold">
                   ← Mint a subgraph to publish docs
@@ -75,9 +76,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
               </div>
             </div>
           ) : (
-            <div
-              className="pt-14 absolute right-0 top-0 pointer-events-none">
-
+            <div className="pt-14 absolute right-0 top-0 pointer-events-none">
               <div className="p-4 border border-dashed border-color rounded inline-block mr-4 background-color pulse">
                 <p className="font-semibold">
                   Connect a wallet to get started ↑
@@ -89,12 +88,15 @@ const Subgraph: FC<Props> = ({ node, document }) => {
           <div className="text-center w-64 flex flex-col items-center">
             <Graph />
             <p className="pb-4 pt-4">
-              Welding is a decentralized knowledge graph protocol, built with Ethereum & IPFS, and deployed to Polygon.
+              Welding is a decentralized knowledge graph protocol, built with
+              Ethereum & IPFS, and deployed to Polygon.
             </p>
 
             <Link href={`/4-welding-docs`}>
               <a>
-                <p>Explore the <strong>👩‍🏭 Welding Docs ↗</strong></p>
+                <p>
+                  Explore the <strong>👩‍🏭 Welding Docs ↗</strong>
+                </p>
               </a>
             </Link>
           </div>

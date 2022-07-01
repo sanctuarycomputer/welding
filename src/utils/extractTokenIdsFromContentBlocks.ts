@@ -1,4 +1,5 @@
-const URL_REGEX = /(?:ht|f)tps?:\/\/[-a-zA-Z0-9:.]+(\.[a-zA-Z]{2,3})?(\/[^"<]*)?/g;
+const URL_REGEX =
+  /(?:ht|f)tps?:\/\/[-a-zA-Z0-9:.]+(\.[a-zA-Z]{2,3})?(\/[^"<]*)?/g;
 
 const extractTokenIdsFromContentBlocks = (blocks) => {
   const urls = blocks.reduce((acc, block) => {
@@ -10,12 +11,9 @@ const extractTokenIdsFromContentBlocks = (blocks) => {
       }
       case "paragraph": {
         const matches = block.data.text.match(URL_REGEX);
-          console.log(matches);
+        console.log(matches);
         if (matches) {
-          acc = [
-            ...matches.map(m => new URL(m)),
-            ...acc
-          ];
+          acc = [...matches.map((m) => new URL(m)), ...acc];
         }
         break;
       }

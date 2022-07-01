@@ -12,10 +12,7 @@ import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
 import withPublisher from "src/hooks/withPublisher";
-import {
-  getRelatedNodes,
-  stageNodeRelations,
-} from "src/lib/useBaseNodeFormik";
+import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 
@@ -68,7 +65,9 @@ const Document: FC<Props> = ({ node }) => {
     "BELONGS_TO"
   )[0];
 
-  const canEdit = node.tokenId.startsWith("-") ? canEditNode(subgraphParent) : canEditNode(node);
+  const canEdit = node.tokenId.startsWith("-")
+    ? canEditNode(subgraphParent)
+    : canEditNode(node);
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -122,7 +121,9 @@ const Document: FC<Props> = ({ node }) => {
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div
-            className={`flex ${node.burnt ? "justify-between" : "justify-end"} pb-2`}
+            className={`flex ${
+              node.burnt ? "justify-between" : "justify-end"
+            } pb-2`}
           >
             {node.burnt && (
               <p className="text-red-500">

@@ -3,10 +3,7 @@ import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
 import TopicTile from "src/components/TopicTile";
 import slugifyNode from "src/utils/slugifyNode";
-import {
-  getRelatedNodes,
-  stageNodeRelations,
-} from "src/lib/useBaseNodeFormik";
+import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import { FormikProps } from "formik";
 import { BaseNodeFormValues } from "src/types";
 

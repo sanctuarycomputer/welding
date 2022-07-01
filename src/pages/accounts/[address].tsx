@@ -187,12 +187,17 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
             if (subgraphs.length === 1) {
               link = `/${slugifyNode(subgraphs[0])}/${slugifyNode(node)}`;
             } else if (subgraphs.length > 1) {
-              const ownedSubgraphs = subgraphs.reduce<BaseNode[]>((acc, subgraph) => {
-                if (accountNodesByCollectionType["Subgraph"][subgraph.tokenId]) {
-                  return [...acc, subgraph];
-                }
-                return acc;
-              }, []);
+              const ownedSubgraphs = subgraphs.reduce<BaseNode[]>(
+                (acc, subgraph) => {
+                  if (
+                    accountNodesByCollectionType["Subgraph"][subgraph.tokenId]
+                  ) {
+                    return [...acc, subgraph];
+                  }
+                  return acc;
+                },
+                []
+              );
               if (ownedSubgraphs.length === 1) {
                 link = `/${slugifyNode(ownedSubgraphs[0])}/${slugifyNode(
                   node
