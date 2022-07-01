@@ -304,7 +304,8 @@ export default async function handler(
     let ensureInt = latestBlock;
     if (ensure) {
       ensureInt = parseInt(Array.isArray(ensure) ? ensure[0] : ensure);
-      if (ensureInt > latestBlock) throw new Error("invalid_ensure_block_given");
+      if (ensureInt > latestBlock)
+        throw new Error("invalid_ensure_block_given");
       if (cursor >= ensureInt)
         return res.status(200).json({ status: "already_processed", cursor });
     }
