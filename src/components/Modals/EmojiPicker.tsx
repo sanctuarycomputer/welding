@@ -6,12 +6,12 @@ import Uwu from "src/components/Icons/Uwu";
 
 export type EmojiPickerMeta = {
   didPickEmoji: (emoji: BaseEmoji) => void;
-  back?: Function | null;
+  back?: () => void | null;
 };
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
   meta: EmojiPickerMeta;
 };
 

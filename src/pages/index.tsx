@@ -1,5 +1,8 @@
+import { GetServerSideProps } from "next";
+import { FC } from "react";
 import Client from "src/lib/Client";
 import Subgraph from "src/renderers/Subgraph";
+import { BaseNode } from "src/types";
 import slugifyNode from "src/utils/slugifyNode";
 
 const WELDING_DOCS_SUBGRAPH_TOKEN_ID = "4";
@@ -14,7 +17,7 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
   return <Subgraph node={subgraph} document={document} />;
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async () => {
   const subgraph = await Client.fetchBaseNodeByTokenId(
     WELDING_DOCS_SUBGRAPH_TOKEN_ID
   );

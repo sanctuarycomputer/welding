@@ -20,12 +20,12 @@ import { BaseNode } from "src/types";
 export type NodeSettingsMeta = {
   node: BaseNode;
   canEdit: boolean;
-  reloadData: Function;
+  reloadData: () => void;
 };
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
   meta: NodeSettingsMeta;
 };
 

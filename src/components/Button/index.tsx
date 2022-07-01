@@ -4,7 +4,7 @@ import { bg } from "src/utils/theme";
 type Props = {
   label: string;
   disabled: boolean;
-  onClick: Function;
+  onClick: () => void;
   className?: string;
 };
 

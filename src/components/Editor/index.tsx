@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { FC, useEffect, useRef } from "react";
 import EditorJS from "@editorjs/editorjs";
-import Undo from "editorjs-undo";
+//import Undo from "editorjs-undo";
 
 import Header from "@editorjs/header";
 import Paragraph from "@editorjs/paragraph";
@@ -67,7 +67,7 @@ const DOM_ID = "editor";
 
 type Props = {
   content: any;
-  contentDidChange: Function;
+  contentDidChange: (content: any) => void;
   readOnly: boolean;
 };
 
@@ -85,17 +85,15 @@ const Editor: FC<Props> = ({ content, contentDidChange, readOnly }) => {
       readOnly,
       minHeight: 20,
       holder: holder.current,
-      logLevel: "ERROR",
       data: content || DEFAULT_CONTENT,
       onReady: () => {
         ejInstance.current = editor;
         editor.readOnly.toggle(readOnly);
-
         //ejUndoInstance.current = new Undo({ editor });
         //ejUndoInstance.current.setReadOnly();
       },
       onChange: async function () {
-        let newContent = await editor.saver.save();
+        const newContent = await editor.saver.save();
         contentDidChange(newContent);
       },
       autofocus: true,

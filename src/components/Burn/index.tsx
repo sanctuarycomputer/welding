@@ -78,7 +78,7 @@ const Burn = ({ node, setLocked, reloadData }) => {
               </>
             ) : (
               <td className="py-4 text-center">
-                <p>You don't have permission to burn this node.</p>
+                <p>You don&apos;t have permission to burn this node.</p>
               </td>
             )}
           </tr>

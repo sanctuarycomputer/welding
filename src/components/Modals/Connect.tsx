@@ -9,7 +9,7 @@ import { useConnect, useAccount } from "wagmi";
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
 };
 
 const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
@@ -19,7 +19,7 @@ const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
 
   useEffect(() => {
     if (account) closeModal();
-  }, [account]);
+  }, [account, closeModal]);
 
   return (
     <Modal isOpen={isOpen} onRequestClose={() => onRequestClose()}>

@@ -8,7 +8,7 @@ import { useNetwork, chain } from "wagmi";
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
 };
 
 const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
@@ -29,7 +29,7 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
   );
 
   const hint = expectedChain
-    ? `Please select "${expectedChain.name}" in your wallet provider.`
+    ? `Please select &quot;${expectedChain.name}&quot; in your wallet provider.`
     : `Please select the correct chain in your wallet provider.`;
 
   return (
@@ -44,7 +44,7 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
         <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Network />
           <p className="pt-2 font-semibold">
-            Select "{expectedChain?.name || "correct network"}" to get started.
+            Select &quot;{expectedChain?.name || "correct network"}&quot; to get started.
           </p>
         </div>
 

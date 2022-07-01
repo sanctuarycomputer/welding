@@ -27,7 +27,7 @@ const Revision = ({ node, revision, current }) => {
         )}
       </td>
       <td className="px-2 py-4 text-center whitespace-nowrap truncate">
-        <a href={metadataLink(revision.hash)} target="_blank">
+        <a href={metadataLink(revision.hash)} target="_blank" rel="noreferrer">
           <p className="underline">View JSON ↗</p>
         </a>
       </td>

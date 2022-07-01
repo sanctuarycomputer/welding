@@ -4,27 +4,20 @@ Before Deploy:
 
 - [ ] Deploys
 - [ ] CORS
-- [ ] Re-add tsc check to Husky
-- [ ] Remove TS Lint?
 
 Roadmap
 
-- [ ] Raw URLs in text should trigger references
-- [ ] Better approach to SSR on /mint pages
+- [ ] Drafts
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Page Caching & purges?
 - [ ] Sitemap.xml
 - [ ] Welding Balance?
-- [ ] Drafts
-- [ ] Iron Session? (Persisted Drafts)
-- [ ] Comments
-- [ ] Favorites
+- [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n (chinese)
 - [ ] Custom subdomains
 - [ ] Test on the FE wether publishing to IPFS is necessary
 - [ ] Add Rainbow Provider
-- [ ] Handle corrupt data cases on the UI
 - [ ] I should be able to view a revision for subgraph
 - [ ] Global activity loader?
 - [ ] Editor: Support in-page Image Uploads

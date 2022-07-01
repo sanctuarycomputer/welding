@@ -19,10 +19,8 @@ const Wallet = () => {
   const { content } = useContext(NavContext);
   const { accountData, accountNodesByCollectionType } =
     useContext(GraphContext);
-
   const { data: account } = useAccount();
   const { activeChain } = useNetwork();
-
   const { disconnect } = useDisconnect();
   const [dropDownOpen, setDropDownOpen] = useState(false);
 
@@ -33,7 +31,7 @@ const Wallet = () => {
     ) {
       openModal({ type: ModalType.WRONG_NETWORK });
     }
-  }, [activeChain]);
+  }, [activeChain, openModal]);
 
   const dropDownRef = useRef(null);
   useOutsideAlerter(dropDownRef, () => {
@@ -49,7 +47,7 @@ const Wallet = () => {
       <>
         {content}
         <button
-          className="relative"
+          className="relative z-10"
           onClick={() => setDropDownOpen(!dropDownOpen)}
         >
           <Address address={account.address} showAvatar />
@@ -61,9 +59,11 @@ const Wallet = () => {
               <Link
                 href={`/accounts/${accountData?.ensName || account.address}`}
               >
-                <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
-                  Account
-                </p>
+                <a>
+                  <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
+                    Account
+                  </p>
+                </a>
               </Link>
 
               {subgraphs.map((item) => {
@@ -75,29 +75,33 @@ const Wallet = () => {
                     key={item.node.tokenId}
                     href={`/${slugifyNode(item.node)}`}
                   >
-                    <p
-                      className={`${bgHover} pl-1 font-semibold w-32 truncate py-1`}
-                    >
-                      {emoji} {name}
-                    </p>
+                    <a>
+                      <p
+                        className={`${bgHover} pl-1 font-semibold w-32 truncate py-1`}
+                      >
+                        {emoji} {name}
+                      </p>
+                    </a>
                   </Link>
                 );
               })}
 
               <Link href={`/mint`}>
-                <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
-                  + New Subgraph
-                </p>
+                <a>
+                  <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
+                    + New Subgraph
+                  </p>
+                </a>
               </Link>
 
-              <button
+              <a
                 className="text-center flex flex-row items-center flex-grow"
                 onClick={() => disconnect()}
               >
                 <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
                   Disconnect
                 </p>
-              </button>
+              </a>
             </div>
           )}
         </button>
@@ -106,11 +110,13 @@ const Wallet = () => {
   }
 
   return (
-    <Button
-      disabled={false}
-      label="Connect"
-      onClick={() => openModal({ type: ModalType.CONNECT })}
-    />
+    <div className="z-10">
+      <Button
+        disabled={false}
+        label="Connect"
+        onClick={() => openModal({ type: ModalType.CONNECT })}
+      />
+    </div>
   );
 };
 

@@ -24,7 +24,7 @@ const Tag = (props) => {
 
   const [, drop] = useDrop(() => ({
     accept: ItemTypes.TAG,
-    drop: (item, monitor) => {
+    drop: (item) => {
       const dragIndex = item.index;
       const hoverIndex = index;
       if (dragIndex === hoverIndex) {

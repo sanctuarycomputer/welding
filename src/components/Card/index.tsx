@@ -10,7 +10,7 @@ const Card: FC<Props> = ({ node }) => {
   const emoji = node.currentRevision.metadata.properties.emoji.native;
   const name = node.currentRevision.metadata.name;
   const description = node.currentRevision.metadata.description;
-  let imageSrc = `${
+  const imageSrc = `${
     Welding.ipfsGateways[0]
   }${node.currentRevision.metadata.image.replace("ipfs://", "/ipfs/")}`;
 

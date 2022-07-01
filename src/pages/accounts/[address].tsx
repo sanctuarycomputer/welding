@@ -33,7 +33,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
   const router = useRouter();
   let { collection } = router.query;
   collection =
-    (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
+    (Array.isArray(collection) ? collection[0] : collection) || "Subgraph";
 
   const { data: account } = useAccount();
   const { setContent } = useContext(NavContext);
@@ -47,7 +47,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         </Link>
       </div>
     );
-  }, [account?.address]);
+  }, [account?.address, setContent]);
 
   let accountNodesByCollectionType = {};
   if (accountData) {
@@ -59,9 +59,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         if (!n) return acc;
         const collectionType = n.labels.filter((l) => l !== "BaseNode")[0];
         acc[collectionType] = acc[collectionType] || {};
-        acc[collectionType][n.tokenId] = acc[collectionType][n.tokenId] || {
-          node: n,
-        };
+        acc[collectionType][n.tokenId] = acc[collectionType][n.tokenId] || n;
         return acc;
       },
       accountNodesByCollectionType
@@ -81,7 +79,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
       </div>
 
       <div className="border-b border-color flex justify-between">
-        <Link href={`/accounts/${address}?collection=subgraphs`}>
+        <Link href={`/accounts/${address}?collection=Subgraph`}>
           <a
             className={`p-4 flex-grow basis-0 text-center ${
               collection === "subgraphs" ? "border-b" : ""
@@ -97,7 +95,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           </a>
         </Link>
 
-        <Link href={`/accounts/${address}?collection=documents`}>
+        <Link href={`/accounts/${address}?collection=Document`}>
           <a
             className={`p-4 flex-grow basis-0 text-center ${
               collection === "documents" ? "border-b" : ""
@@ -113,7 +111,7 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
           </a>
         </Link>
 
-        <Link href={`/accounts/${address}?collection=topics`}>
+        <Link href={`/accounts/${address}?collection=Topic`}>
           <a
             className={`p-4 flex-grow basis-0 text-center ${
               collection === "topics" ? "border-b" : ""
@@ -132,27 +130,27 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
 
       {nodes.length === 0 && (
         <div className="flex flex-col pt-16 items-center">
-          {collection === "subgraphs" && <Graph />}
-          {collection === "documents" && <Document />}
-          {collection === "topics" && <Hashtag />}
+          {collection === "Subgraph" && <Graph />}
+          {collection === "Document" && <Document />}
+          {collection === "Topic" && <Hashtag />}
           <p className="pt-4">This account does not have any {collection}.</p>
         </div>
       )}
 
-      {nodes.length !== 0 && collection === "subgraphs" && (
+      {nodes.length !== 0 && collection === "Subgraph" && (
         <div className="">
           {nodes.map((node) => {
             return (
-              <Link key={node.n.tokenId} href={`/${slugifyNode(node.n)}`}>
+              <Link key={node.tokenId} href={`/${slugifyNode(node)}`}>
                 <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                   <div className="flex flex-row items-center py-1 flex-grow">
                     <p className="pr-2 font-semibold w-32 truncate">
-                      {node.n.currentRevision.metadata.properties.emoji.native}{" "}
-                      {node.n.currentRevision.metadata.name}
+                      {node.currentRevision.metadata.properties.emoji.native}{" "}
+                      {node.currentRevision.metadata.name}
                     </p>
                   </div>
                   <div className="flex">
-                    <p>↙ {node.n.incoming.length} Backlinks</p>
+                    <p>↙ {node.incoming.length} Backlinks</p>
                   </div>
                 </a>
               </Link>
@@ -161,13 +159,13 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         </div>
       )}
 
-      {nodes.length !== 0 && collection === "topics" && (
+      {nodes.length !== 0 && collection === "Topic" && (
         <div className="pt-4 px-4 sm:px-0">
           {nodes.map((node) => {
             return (
-              <Link key={node.n.tokenId} href={`/${slugifyNode(node.n)}`}>
+              <Link key={node.tokenId} href={`/${slugifyNode(node)}`}>
                 <a className="inline-block pb-2">
-                  <TopicTile topic={node.n} />
+                  <TopicTile topic={node} />
                 </a>
               </Link>
             );
@@ -175,38 +173,37 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
         </div>
       )}
 
-      {nodes.length !== 0 && collection === "documents" && (
+      {nodes.length !== 0 && collection === "Document" && (
         <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 sm:px-0">
           {nodes.map((node) => {
             const subgraphs = getRelatedNodes(
-              node.n,
+              node,
               "outgoing",
               "Subgraph",
               "BELONGS_TO"
             );
 
-            let link = `/${slugifyNode(node.n)}`;
+            let link = `/${slugifyNode(node)}`;
             if (subgraphs.length === 1) {
-              link = `/${slugifyNode(subgraphs[0])}/${slugifyNode(node.n)}`;
+              link = `/${slugifyNode(subgraphs[0])}/${slugifyNode(node)}`;
             } else if (subgraphs.length > 1) {
-              debugger;
-              const ownedSubgraphs = subgraphs.reduce((acc, subgraph) => {
-                if (nodesByCollectionType.subgraphs[subgraph.tokenId]) {
+              const ownedSubgraphs = subgraphs.reduce<BaseNode[]>((acc, subgraph) => {
+                if (accountNodesByCollectionType["Subgraph"][subgraph.tokenId]) {
                   return [...acc, subgraph];
                 }
                 return acc;
               }, []);
               if (ownedSubgraphs.length === 1) {
                 link = `/${slugifyNode(ownedSubgraphs[0])}/${slugifyNode(
-                  node.n
+                  node
                 )}`;
               }
             }
 
             return (
-              <Link key={node.n.tokenId} href={link}>
+              <Link key={node.tokenId} href={link}>
                 <a>
-                  <Card key={node.n.tokenId} node={node.n} />
+                  <Card key={node.tokenId} node={node} />
                 </a>
               </Link>
             );

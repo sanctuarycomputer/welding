@@ -45,7 +45,7 @@ const feesRequired = (formik, accountData) => {
   }, BigNumber.from(0));
 };
 
-const makeFormikForBaseNode = (
+const useBaseNodeFormik = (
   signer,
   accountData,
   node: BaseNode
@@ -194,7 +194,7 @@ const makeFormikForBaseNode = (
 
   return formik;
 };
-export default makeFormikForBaseNode;
+export default useBaseNodeFormik;
 
 export const getRelatedNodes = (
   formik: FormikProps<BaseNodeFormValues>,
@@ -223,22 +223,6 @@ export const getRelatedNodes = (
     })
     .filter(notEmpty);
 };
-
-//export const hasStagedRelations = (
-//  formik,
-//  relation: "incoming" | "outgoing",
-//  nodes: BaseNode[],
-//  name: string,
-//  exclusive: boolean
-//) => {
-//  if (!exclusive) {
-//    return nodes.every((n) => {
-//      return !!formik.values[relation].find((e) => {
-//        return e.name === name && e.tokenId === n.tokenId && e.active;
-//      });
-//    });
-//  }
-//};
 
 export const stageNodeRelations = (
   formik,

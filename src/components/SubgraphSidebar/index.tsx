@@ -6,6 +6,7 @@ import {
   useContext,
   useState,
   useCallback,
+  ChangeEvent,
 } from "react";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
@@ -17,7 +18,6 @@ import slugifyNode from "src/utils/slugifyNode";
 import DraggableDocumentLink from "./DraggableDocumentLink";
 import Document from "src/components/Icons/Document";
 import Actions from "src/components/Actions";
-import useEditableImage from "src/hooks/useEditableImage";
 import NodeImage from "src/components/NodeImage";
 import TopicManager from "src/components/TopicManager";
 import getRelatedNodes from "src/utils/getRelatedNodes";
@@ -28,13 +28,19 @@ type Props = {
   formik: FormikProps<BaseNodeFormValues>;
   canEdit: boolean;
   currentDocument?: BaseNode;
-  reloadData: Function;
+  imagePreview: string | null;
+  imageDidChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  clearImage: () => void;
+  reloadData: (tx: any) => Promise<void>;
 };
 
 const SubgraphSidebar: FC<Props> = ({
   formik,
   canEdit,
   currentDocument,
+  imagePreview,
+  imageDidChange,
+  clearImage,
   reloadData,
 }) => {
   const { openModal, closeModal } = useContext(ModalContext);
@@ -64,8 +70,6 @@ const SubgraphSidebar: FC<Props> = ({
     "Subgraph",
     "STASHED_BY"
   );
-
-  const [imagePreview, imageDidChange, clearImage] = useEditableImage(formik);
 
   const descriptionPresent =
     !!formik.values.description && formik.values.description.length > 0;
@@ -121,7 +125,7 @@ const SubgraphSidebar: FC<Props> = ({
         />
       );
     },
-    []
+    [currentDocument?.tokenId, moveDocumentNode, stashedDocuments, subgraph]
   );
 
   return (
@@ -139,13 +143,13 @@ const SubgraphSidebar: FC<Props> = ({
         onClick={() => setMobileOpen(!mobileOpen)}
         className={`${bg} w-full h-screen fixed z-10 curtain ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } md:-translate-x-full`}
+        } md:-translate-x-full `}
       ></div>
 
       <nav
         className={`${bg} ${border} ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 fixed top-0 inline-block w-64 h-screen border-r z-20 `}
+        } md:translate-x-0 fixed top-0 inline-block w-64 h-screen border-r z-20 transition-transform ease-in-out duration-500`}
       >
         <div className="pl-2 pr-1 py-4 text-xs flex items-center">
           <p
@@ -210,7 +214,7 @@ const SubgraphSidebar: FC<Props> = ({
                 readOnly={!canEdit}
                 className={`${
                   canEdit ? "cursor-edit" : "pointer-events-none"
-                } block pb-4 w-full bg-transparent text-xs px-2`}
+                } block pb-4 w-full bg-transparent text-xs px-2 pt-1`}
                 name="description"
                 placeholder="Add a description"
                 value={formik.values.description}
@@ -276,7 +280,13 @@ const SubgraphSidebar: FC<Props> = ({
             {documentNodes.length === 0 && (
               <div className="flex flex-col items-center py-8 opacity-50">
                 <Document />
-                <p className="pt-1 whitespace-nowrap">No documents (yet).</p>
+                <p className="pt-1 text-center">
+                  {subgraph.tokenId.startsWith("-") ? (
+                    "Publish this subgraph to start writing."
+                  ) : (
+                    "No documents (yet)"
+                  )}
+                </p>
               </div>
             )}
 

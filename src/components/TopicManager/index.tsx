@@ -6,7 +6,7 @@ import slugifyNode from "src/utils/slugifyNode";
 import {
   getRelatedNodes,
   stageNodeRelations,
-} from "src/lib/makeBaseNodeFormik";
+} from "src/lib/useBaseNodeFormik";
 import { FormikProps } from "formik";
 import { BaseNodeFormValues } from "src/types";
 

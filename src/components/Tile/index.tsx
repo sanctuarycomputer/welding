@@ -5,7 +5,7 @@ import { bgPassive } from "src/utils/theme";
 type Props = {
   label: string;
   tracked?: boolean;
-  onClick?: Function;
+  onClick?: () => void;
 };
 
 const Tile: FC<Props> = ({ label, onClick, tracked }) => {

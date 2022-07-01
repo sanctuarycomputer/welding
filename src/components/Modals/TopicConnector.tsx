@@ -17,7 +17,7 @@ export type TopicConnectorMeta = {
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
   meta: TopicConnectorMeta;
 };
 
@@ -142,7 +142,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           <Hashtag />
           <p className="pt-2 font-semibold">
             Topics improve discoverability of nodes, and reward the owner of the
-            Topic NFT whenever they're referenced.
+            Topic NFT whenever they&apos;re referenced.
           </p>
         </div>
 

@@ -8,7 +8,7 @@ type Props = {
   readOnly: boolean;
   imagePreview: string | null;
   imageDidChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  clearImage: Function;
+  clearImage: () => void;
   children?: ReactNode;
 };
 
@@ -21,7 +21,7 @@ const NodeImage: FC<Props> = ({
   children,
 }) => {
   const isDefault =
-    (imagePreview || "").endsWith("emoji.jpg") || imagePreview === null;
+    (imagePreview || "").endsWith("emoji.jpg") || (imagePreview || "").length === 0 || imagePreview === null;
   if (!showDefault && isDefault) return null;
 
   return (

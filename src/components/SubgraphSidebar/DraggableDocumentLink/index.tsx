@@ -15,7 +15,7 @@ type Props = {
   isStashed: boolean;
   isCurrent: boolean;
   index: number;
-  move: Function;
+  move: (a: number, b: number) => void;
 };
 
 interface DragItem {

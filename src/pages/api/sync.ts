@@ -16,7 +16,7 @@ function capitalizeFirstLetter(string) {
 }
 
 const merge = async (e, session) => {
-  const { blockNumber, event, args } = e;
+  const { event, args } = e;
   switch (event) {
     case "Mint": {
       let q = `MERGE (n:BaseNode {tokenId: $tokenId})
@@ -69,7 +69,7 @@ const merge = async (e, session) => {
     }
 
     case "Revise": {
-      let q = `MERGE (n:BaseNode {tokenId: $tokenId})
+      const q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
           MERGE (rev:Revision {hash: $hash})
@@ -297,23 +297,26 @@ export default async function handler(
     }
 
     // Load the latest block
-    const latestBlock = await Welding.getBlockNumber();
+    const latestBlock = await Welding.getBlockNumber(null);
 
     // If we're ensuring that our cursor is up to a point
-    let { ensure } = req.query;
+    const { ensure } = req.query;
+    let ensureInt = cursor;
     if (ensure) {
-      ensure = parseInt(ensure);
-      if (ensure > latestBlock) throw new Error("invalid_ensure_block_given");
-      if (cursor >= ensure)
-        return res.status(200).json({ status: "already_processed", cursor });
+      ensureInt = parseInt(Array.isArray(ensure) ? ensure[0] : ensure);
     }
+
+    if (ensureInt > latestBlock) throw new Error("invalid_ensure_block_given");
+    if (cursor >= ensureInt)
+      return res.status(200).json({ status: "already_processed", cursor });
 
     const { endAt, events } = await Welding.queryEvents(
       null,
       cursor + 1,
-      ensure
+      ensureInt 
     );
     events.sort(function (a, b) {
+      // @ts-ignore
       return a.blockNumber - b.blockNumber;
     });
     for (const event of events) await merge(event, session);

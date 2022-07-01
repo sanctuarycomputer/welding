@@ -1,4 +1,3 @@
-import Subgraph from "src/renderers/Subgraph";
 import slugifyNode from "src/utils/slugifyNode";
 import Client from "src/lib/Client";
 import makeDummyNode from "src/utils/makeDummyNode";
@@ -6,12 +5,18 @@ import { FC } from "react";
 import { GetServerSideProps } from "next";
 import { BaseNode } from "src/types";
 
+import dynamic from "next/dynamic";
+const Subgraph = dynamic(() => import("src/renderers/Subgraph"), {
+  ssr: false,
+});
+
 type Props = {
   node: BaseNode;
+  document: BaseNode;
 };
 
-const NodeShow: FC<Props> = ({ node }) => {
-  return <Subgraph node={node} />;
+const NodeShow: FC<Props> = ({ node, document }) => {
+  return <Subgraph node={node} document={document} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

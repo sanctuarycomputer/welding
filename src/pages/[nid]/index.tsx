@@ -44,7 +44,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   givenNidSlug =
     (Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || "";
   if (givenNidSlug !== slugifyNode(node)) {
-    console.log("BING!!", q, context);
     return {
       redirect: {
         permanent: false,

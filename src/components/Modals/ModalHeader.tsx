@@ -4,8 +4,8 @@ import { bg } from "src/utils/theme";
 type Props = {
   title: string;
   hint: string;
-  onClickClose: Function;
-  onClickBack?: Function;
+  onClickClose: () => void;
+  onClickBack?: () => void;
 };
 
 const ModalHeader: FC<Props> = ({ title, hint, onClickClose, onClickBack }) => {

@@ -11,7 +11,7 @@ import { useSigner } from "wagmi";
 import makeFormikForBaseNode, {
   stageNodeRelations,
   unstageNodeRelations,
-} from "src/lib/makeBaseNodeFormik";
+} from "src/lib/useBaseNodeFormik";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { bg, bgHover } from "src/utils/theme";
 

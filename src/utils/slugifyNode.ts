@@ -1,3 +1,4 @@
+import { BaseNode } from "src/types";
 import slugify from "src/utils/slugify";
 
 const slugifyNode = (node: BaseNode) => {

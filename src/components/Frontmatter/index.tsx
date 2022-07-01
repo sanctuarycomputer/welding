@@ -34,13 +34,12 @@ const FrontmatterReadOnly: FC<ReadOnlyProps> = ({ formik }) => {
 
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
-  label: string;
   readOnly: boolean;
 };
 
-const Frontmatter: FC<Props> = ({ formik, label, readOnly }) => {
-  if (readOnly) return <FrontmatterReadOnly formik={formik} />;
+const Frontmatter: FC<Props> = ({ formik, readOnly }) => {
   const { openModal, closeModal } = useContext(ModalContext);
+  if (readOnly) return <FrontmatterReadOnly formik={formik} />;
 
   return (
     <div className={`px-2 md:px-0`}>
@@ -66,7 +65,7 @@ const Frontmatter: FC<Props> = ({ formik, label, readOnly }) => {
             <input
               type="text"
               name="name"
-              placeholder={`${label} name`}
+              placeholder={`Document title`}
               className="text-3xl md:text-5xl font-bold"
               value={formik.values.name}
               onChange={formik.handleChange}

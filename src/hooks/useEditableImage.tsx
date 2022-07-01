@@ -3,7 +3,7 @@ import Welding from "src/lib/Welding";
 
 const useEditableImage = (
   formik
-): [string | null, (e: ChangeEvent<HTMLInputElement>) => void, Function] => {
+): [string | null, (e: ChangeEvent<HTMLInputElement>) => void, () => void] => {
   let imageSrc = ``;
   if (formik.values.image) {
     imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(

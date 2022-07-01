@@ -20,7 +20,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ErrorBoundary from "src/components/ErrorBoundary";
 import Link from "next/link";
-import { bg, bgHover, textPassive } from "src/utils/theme";
+import { bg, bgHover } from "src/utils/theme";
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -34,7 +34,7 @@ const Wallet = dynamic(() => import("src/components/Wallet"), {
 });
 
 NProgress.configure({ showSpinner: false });
-Router.events.on("routeChangeStart", (url) => {
+Router.events.on("routeChangeStart", () => {
   NProgress.start();
 });
 Router.events.on("routeChangeComplete", () => NProgress.done());
@@ -93,7 +93,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   <Toaster />
                   <Link href="/">
                     <a
-                      className={`${bg} ${bgHover} ${textPassive} z-10 fixed bottom-0 right-0 aspect-square border rounded-full mr-2 mb-2 sm:mr-4 sm:mb-4 w-6 h-6 flex items-center justify-center`}
+                      className={`${bg} ${bgHover} z-10 fixed bottom-0 right-0 aspect-square border rounded-full mr-2 mb-2 sm:mr-4 sm:mb-4 w-6 h-6 flex items-center justify-center`}
                     >
                       <p className="font-semibold">?</p>
                     </a>

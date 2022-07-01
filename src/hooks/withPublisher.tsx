@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/router";
 import Client from "src/lib/Client";
-import makeFormikForBaseNode from "src/lib/makeBaseNodeFormik";
+import makeFormikForBaseNode from "src/lib/useBaseNodeFormik";
 import useEditableImage from "src/hooks/useEditableImage";
 import { useSigner } from "wagmi";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -14,8 +14,8 @@ export interface PublisherUtils {
   formik: FormikProps<BaseNodeFormValues>;
   imagePreview: string | null;
   imageDidChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  clearImage: Function;
-  reloadData: Function;
+  clearImage: () => void;
+  reloadData: (tx: any) => Promise<void>;
 }
 
 export default function withPublisher(initialNode: BaseNode): PublisherUtils {

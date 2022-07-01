@@ -57,7 +57,7 @@ const Metadata = ({ node }) => {
             <p className="font-semibold">Current Revision Hash</p>
           </td>
           <td className="px-2 py-4 text-right whitespace-nowrap truncate">
-            <a href={ipfsLink} target="_blank">
+            <a href={ipfsLink} target="_blank" rel="noreferrer">
               <p className="underline">
                 {truncate(node.currentRevision.hash, 30)} ↗
               </p>
@@ -91,7 +91,7 @@ const Metadata = ({ node }) => {
             <p className="font-semibold">Polygon Scan</p>
           </td>
           <td className="px-2 py-4 text-right whitespace-nowrap truncate">
-            <a href={scanLink} target="_blank">
+            <a href={scanLink} target="_blank" rel="noreferrer">
               <p className="underline">Explore ↗</p>
             </a>
           </td>

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { Dispatch, FC, SetStateAction } from "react";
 import { BaseNode } from "src/types";
 import Tile from "src/components/Tile";
 import { useSigner } from "wagmi";
@@ -29,8 +29,8 @@ enum Roles {
 type Props = {
   node: BaseNode;
   currentAddress: string;
-  setLocked: Function;
-  reloadData: Function;
+  setLocked: Dispatch<SetStateAction<boolean>>;
+  reloadData: () => void;
 };
 
 type FormikInviteProps = {

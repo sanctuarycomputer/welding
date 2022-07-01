@@ -1,3 +1,6 @@
+import { BaseNode, Edge } from "src/types";
+import { notEmpty } from "src/utils/predicates";
+
 const getRelatedNodes = (
   node: BaseNode,
   relation: "incoming" | "outgoing",
@@ -22,7 +25,8 @@ const getRelatedNodes = (
       uniqueTokenIds.add(n.tokenId);
       if (!dupe) return true;
       return false;
-    });
+    })
+    .filter(notEmpty);
 };
 
 export default getRelatedNodes;

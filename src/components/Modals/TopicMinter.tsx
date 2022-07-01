@@ -27,15 +27,15 @@ type MintState = {
 
 type Props = {
   isOpen: boolean;
-  onRequestClose: Function;
+  onRequestClose: () => void;
   meta: TopicMinterMeta;
 };
 
 const IndividualTopicMinter: FC<{
   topic: BaseNode;
-  setTopicId: Function;
-  setTopicDescription: Function;
-  openEmojiPicker: Function;
+  setTopicId: (baseNode: BaseNode, id: string) => void;
+  setTopicDescription: (baseNode: BaseNode, description: string) => void;
+  openEmojiPicker: (baseNode: BaseNode) => void;
   currentlyMinting: MutableRefObject<Set<string>>;
 }> = ({
   topic,

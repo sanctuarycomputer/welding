@@ -25,7 +25,7 @@ export type Account = {
   ensName?: string | null;
 };
 
-type MetadataProperties = {
+export type MetadataProperties = {
   emoji: BaseEmoji;
   content?: any;
   ui?: {

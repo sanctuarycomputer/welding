@@ -7,7 +7,7 @@ import { textPassive } from "src/utils/theme";
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
   buttonLabel: string;
-  onClick?: Function;
+  onClick?: () => void;
 };
 
 const EditNav: FC<Props> = ({ formik, buttonLabel, onClick }) => {

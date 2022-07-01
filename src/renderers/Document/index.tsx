@@ -15,7 +15,7 @@ import withPublisher from "src/hooks/withPublisher";
 import {
   getRelatedNodes,
   stageNodeRelations,
-} from "src/lib/makeBaseNodeFormik";
+} from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 
@@ -60,7 +60,15 @@ const Document: FC<Props> = ({ node }) => {
 
   const { canEditNode, shallowNodes } = useContext(GraphContext);
   const { setContent } = useContext(NavContext);
-  const canEdit = node.tokenId.startsWith("-") || canEditNode(node);
+
+  const subgraphParent = getRelatedNodes(
+    formik,
+    "outgoing",
+    "Subgraph",
+    "BELONGS_TO"
+  )[0];
+
+  const canEdit = node.tokenId.startsWith("-") ? canEditNode(subgraphParent) : canEditNode(node);
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -105,12 +113,6 @@ const Document: FC<Props> = ({ node }) => {
     "REFERENCED_BY"
   );
 
-  const subgraphParent = getRelatedNodes(
-    formik,
-    "outgoing",
-    "Subgraph",
-    "BELONGS_TO"
-  )[0];
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
@@ -120,9 +122,7 @@ const Document: FC<Props> = ({ node }) => {
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div
-            className={`flex justify-${
-              showStashInfo || node.burnt ? "between" : "end"
-            } pb-2`}
+            className={`flex ${node.burnt ? "justify-between" : "justify-end"} pb-2`}
           >
             {node.burnt && (
               <p className="text-red-500">
@@ -148,7 +148,6 @@ const Document: FC<Props> = ({ node }) => {
           <Frontmatter
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
-            label="document"
           />
           <TopicManager
             formik={formik}
