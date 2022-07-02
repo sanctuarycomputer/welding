@@ -139,8 +139,12 @@ const Document: FC<Props> = ({ node }) => {
           }
           try {
             if (draft && draft.content) {
-              const contentDiff: any = diff(draft.content, formik.values.content || {});
-              if (contentDiff.blocks) formik.setFieldValue("content", draft.content);
+              const contentDiff: any = diff(
+                draft.content,
+                formik.values.content || {}
+              );
+              if (contentDiff.blocks)
+                formik.setFieldValue("content", draft.content);
             }
           } catch (e) {
             Sentry.configureScope((scope: any) => {
