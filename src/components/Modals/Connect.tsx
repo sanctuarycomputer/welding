@@ -31,7 +31,7 @@ const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
         />
 
         <div>
-          {connectors.map((connector) => (
+          {connectors.filter(c => c.ready).map((connector) => (
             <div
               onClick={() => connect(connector)}
               key={connector.id}
@@ -40,7 +40,6 @@ const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
               <div className="flex flex-row items-center py-1 flex-grow">
                 <p className="pr-2 font-semibold w-32 truncate">
                   {connector.name}
-                  {!connector.ready && " (unsupported)"}
                 </p>
               </div>
             </div>

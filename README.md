@@ -6,8 +6,9 @@ Roadmap
 - [ ] Page Caching, Performance & purges?
 - [ ] CORS
 - [ ] Fix mobile full height
+- [ ] Mobile experience should be nice
+- [ ] Filter metamask on mobile
 
-- [ ] Mobile minting should be nice
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
