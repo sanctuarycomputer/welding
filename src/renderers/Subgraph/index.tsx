@@ -63,7 +63,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
         </div>
       ) : (
         <div
-          className={cx(`pt-14 flex h-screen items-center justify-center`, {
+          className={cx(`flex h-screen items-center justify-center`, {
             "md:pl-4 md:ml-64": showSubgraph,
           })}
         >
