@@ -116,7 +116,7 @@ const Document: FC<Props> = ({ node }) => {
           const draft = {
             name: formik.values.name,
             description: formik.values.description,
-            content: formik.values.content
+            content: formik.values.content,
           };
           window.localStorage.setItem(draftKey, JSON.stringify(draft));
         } else {
@@ -127,14 +127,18 @@ const Document: FC<Props> = ({ node }) => {
         if (draft) {
           draft = JSON.parse(draft);
           if (draft && draft.name && draft.name !== formik.values.name) {
-            formik.setFieldValue('name', draft.name);
+            formik.setFieldValue("name", draft.name);
           }
-          if (draft && draft.description && draft.description !== formik.values.description) {
-            formik.setFieldValue('description', draft.description);
+          if (
+            draft &&
+            draft.description &&
+            draft.description !== formik.values.description
+          ) {
+            formik.setFieldValue("description", draft.description);
           }
           const contentDiff: any = diff(draft.content, formik.values.content);
           if (draft && draft.content && contentDiff.blocks) {
-            formik.setFieldValue('content', draft.content);
+            formik.setFieldValue("content", draft.content);
           }
         }
         isMounted.current = true;

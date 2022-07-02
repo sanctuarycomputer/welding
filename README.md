@@ -1,12 +1,8 @@
 # Ref
 
-Before Deploy:
-
-- [ ] CORS
-- [ ] Drafts
-
 Roadmap
 
+- [ ] CORS
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Page Caching & purges?
