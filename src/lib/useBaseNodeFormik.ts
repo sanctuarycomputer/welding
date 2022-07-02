@@ -51,6 +51,7 @@ const useBaseNodeFormik = (
   node: BaseNode
 ): FormikProps<BaseNodeFormValues> => {
   const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
+  const draftKey = `-welding:Drafts:${label}:${node.tokenId}`;
 
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
@@ -170,6 +171,9 @@ const useBaseNodeFormik = (
         status = PublishStep.COMPLETE;
         formik.setStatus({ status, tx });
         toast.success("Success!", { id });
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(draftKey);
+        }
         return;
       } catch (e: any) {
         if (e && e?.message === "user_rejected") {

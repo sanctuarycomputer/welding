@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect } from "react";
+import { FC, useContext, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -15,6 +15,7 @@ import withPublisher from "src/hooks/withPublisher";
 import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
+import { diff } from "deep-object-diff";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -104,6 +105,42 @@ const Document: FC<Props> = ({ node }) => {
       true
     );
   }, [formik.values.content, shallowNodes]);
+
+  const isMounted = useRef(false);
+  const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
+  const draftKey = `-welding:Drafts:${label}:${node.tokenId}`;
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (isMounted.current) {
+        if (formik.dirty) {
+          const draft = {
+            name: formik.values.name,
+            description: formik.values.description,
+            content: formik.values.content
+          };
+          window.localStorage.setItem(draftKey, JSON.stringify(draft));
+        } else {
+          window.localStorage.removeItem(draftKey);
+        }
+      } else {
+        let draft: any = window.localStorage.getItem(draftKey);
+        if (draft) {
+          draft = JSON.parse(draft);
+          if (draft && draft.name && draft.name !== formik.values.name) {
+            formik.setFieldValue('name', draft.name);
+          }
+          if (draft && draft.description && draft.description !== formik.values.description) {
+            formik.setFieldValue('description', draft.description);
+          }
+          const contentDiff: any = diff(draft.content, formik.values.content);
+          if (draft && draft.content && contentDiff.blocks) {
+            formik.setFieldValue('content', draft.content);
+          }
+        }
+        isMounted.current = true;
+      }
+    }
+  }, [formik.values]);
 
   const references = getRelatedNodes(
     formik,

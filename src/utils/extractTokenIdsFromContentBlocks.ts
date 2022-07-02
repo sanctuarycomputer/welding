@@ -3,7 +3,6 @@ const URL_REGEX =
 
 const extractTokenIdsFromContentBlocks = (blocks) => {
   const urls = blocks.reduce((acc, block) => {
-    console.log(block);
     switch (block.type) {
       case "linkTool": {
         acc = [new URL(block.data.link), ...acc];
@@ -11,10 +10,7 @@ const extractTokenIdsFromContentBlocks = (blocks) => {
       }
       case "paragraph": {
         const matches = block.data.text.match(URL_REGEX);
-        console.log(matches);
-        if (matches) {
-          acc = [...matches.map((m) => new URL(m)), ...acc];
-        }
+        if (matches) acc = [...matches.map((m) => new URL(m)), ...acc];
         break;
       }
     }
