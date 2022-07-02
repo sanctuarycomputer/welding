@@ -142,10 +142,10 @@ const Document: FC<Props> = ({ node }) => {
             if (draft && draft.content && contentDiff.blocks) {
               formik.setFieldValue("content", draft.content);
             }
-          } catch(e) {
+          } catch (e) {
             Sentry.configureScope((scope: any) => {
-              scope.setExtra('draft.content', draft.content);
-              scope.setExtra('formik.values.content', formik.values.content);
+              scope.setExtra("draft.content", draft.content);
+              scope.setExtra("formik.values.content", formik.values.content);
               Sentry.captureException(e, scope);
             });
             throw e;
