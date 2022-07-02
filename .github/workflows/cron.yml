@@ -1,0 +1,11 @@
+name: 15-minute-cron
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync new blocks
+        run: |
+          curl --request GET --url 'https://www.welding.app/api/sync'

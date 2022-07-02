@@ -2,6 +2,7 @@
 
 Roadmap
 
+- [ ] Mobile minting should be nice
 - [ ] CORS
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
@@ -10,9 +11,6 @@ Roadmap
 - [ ] Welding Balance?
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n (chinese)
-- [ ] Custom subdomains
-- [ ] Test on the FE wether publishing to IPFS is necessary
-- [ ] Add Rainbow Provider
 - [ ] I should be able to view a revision for subgraph
 - [ ] Global activity loader?
 - [ ] Editor: Support in-page Image Uploads
@@ -23,6 +21,7 @@ Roadmap
 - [ ] When viewing a revision, I should see a message so that I realize
 - [ ] Ability to color your Node's background
 - [ ] Referenced documents should have backlinks
+- [ ] Custom subdomains & domains
 
 Ideas for Writing:
 
@@ -32,6 +31,6 @@ Ideas for Writing:
 - [ ] NFT Contracts as a Database
 - [ ] Smart Contract as Event Emitter
 - [ ] How to file bugs
-- [ ] Tradable Hyper Structures
+- [ ] Non Fungible Protocols
 - [ ] Monetizing your nodes
 - [ ] Open Source Shoutouts
