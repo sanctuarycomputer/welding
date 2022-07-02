@@ -11,6 +11,7 @@ Roadmap
 - [ ] Style Headers in Document for Mobile & Desktop
 
 ---
+
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
