@@ -16,6 +16,7 @@ import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { diff } from "deep-object-diff";
+import * as Sentry from "@sentry/nextjs";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -136,9 +137,18 @@ const Document: FC<Props> = ({ node }) => {
           ) {
             formik.setFieldValue("description", draft.description);
           }
-          const contentDiff: any = diff(draft.content, formik.values.content);
-          if (draft && draft.content && contentDiff.blocks) {
-            formik.setFieldValue("content", draft.content);
+          try {
+            const contentDiff: any = diff(draft.content, formik.values.content);
+            if (draft && draft.content && contentDiff.blocks) {
+              formik.setFieldValue("content", draft.content);
+            }
+          } catch(e) {
+            Sentry.configureScope((scope: any) => {
+              scope.setExtra('draft.content', draft.content);
+              scope.setExtra('formik.values.content', formik.values.content);
+              Sentry.captureException(e, scope);
+            });
+            throw e;
           }
         }
         isMounted.current = true;

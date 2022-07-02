@@ -2,11 +2,14 @@
 
 Roadmap
 
-- [ ] Mobile minting should be nice
+- [ ] Privacy forward analytics
+- [ ] Page Caching, Performance & purges?
 - [ ] CORS
+- [ ] Fix mobile full height
+
+- [ ] Mobile minting should be nice
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
-- [ ] Page Caching & purges?
 - [ ] Sitemap.xml
 - [ ] Welding Balance?
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
