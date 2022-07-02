@@ -71,7 +71,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
             <div className="pt-14 absolute left-0 md:left-64 top-0 pointer-events-none">
               <div className="ml-4 p-4 border border-dashed border-color rounded inline-block mr-4 background-color pulse">
                 <p className="font-semibold">
-                  ← Mint a subgraph to publish docs
+                  ↖ Mint a subgraph to publish docs
                 </p>
               </div>
             </div>
