@@ -2,13 +2,15 @@
 
 Roadmap
 
+- [ ] Switch to ISR
+- [ ] A11Y & Lighthouse
 - [ ] Privacy forward analytics
-- [ ] Page Caching, Performance & purges?
 - [ ] CORS
 - [ ] Fix mobile full height
 - [ ] Mobile experience should be nice
-- [ ] Filter metamask on mobile
+- [ ] Style Headers in Document for Mobile & Desktop
 
+---
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml

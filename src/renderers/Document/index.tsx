@@ -120,8 +120,6 @@ const Document: FC<Props> = ({ node }) => {
             content: formik.values.content,
           };
           window.localStorage.setItem(draftKey, JSON.stringify(draft));
-        } else {
-          window.localStorage.removeItem(draftKey);
         }
       } else {
         let draft: any = window.localStorage.getItem(draftKey);
@@ -140,8 +138,8 @@ const Document: FC<Props> = ({ node }) => {
           try {
             if (draft && draft.content) {
               const contentDiff: any = diff(
-                draft.content,
-                formik.values.content || {}
+                formik.values.content || {},
+                draft.content
               );
               if (contentDiff.blocks)
                 formik.setFieldValue("content", draft.content);
