@@ -3,6 +3,7 @@
 Roadmap
 
 Content
+
 - [ ] Open Source Github
 - [ ] Gif of Connecting to Polygon
 - [ ] Gif of Publishing a Document
@@ -14,6 +15,7 @@ Content
 - [ ] Header images for each post?
 
 Must Have
+
 - [ ] SEO Cards for /mint pages
 - [ ] Ability to flush local draft and restore
 - [ ] Fix mobile full height

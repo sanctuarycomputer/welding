@@ -18,7 +18,7 @@ import InlineCode from "@editorjs/inline-code";
 // import Raw from "@editorjs/raw";
 // import Warning from "@editorjs/warning";
 // import CheckList from "@editorjs/checklist";
-import Image from '@editorjs/image';
+import Image from "@editorjs/image";
 
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
@@ -35,10 +35,10 @@ const EDITOR_JS_TOOLS = {
     class: Image,
     config: {
       endpoints: {
-        byFile: '/api/image',
-        byUrl: '/api/image',
-      }
-    }
+        byFile: "/api/image",
+        byUrl: "/api/image",
+      },
+    },
   },
   // checklist: CheckList,
   // warning: Warning,

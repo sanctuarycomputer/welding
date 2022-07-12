@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { NFTStorage, File } from "nft.storage";
-import formidable from 'formidable';
+import formidable from "formidable";
 import * as Sentry from "@sentry/nextjs";
-import fs from 'fs';
+import fs from "fs";
 
 export const config = {
   api: {
@@ -29,23 +29,21 @@ export default async function handler(
       if (fields.url) {
         return res.status(200).json({
           success: 1,
-          file: { url: fields.url }
+          file: { url: fields.url },
         });
       }
 
       if (files.image) {
         const buffer = fs.readFileSync(files.image.filepath);
-        const file = new File(
-          [buffer],
-          files.image.originalFilename,
-          { type: files.image.mimetype }
-        );
+        const file = new File([buffer], files.image.originalFilename, {
+          type: files.image.mimetype,
+        });
 
         const cid = await nftstorage.storeBlob(file);
         const url = `https://welding.infura-ipfs.io/ipfs/${cid}`;
         return res.status(200).json({
           success: 1,
-          file: { url }
+          file: { url },
         });
       }
     });
