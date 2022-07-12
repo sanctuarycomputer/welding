@@ -14,12 +14,11 @@ import Quote from "@editorjs/quote";
 import Marker from "@editorjs/marker";
 import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
-import SimpleImage from "@editorjs/simple-image";
 
 // import Raw from "@editorjs/raw";
 // import Warning from "@editorjs/warning";
 // import CheckList from "@editorjs/checklist";
-// import Image from '@editorjs/image';
+import Image from '@editorjs/image';
 
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
@@ -32,7 +31,15 @@ const DEFAULT_CONTENT = {
 };
 
 const EDITOR_JS_TOOLS = {
-  // image: Image,
+  image: {
+    class: Image,
+    config: {
+      endpoints: {
+        byFile: '/api/image',
+        byUrl: '/api/image',
+      }
+    }
+  },
   // checklist: CheckList,
   // warning: Warning,
   // raw: Raw,
@@ -60,7 +67,6 @@ const EDITOR_JS_TOOLS = {
   marker: Marker,
   delimiter: Delimiter,
   inlineCode: InlineCode,
-  simpleImage: SimpleImage,
 };
 
 const DOM_ID = "editor";
