@@ -2,13 +2,37 @@
 
 Roadmap
 
+Content
+
+- [ ] Open Source Github
+- [ ] Gif of Connecting to Polygon
+- [ ] Gif of Publishing a Document
+- [ ] Gif of setting a Connection Fee
+- [ ] Gif of withdrawing your Connection Fees
+- [ ] Gif of Permission Layer?
+- [ ] Gif of NFTs being joined
+- [ ] Screenshot of Bloom
+- [ ] Header images for each post?
+
+Must Have
+
+- [ ] SEO Cards for /mint pages
+- [ ] Ability to flush local draft and restore
+- [ ] Fix mobile full height
+- [ ] Style Headers in Document for Mobile & Desktop
+- [ ] Mobile in-graph references needs padding
+- [ ] Vertically center blocktune handle
+- [ ] Ability to withdraw Welding Balance
+- [ ] I should be able to search Emojis
+
+- [ ] Bug: Scope local drafts to the current account
 - [ ] Switch to ISR
 - [ ] A11Y & Lighthouse
-- [ ] Privacy forward analytics
+- [ ] Add privacy forward analytics
 - [ ] CORS
-- [ ] Fix mobile full height
-- [ ] Mobile experience should be nice
-- [ ] Style Headers in Document for Mobile & Desktop
+- [ ] Remove outer borders in modals on Mobile
+- [ ] Verify contract ABI?
+- [ ] Welding Avatar
 
 ---
 
