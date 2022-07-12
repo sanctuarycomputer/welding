@@ -16,6 +16,7 @@ import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { diff } from "deep-object-diff";
+import { useAccount } from "wagmi";
 import * as Sentry from "@sentry/nextjs";
 
 import dynamic from "next/dynamic";
@@ -50,6 +51,8 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
+  const { data: account } = useAccount();
+
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     withPublisher(node);
 
@@ -109,11 +112,12 @@ const Document: FC<Props> = ({ node }) => {
 
   const isMounted = useRef(false);
   const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
-  const draftKey = `-welding:Drafts:${label}:${node.tokenId}`;
   useEffect(() => {
+    const draftKey = `-welding:${account?.address}:Drafts:${label}:${node.tokenId}`;
+
     if (typeof window !== "undefined") {
       if (isMounted.current) {
-        if (formik.dirty) {
+        if (formik.dirty && account?.address) {
           const draft = {
             name: formik.values.name,
             description: formik.values.description,
@@ -156,7 +160,7 @@ const Document: FC<Props> = ({ node }) => {
         isMounted.current = true;
       }
     }
-  }, [formik.values]);
+  }, [formik.values, account?.address]);
 
   const references = getRelatedNodes(
     formik,
@@ -216,7 +220,7 @@ const Document: FC<Props> = ({ node }) => {
           />
 
           {references.length > 0 && (
-            <>
+            <div className={`px-2 md:px-0`}>
               <div className="flex justify-between ">
                 <p
                   className={`${textPassive} pb-2 font-semibold tracking-wide uppercase`}
@@ -240,7 +244,7 @@ const Document: FC<Props> = ({ node }) => {
                   );
                 })}
               </ol>
-            </>
+            </div>
           )}
         </div>
       </div>

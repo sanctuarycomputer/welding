@@ -11,7 +11,6 @@ Content
 - [ ] Gif of withdrawing your Connection Fees
 - [ ] Gif of Permission Layer?
 - [ ] Gif of NFTs being joined
-- [ ] Screenshot of Bloom
 - [ ] Header images for each post?
 
 Must Have
@@ -20,8 +19,6 @@ Must Have
 - [ ] Ability to flush local draft and restore
 - [ ] Fix mobile full height
 - [ ] Style Headers in Document for Mobile & Desktop
-- [ ] Mobile in-graph references needs padding
-- [ ] Vertically center blocktune handle
 - [ ] Ability to withdraw Welding Balance
 - [ ] I should be able to search Emojis
 
