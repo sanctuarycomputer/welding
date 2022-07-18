@@ -28,11 +28,11 @@ const NodeImage: FC<Props> = ({
 
   return (
     <div
-      style={{ backgroundImage: `url(${imagePreview})` }}
-      className={`${bgPassive} allowed aspect-sharecard bg-cover bg-center p-2 relative ${
+      className={`${bgPassive} allowed relative ${
         readOnly ? "pointer-events-none" : ""
       }`}
     >
+      <img src={imagePreview || undefined} />
       {children}
 
       {!readOnly && (
