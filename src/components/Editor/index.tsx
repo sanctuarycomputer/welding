@@ -54,23 +54,26 @@ const EDITOR_JS_TOOLS = {
     config: {
       services: {
         figma: {
-          regex: /https:\/\/([\w\.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(\/.*)?$/,
-          embedUrl: 'https://www.figma.com/embed?embed_host=welding.app&url=https://www.figma.com/file/<%= remote_id %>',
+          regex:
+            /https:\/\/([\w\.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(\/.*)?$/,
+          embedUrl:
+            "https://www.figma.com/embed?embed_host=welding.app&url=https://www.figma.com/file/<%= remote_id %>",
           html: "<iframe frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen style='width:100%;' height='320'></iframe>",
           height: 320,
           width: 580,
-          id: (groups) => `${groups[2]}${groups[3]}`
+          id: (groups) => `${groups[2]}${groups[3]}`,
         },
         loom: {
           regex: /https?:\/\/www.loom.com\/share\/([^\/\?\&]*)/,
-          embedUrl: 'https://www.loom.com/embed/<%= remote_id %>?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true',
+          embedUrl:
+            "https://www.loom.com/embed/<%= remote_id %>?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true",
           html: "<iframe frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen style='width:100%;' height='320'></iframe>",
           height: 320,
           width: 580,
-          id: (groups) => groups[0]
-        }
-      }
-    }
+          id: (groups) => groups[0],
+        },
+      },
+    },
   },
   table: Table,
   list: List,

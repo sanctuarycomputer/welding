@@ -10,12 +10,13 @@ const NodeMeta = ({ formik }) => {
   let name = `welding.app • knowledge is valuable`;
   let imageSrc = `https://www.welding.app/share.jpg`;
   let nameWithEmoji = `👩‍🏭 ${name}`;
-  const nodeLabel = formik.values.__node__.labels.filter((l) => l !== "BaseNode")[0] || "Document";
+  const nodeLabel =
+    formik.values.__node__.labels.filter((l) => l !== "BaseNode")[0] ||
+    "Document";
   let description = `Mint a ${nodeLabel.toLowerCase()}`;
-  let emojiCDN =
-    `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
+  let emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
 
-  if (!formik.values.__node__.tokenId.startsWith('-')) {
+  if (!formik.values.__node__.tokenId.startsWith("-")) {
     name = `${formik.values.name}`;
     description = `${formik.values.description}`;
     if (belongsToNode) {

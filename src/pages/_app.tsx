@@ -93,10 +93,14 @@ function MyApp({ Component, pageProps }: AppProps) {
                   <Toaster />
 
                   <div className="fixed bottom-0 right-0 bg-yellow-400 flex rounded-full pl-2 pr-1 py-1 mb-4 mr-12">
-                    <p className="text-stone-800 mr-1 font-medium">10x beta subgraphs remaining.</p>
+                    <p className="text-stone-800 mr-1 font-medium">
+                      10x beta subgraphs remaining.
+                    </p>
                     <Link href="/mint">
                       <a>
-                        <p className="rounded-full bg-stone-800 px-2 font-medium">Join Beta</p>
+                        <p className="rounded-full bg-stone-800 px-2 font-medium">
+                          Join Beta
+                        </p>
                       </a>
                     </Link>
                   </div>
