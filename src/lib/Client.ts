@@ -147,13 +147,7 @@ const Client = {
       query: gql`
         query BaseNodes {
           baseNodes {
-            tokenId
-            burnt
-            labels
-            fee
-            currentRevision {
-              ${revisionShape}
-            }
+            ${baseNodeShape}
           }
         }
       `,

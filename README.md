@@ -11,11 +11,14 @@ Content
 - [ ] Gif of withdrawing your Connection Fees
 - [ ] Gif of Permission Layer?
 - [ ] Gif of NFTs being joined
-- [ ] Header images for each post?
+
+Launch Plan
+
+- [ ] Beta: First 50 Subgraphs
+- [ ] Share: Gnosis Safe, Rainbow
 
 Must Have
 
-- [ ] SEO Cards for /mint pages
 - [ ] Ability to flush local draft and restore
 - [ ] Fix mobile full height
 - [ ] Style Headers in Document for Mobile & Desktop
