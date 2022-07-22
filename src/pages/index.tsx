@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import { FC } from "react";
 import Client from "src/lib/Client";
 import Subgraph from "src/renderers/Subgraph";
@@ -17,7 +17,7 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
   return <Subgraph node={subgraph} document={document} />;
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const [subgraph, document] = await Promise.all([
     Client.fetchBaseNodeByTokenId(WELDING_DOCS_SUBGRAPH_TOKEN_ID),
     Client.fetchBaseNodeByTokenId(WELDING_DOCS_INTRO_DOC_TOKEN_ID),
@@ -49,6 +49,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
       subgraph,
       document,
     },
+    revalidate: 1440,
   };
 };
 
