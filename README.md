@@ -41,7 +41,7 @@ Welding is documented with Welding. [www.welding.app](https://www.welding.app).
 Check out the following places for more Welding-related content:
 
 - Join the [discussions on GitHub](https://github.com/sanctuarycomputer/welding/discussions)
-- Follow [@welding_app](https://twitter.com/welding_app), [@_hhff](https://twitter.com/_hhff) and [@sanctucompu](https://twitter.com/sanctucompu) on Twitter to stay up to date
+- Follow [@welding_app](https://twitter.com/welding_app), [@\_hhff](https://twitter.com/_hhff) and [@sanctucompu](https://twitter.com/sanctucompu) on Twitter to stay up to date
 
 ## Contributing
 
@@ -49,7 +49,7 @@ If you're interested in contributing, please read the [contributing docs](/.gith
 
 ## Authors
 
-- hhff.eth ([@_hhff](https://twitter.com/_hhff))
+- hhff.eth ([@\_hhff](https://twitter.com/_hhff))
 
 ## License
 
