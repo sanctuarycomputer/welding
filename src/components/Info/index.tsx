@@ -1,12 +1,10 @@
-import { FC, useContext } from "react";
+import { useContext } from "react";
 import { GraphContext } from "src/hooks/useGraphData";
 import Link from "next/link";
 import { bg, bgHover } from "src/utils/theme";
 import { IS_BETA } from "src/utils/constants";
 
-type Props = {};
-
-const Info: FC<Props> = ({}) => {
+const Info = ({}) => {
   const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
