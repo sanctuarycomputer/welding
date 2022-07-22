@@ -14,8 +14,6 @@
   </a>
 </p>
 
-
-
 ## Intro
 
 Welding is a decentralized knowledge graph protocol for building and managing networks of research and documentation. It is inspired by [Notion](https://www.notion.so/), [Are.na](https://www.are.na/) & [Roam](https://roamresearch.com/); but it is built on the Ethereum Virtual Machine (and deployed to [Polygon](https://polygon.technology/)), allowing every `Subgraph`, `Topic` & `Document` to be backed by an NFT, ensuring all content is free and public forever (via [IPFS](https://ipfs.io/)).
