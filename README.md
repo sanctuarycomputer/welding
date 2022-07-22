@@ -1,31 +1,77 @@
-# Ref
+<p>
+  <picture>
+    <img alt="Welding Share Card" src="https://raw.githubusercontent.com/sanctuarycomputer/welding/main/public/share.jpg" width="auto" height="60">
+  </picture>
+</p>
 
-Roadmap
+welding.app • knowledge is valuable
 
-Content
+<p>
+  <a href="https://www.welding.app">
+    <img src="https://img.shields.io/website?down_color=lightgrey&down_message=offline&up_color=blue&up_message=online&url=https%3A%2F%2Fwww.welding.app" alt="Website">
+  </a>
+  <a href="https://twitter.com/welding_app">
+    <img src="https://img.shields.io/twitter/follow/welding_app?label=Follow&style=flat" alt="Twitter">
+  </a>
+  <a href="/LICENSE">
+    <img src="https://img.shields.io/github/license/sanctucompu/welding&style=flat" alt="License">
+  </a>
+</p>
 
-- [ ] Open Source Github
+## Intro
+
+Welding is a decentralized knowledge graph protocol for building and managing networks of research and documentation. It is inspired by Notion, Are.na & Roam; but it is built on the Ethereum Virtual Machine (and deployed to Polygon), allowing every Subgraph, Topic & Document to be backed by an NFT, ensuring all content is free and public forever (via IPFS).
+
+Through a novel ERC721 contract design, NFTs can cross-reference each other by merging “edges” into the graph. Researchers and writers can earn royalties as their writing is referenced (and backlinked) by others, allowing all humans to participate and be rewarded for contributing their thought, ideas, and knowledge as they learn together, in the open.
+
+## Documentation
+
+Welding is documented with Welding. [www.welding.app](https://www.welding.app).
+
+## Development
+
+1. Clone the repo
+2. Copy `.env.example` to `.env`
+3. Subsitute the `{Add me...` env vars in `.env` with your own
+4. `yarn install`
+5. `yarn dev`
+
+## Community
+
+Check out the following places for more Welding-related content:
+
+- Join the [discussions on GitHub](https://github.com/sanctuarycomputer/welding/discussions)
+- Follow [@welding_app](https://twitter.com/welding_app), [@_hhff](https://twitter.com/_hhff) and [@sanctucompu](https://twitter.com/sanctucompu) on Twitter to stay up to date
+
+## Contributing
+
+If you're interested in contributing, please read the [contributing docs](/.github/CONTRIBUTING.md) **before submitting a pull request**.
+
+## Authors
+
+- hhff.eth ([@_hhff](https://twitter.com/_hhff))
+
+## License
+
+[WAGMIT](/LICENSE) License
+
+# Roadmap
+
+- [ ] Loom: What is Welding?
+- [ ] Loom: Getting Started
 - [ ] Gif of Connecting to Polygon
 - [ ] Gif of Publishing a Document
 - [ ] Gif of setting a Connection Fee
-- [ ] Gif of withdrawing your Connection Fees
-- [ ] Gif of Permission Layer?
-- [ ] Gif of NFTs being joined
-
-Launch Plan
-
+- [ ] Mobile Subgraph Minting should auto open
 - [ ] Beta: First 50 Subgraphs
-- [ ] Share: Gnosis Safe, Rainbow
+- [ ] Share Week
 
 Must Have
 
-- [ ] Ability to flush local draft and restore
 - [ ] Fix mobile full height
 - [ ] Style Headers in Document for Mobile & Desktop
-- [ ] Ability to withdraw Welding Balance
 - [ ] I should be able to search Emojis
-
-- [ ] Bug: Scope local drafts to the current account
+- [ ] Feature Flag Drafts
 - [ ] Switch to ISR
 - [ ] A11Y & Lighthouse
 - [ ] Add privacy forward analytics
@@ -36,6 +82,9 @@ Must Have
 
 ---
 
+- [ ] Bug: Scope local drafts to the current account
+- [ ] Ability to withdraw Welding Balance
+- [ ] Gif of withdrawing your Connection Fees
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml

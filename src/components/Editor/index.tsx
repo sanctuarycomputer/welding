@@ -60,7 +60,7 @@ const EDITOR_JS_TOOLS = {
             "https://www.figma.com/embed?embed_host=welding.app&url=https://www.figma.com/file/<%= remote_id %>",
           html: "<iframe frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen style='width:100%;' height='320'></iframe>",
           height: 320,
-          width: 580,
+          width: 640,
           id: (groups) => `${groups[2]}${groups[3]}`,
         },
         loom: {
