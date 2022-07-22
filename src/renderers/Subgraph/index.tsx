@@ -9,6 +9,7 @@ import withPublisher from "src/hooks/withPublisher";
 import Link from "next/link";
 import cx from "classnames";
 import Graph from "src/components/Icons/Graph";
+import { IS_BETA } from "src/utils/constants";
 
 import dynamic from "next/dynamic";
 const SubgraphSidebar = dynamic(
@@ -28,8 +29,15 @@ const Subgraph: FC<Props> = ({ node, document }) => {
     withPublisher(node);
 
   const { data: account } = useAccount();
-  const { canEditNode } = useContext(GraphContext);
+  const { canEditNode, shallowNodes, shallowNodesLoading } =
+    useContext(GraphContext);
   const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node);
+
+  const subgraphs = shallowNodes
+    ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
+    : [];
+  const remainingForBeta =
+    shallowNodesLoading ? '?' : `${(50 - subgraphs.length)}`;
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -54,6 +62,8 @@ const Subgraph: FC<Props> = ({ node, document }) => {
           imageDidChange={imageDidChange}
           clearImage={clearImage}
           reloadData={reloadData}
+          betaIsClosed={IS_BETA && remainingForBeta === '0'}
+          autoOpenSidebarOnMobile={node.tokenId.startsWith("-")}
         />
       )}
 

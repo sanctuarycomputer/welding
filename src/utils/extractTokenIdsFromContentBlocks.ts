@@ -18,9 +18,8 @@ const extractTokenIdsFromContentBlocks = (blocks) => {
   }, []);
 
   return urls.reduce((acc, url) => {
-    if (url.host === process.env.NEXT_PUBLIC_BASE_HOST) {
+    if (url.host === "www.welding.app") {
       const splat = url.pathname.split("/");
-      console.log(splat);
       const slug = splat[splat.length - 1];
       if (slug) acc = [slug.split("-")[0], ...acc];
     }

@@ -16,6 +16,7 @@
   width: 100%;
   background-color: var(--background-color) !important;
   border-color: var(--border-color) !important;
+  border-width: 0px !important;
   inset: auto !important;
   padding: unset !important;
 }
@@ -27,6 +28,7 @@
     justify-content: center;
   }
   .ReactModal__Overlay .ReactModal__Content {
+    border-width: 1px !important;
     max-height: 90%;
     min-height: auto;
   }

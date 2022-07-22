@@ -19,8 +19,6 @@ import { Toaster } from "react-hot-toast";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ErrorBoundary from "src/components/ErrorBoundary";
-import Link from "next/link";
-import { bg, bgHover } from "src/utils/theme";
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -30,6 +28,9 @@ import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
 
 const Wallet = dynamic(() => import("src/components/Wallet"), {
+  ssr: false,
+});
+const Info = dynamic(() => import("src/components/Info"), {
   ssr: false,
 });
 
@@ -91,27 +92,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   </div>
                   <Component {...pageProps} />
                   <Toaster />
-
-                  <div className="fixed bottom-0 right-0 bg-yellow-400 flex rounded-full pl-2 pr-1 py-1 mb-4 mr-12">
-                    <p className="text-stone-800 mr-1 font-medium">
-                      10x beta subgraphs remaining.
-                    </p>
-                    <Link href="/mint">
-                      <a>
-                        <p className="rounded-full bg-stone-800 px-2 font-medium">
-                          Join Beta
-                        </p>
-                      </a>
-                    </Link>
-                  </div>
-
-                  <Link href="/">
-                    <a
-                      className={`${bg} ${bgHover} z-10 fixed bottom-0 right-0 aspect-square border rounded-full mr-2 mb-2 sm:mr-4 sm:mb-4 w-6 h-6 flex items-center justify-center`}
-                    >
-                      <p className="font-semibold">?</p>
-                    </a>
-                  </Link>
+                  <Info />
                 </ErrorBoundary>
               </NavProvider>
             </ModalProvider>

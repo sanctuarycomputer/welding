@@ -4,6 +4,7 @@ import Client from "src/lib/Client";
 import { useAccount } from "wagmi";
 import { ObservableQuery } from "@apollo/client";
 import { notEmpty } from "src/utils/predicates";
+import toast from "react-hot-toast";
 
 type RevisionLoadingData = {
   [tokenId: string]: {
@@ -94,8 +95,19 @@ function GraphProvider({ children }) {
       return;
     }
 
+    if (accountDataLoading) return;
     setAccountDataLoading(true);
-    setAccountData(await Client.fetchAccount(address));
+
+    let id = toast.loading("Loading account data...", {
+      className: "toast",
+    });
+    try {
+      setAccountData(await Client.fetchAccount(address));
+      toast.success("Account data loaded.", { id });
+    } catch(e) {
+      console.log(e);
+      toast.error("An error occured.", { id });
+    }
     setAccountDataLoading(false);
   };
 

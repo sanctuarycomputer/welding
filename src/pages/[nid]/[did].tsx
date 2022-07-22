@@ -15,10 +15,18 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { nid, hash } = context.query;
+  let { nid, did, hash } = context.query;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
-  const subgraph = await Client.fetchBaseNodeByTokenId(nid);
+  did = ((Array.isArray(did) ? did[0] : did) || "").split("-")[0];
+
+  const [subgraph, document] = await Promise.all([
+    Client.fetchBaseNodeByTokenId(nid),
+    Client.fetchBaseNodeByTokenId(did)
+  ]);
+
   if (!subgraph) return { notFound: true };
+  if (!document) return { notFound: true };
+
   if (subgraph.labels.filter((l) => l !== "BaseNode")[0] !== "Subgraph") {
     return {
       redirect: {
@@ -28,10 +36,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  let { did } = context.query;
-  did = ((Array.isArray(did) ? did[0] : did) || "").split("-")[0];
-  const document = await Client.fetchBaseNodeByTokenId(did);
-  if (!document) return { notFound: true };
   if (document.labels.filter((l) => l !== "BaseNode")[0] !== "Document") {
     return {
       redirect: {

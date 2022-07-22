@@ -17,12 +17,14 @@ import slugifyNode from "src/utils/slugifyNode";
 
 import DraggableDocumentLink from "./DraggableDocumentLink";
 import Document from "src/components/Icons/Document";
+import Menu from "src/components/Icons/Menu";
 import Actions from "src/components/Actions";
 import NodeImage from "src/components/NodeImage";
 import TopicManager from "src/components/TopicManager";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { bg, border, textPassive } from "src/utils/theme";
 import { BaseEmoji } from "emoji-mart";
+import { IS_BETA } from "src/utils/constants";
 
 type Props = {
   formik: FormikProps<BaseNodeFormValues>;
@@ -32,6 +34,8 @@ type Props = {
   imageDidChange: (e: ChangeEvent<HTMLInputElement>) => void;
   clearImage: () => void;
   reloadData: (tx: any) => Promise<void>;
+  betaIsClosed: boolean;
+  autoOpenSidebarOnMobile: boolean;
 };
 
 const SubgraphSidebar: FC<Props> = ({
@@ -42,9 +46,11 @@ const SubgraphSidebar: FC<Props> = ({
   imageDidChange,
   clearImage,
   reloadData,
+  betaIsClosed,
+  autoOpenSidebarOnMobile
 }) => {
   const { openModal, closeModal } = useContext(ModalContext);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(autoOpenSidebarOnMobile);
 
   const emoji = formik.values.emoji.native;
   const subgraph = formik.values.__node__;
@@ -132,16 +138,17 @@ const SubgraphSidebar: FC<Props> = ({
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="absolute p-2"
+        className="absolute pl-2 flex py-4 items-center"
       >
-        <p className="py-3 font-semibold">
+        <Menu />
+        <p className="ml-1 font-semibold">
           {emoji} {formik.values.name}
         </p>
       </button>
 
       <div
         onClick={() => setMobileOpen(!mobileOpen)}
-        className={`${bg} w-full h-screen fixed z-10 curtain ${
+        className={`${bg} w-full h-screen fixed z-20 curtain ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         } md:-translate-x-full `}
       ></div>
@@ -149,7 +156,7 @@ const SubgraphSidebar: FC<Props> = ({
       <nav
         className={`${bg} ${border} ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 fixed top-0 inline-block w-64 h-screen border-r z-20 transition-transform ease-in-out duration-500`}
+        } md:translate-x-0 fixed top-0 inline-block w-64 h-screen border-r z-30 transition-transform ease-in-out duration-500`}
       >
         <div className="pl-2 pr-1 py-4 text-xs flex items-center">
           <p
@@ -179,6 +186,7 @@ const SubgraphSidebar: FC<Props> = ({
               canEdit ? "cursor-edit" : "pointer-events-none"
             } font-semibold`}
             placeholder={`Subgraph name`}
+            autoFocus={subgraph.tokenId.startsWith("-")}
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -315,17 +323,25 @@ const SubgraphSidebar: FC<Props> = ({
               className={`absolute w-full bottom-0 text-center border-t ${border}`}
             >
               <div className="flex px-2 py-4 justify-between">
-                <div className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center">
-                  Unsaved
-                </div>
-                <Button
-                  className="basis-0 flex-grow"
-                  disabled={
-                    formik.isSubmitting || !(formik.isValid && formik.dirty)
-                  }
-                  onClick={formik.handleSubmit}
-                  label={"Publish"}
-                />
+                {IS_BETA && betaIsClosed ? (
+                  <div className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center">
+                    Beta is closed
+                  </div>
+                ) : (
+                <>
+                  <div className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center">
+                    Unsaved
+                  </div>
+                  <Button
+                    className="basis-0 flex-grow"
+                    disabled={
+                      formik.isSubmitting || !(formik.isValid && formik.dirty)
+                    }
+                    onClick={formik.handleSubmit}
+                    label={"Publish"}
+                  />
+                </>
+                )}
               </div>
             </div>
           )}

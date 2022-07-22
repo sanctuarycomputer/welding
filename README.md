@@ -58,38 +58,28 @@ Check out the following places for more Welding-related content:
 - [ ] Gif of Connecting to Polygon
 - [ ] Gif of Publishing a Document
 - [ ] Gif of setting a Connection Fee
-- [ ] Mobile Subgraph Minting should auto open
-- [ ] Beta: First 50 Subgraphs
-- [ ] Share Week
 
 Must Have
 
 - [ ] Fix mobile full height
-- [ ] Style Headers in Document for Mobile & Desktop
-- [ ] I should be able to search Emojis
-- [ ] Feature Flag Drafts
-- [ ] Switch to ISR
 - [ ] A11Y & Lighthouse
-- [ ] Add privacy forward analytics
 - [ ] CORS
-- [ ] Remove outer borders in modals on Mobile
 - [ ] Verify contract ABI?
-- [ ] Welding Avatar
 
 ---
 
+- [ ] Bug: I should be able to search Emojis
+- [ ] Switch to ISR
 - [ ] Bug: Scope local drafts to the current account
 - [ ] Ability to withdraw Welding Balance
 - [ ] Gif of withdrawing your Connection Fees
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
-- [ ] Welding Balance?
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n (chinese)
 - [ ] I should be able to view a revision for subgraph
 - [ ] Global activity loader?
-- [ ] Editor: Support in-page Image Uploads
 - [ ] Editor: Support callouts
 - [ ] Editor: Support Text Color
 - [ ] Editor: Support Deeplinks into Blocks

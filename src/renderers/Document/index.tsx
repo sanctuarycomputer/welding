@@ -29,6 +29,8 @@ interface Props {
   node: BaseNode;
 }
 
+const LOCAL_DRAFTS_ENABLED = false;
+
 const DocumentStashInfo = ({ subgraph }) => {
   if (subgraph) {
     const name = subgraph.currentRevision.metadata.name;
@@ -60,7 +62,7 @@ const Document: FC<Props> = ({ node }) => {
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { canEditNode, shallowNodes } = useContext(GraphContext);
+  const { canEditNode, shallowNodes, shallowNodesLoading } = useContext(GraphContext);
   const { setContent } = useContext(NavContext);
 
   const subgraphParent = getRelatedNodes(
@@ -93,8 +95,9 @@ const Document: FC<Props> = ({ node }) => {
     }
   );
 
-  // We assume that shallowNodes is always up to date.
   useEffect(() => {
+    if (shallowNodesLoading) return;
+    if (shallowNodes.length === 0) return;
     const tokenIds = extractTokenIdsFromContentBlocks(
       formik.values.content?.blocks || []
     );
@@ -108,59 +111,61 @@ const Document: FC<Props> = ({ node }) => {
       "REFERENCED_BY",
       true
     );
-  }, [formik.values.content, shallowNodes]);
+  }, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
-  const isMounted = useRef(false);
-  const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
-  useEffect(() => {
-    const draftKey = `-welding:${account?.address}:Drafts:${label}:${node.tokenId}`;
+  if (LOCAL_DRAFTS_ENABLED) {
+    const isMounted = useRef(false);
+    const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
+    useEffect(() => {
+      const draftKey = `-welding:${account?.address}:Drafts:${label}:${node.tokenId}`;
 
-    if (typeof window !== "undefined") {
-      if (isMounted.current) {
-        if (formik.dirty && account?.address) {
-          const draft = {
-            name: formik.values.name,
-            description: formik.values.description,
-            content: formik.values.content,
-          };
-          window.localStorage.setItem(draftKey, JSON.stringify(draft));
-        }
-      } else {
-        let draft: any = window.localStorage.getItem(draftKey);
-        if (draft) {
-          draft = JSON.parse(draft);
-          if (draft && draft.name && draft.name !== formik.values.name) {
-            formik.setFieldValue("name", draft.name);
+      if (typeof window !== "undefined") {
+        if (isMounted.current) {
+          if (formik.dirty && account?.address) {
+            const draft = {
+              name: formik.values.name,
+              description: formik.values.description,
+              content: formik.values.content,
+            };
+            window.localStorage.setItem(draftKey, JSON.stringify(draft));
           }
-          if (
-            draft &&
-            draft.description &&
-            draft.description !== formik.values.description
-          ) {
-            formik.setFieldValue("description", draft.description);
-          }
-          try {
-            if (draft && draft.content) {
-              const contentDiff: any = diff(
-                formik.values.content || {},
-                draft.content
-              );
-              if (contentDiff.blocks)
-                formik.setFieldValue("content", draft.content);
+        } else {
+          let draft: any = window.localStorage.getItem(draftKey);
+          if (draft) {
+            draft = JSON.parse(draft);
+            if (draft && draft.name && draft.name !== formik.values.name) {
+              formik.setFieldValue("name", draft.name);
             }
-          } catch (e) {
-            Sentry.configureScope((scope: any) => {
-              scope.setExtra("draft.content", draft.content);
-              scope.setExtra("formik.values.content", formik.values.content);
-              Sentry.captureException(e, scope);
-            });
-            throw e;
+            if (
+              draft &&
+              draft.description &&
+              draft.description !== formik.values.description
+            ) {
+              formik.setFieldValue("description", draft.description);
+            }
+            try {
+              if (draft && draft.content) {
+                const contentDiff: any = diff(
+                  formik.values.content || {},
+                  draft.content
+                );
+                if (contentDiff.blocks)
+                  formik.setFieldValue("content", draft.content);
+              }
+            } catch (e) {
+              Sentry.configureScope((scope: any) => {
+                scope.setExtra("draft.content", draft.content);
+                scope.setExtra("formik.values.content", formik.values.content);
+                Sentry.captureException(e, scope);
+              });
+              throw e;
+            }
           }
+          isMounted.current = true;
         }
-        isMounted.current = true;
       }
-    }
-  }, [formik.values, account?.address]);
+    }, [formik.values, account?.address]);
+  }
 
   const references = getRelatedNodes(
     formik,

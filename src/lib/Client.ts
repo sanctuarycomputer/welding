@@ -84,10 +84,7 @@ owner {
 `;
 
 const Client = {
-  _client: null,
-
   async getClient(): Promise<ApolloClient<NormalizedCacheObject>> {
-    //if (Client._client) return Client._client;
     const cache = new InMemoryCache();
     if (typeof window !== "undefined") {
       await persistCache({
@@ -101,11 +98,6 @@ const Client = {
       cache,
       uri: `${baseHostWithProtocol}/api/graphql`,
     });
-    //Client._client = new ApolloClient({
-    //  cache,
-    //  uri: `${baseHostWithProtocol}/api/graphql`,
-    //});
-    //return Client._client;
   },
 
   resetStore: async function (): Promise<void> {
@@ -161,7 +153,6 @@ const Client = {
     const {
       data: { accounts },
     } = await client.query({
-      fetchPolicy: "network-only",
       variables: { accountAddress },
       query: gql`
         query Account($accountAddress: String) {

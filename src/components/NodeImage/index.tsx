@@ -32,7 +32,7 @@ const NodeImage: FC<Props> = ({
         readOnly ? "pointer-events-none" : ""
       }`}
     >
-      <img src={imagePreview || undefined} />
+      <img className="m-auto" src={imagePreview || undefined} />
       {children}
 
       {!readOnly && (

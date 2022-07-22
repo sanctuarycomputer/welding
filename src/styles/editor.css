@@ -95,10 +95,6 @@
   font-weight: 500;
 }
 
-.cdx-input.link-tool__input {
-  background-color: var(--background-color-passive) !important;
-}
-
 .ce-code__textarea.cdx-input,
 .ce-rawtool__textarea.cdx-input {
   background-color: var(--background-color-passive) !important;
