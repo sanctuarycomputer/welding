@@ -1,10 +1,6 @@
-<p>
-  <picture>
-    <img alt="Welding Share Card" src="https://raw.githubusercontent.com/sanctuarycomputer/welding/main/public/share.jpg" width="100%" height="auto">
-  </picture>
-</p>
+![Welding Share Card](https://raw.githubusercontent.com/sanctuarycomputer/welding/main/public/share.jpg)
 
-[welding.app](https://www.welding.app) • knowledge is valuable
+# [welding.app](https://www.welding.app) • knowledge is valuable
 
 <p>
   <a href="https://www.welding.app">
@@ -17,6 +13,8 @@
     <img src="https://img.shields.io/github/license/sanctuarycomputer/welding" alt="License">
   </a>
 </p>
+
+
 
 ## Intro
 
