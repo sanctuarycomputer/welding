@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import { FC } from "react";
 import Client from "src/lib/Client";
 import Subgraph from "src/renderers/Subgraph";
@@ -14,8 +14,9 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
   return <Subgraph node={subgraph} document={document} />;
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { nid, did, hash } = context.query;
+export const getStaticProps: GetStaticProps = async (context) => {
+  let nid = context.params?.nid;
+  let did = context.params?.did;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
   did = ((Array.isArray(did) ? did[0] : did) || "").split("-")[0];
 
@@ -45,7 +46,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  let { did: givenDidSlug, nid: givenNidSlug } = context.query;
+  let givenDidSlug = context.params?.did;
+  let givenNidSlug = context.params?.nid;
   givenNidSlug =
     (Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || "";
   givenDidSlug =
@@ -62,12 +64,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (hash) {
-    hash = (Array.isArray(hash) ? hash[0] : hash) || "subgraphs";
-    const rev = await Client.fetchRevisionByHash(hash);
-    if (rev) document.currentRevision = rev;
-  }
-
   return {
     props: {
       key: `${subgraph.tokenId}-${document.tokenId}`,
@@ -78,8 +74,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-//export async function getStaticPaths() {
-//  return { paths: [], fallback: "blocking" };
-//}
+export async function getStaticPaths() {
+  return { paths: [], fallback: "blocking" };
+}
 
 export default NodeShow;
