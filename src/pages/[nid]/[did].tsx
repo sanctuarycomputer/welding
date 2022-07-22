@@ -79,7 +79,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export async function getStaticPaths() {
-  return { paths: [], fallback: 'blocking' };
-};
+  return { paths: [], fallback: "blocking" };
+}
 
 export default NodeShow;

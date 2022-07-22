@@ -98,7 +98,9 @@ export const getStaticProps: GetStaticProps = async (context) => {
       return {
         redirect: {
           permanent: false,
-          destination: `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`,
+          destination: `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(
+            node
+          )}`,
         },
       };
     }
@@ -114,7 +116,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 };
 
 export async function getStaticPaths() {
-  return { paths: [], fallback: 'blocking' };
-};
+  return { paths: [], fallback: "blocking" };
+}
 
 export default NodeShow;
