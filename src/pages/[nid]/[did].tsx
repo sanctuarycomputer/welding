@@ -74,7 +74,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       subgraph,
       document,
     },
+    revalidate: 1440,
   };
+};
+
+export async function getStaticPaths() {
+  return { paths: [], fallback: 'blocking' };
 };
 
 export default NodeShow;

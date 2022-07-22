@@ -5,7 +5,7 @@ import Topic from "src/renderers/Topic";
 import slugifyNode from "src/utils/slugifyNode";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { BaseNode } from "src/types";
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import { FC } from "react";
 
 type Props = {
@@ -25,33 +25,28 @@ const NodeShow: FC<Props> = ({ node }) => {
   return null;
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const q = Object.keys(context.query).reduce<string>((acc, k) => {
-    if (k === "nid") return `${acc}`;
-    if (acc === "") return `${context.query[k]}`;
-    return `${acc}&${context.query[k]}`;
-  }, "");
-
-  let { nid, hash } = context.query;
+export const getStaticProps: GetStaticProps = async (context) => {
+  let nid = context.params?.nid;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
   const node = await Client.fetchBaseNodeByTokenId(nid);
   if (!node) return { notFound: true };
 
   const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
 
-  // Ensure slug is correct
-  let { nid: givenNidSlug } = context.query;
+  // First, ensure slug is correct
+  let givenNidSlug = context.params?.nid;
   givenNidSlug =
     (Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || "";
   if (givenNidSlug !== slugifyNode(node)) {
     return {
       redirect: {
         permanent: false,
-        destination: q ? `/${slugifyNode(node)}?${q}` : `/${slugifyNode(node)}`,
+        destination: `/${slugifyNode(node)}`,
       },
     };
   }
 
+  // Next, if it's a Subgraph, redirect to the first document
   if (nodeType === "Subgraph") {
     const sortOrder =
       node.currentRevision.metadata.properties.ui
@@ -91,6 +86,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   }
 
+  // If it's a Document, attempt redirect to the document's Subgraph
   if (nodeType === "Document") {
     const documentSubgraphs = getRelatedNodes(
       node,
@@ -98,22 +94,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       "Subgraph",
       "BELONGS_TO"
     );
-    // TODO: Reference the "Belongs To" Subgraph
-    if (documentSubgraphs.length === 1) console.log("BONG!!", q, context);
-    return {
-      redirect: {
-        permanent: false,
-        destination: q
-          ? `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}?${q}`
-          : `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`,
-      },
-    };
-  }
-
-  if (hash) {
-    hash = (Array.isArray(hash) ? hash[0] : hash) || "subgraphs";
-    const rev = await Client.fetchRevisionByHash(hash);
-    if (rev) node.currentRevision = rev;
+    if (documentSubgraphs.length) {
+      return {
+        redirect: {
+          permanent: false,
+          destination: `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`,
+        },
+      };
+    }
   }
 
   return {
@@ -121,7 +109,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       key: `${node.tokenId}`,
       node,
     },
+    revalidate: 1440,
   };
+};
+
+export async function getStaticPaths() {
+  return { paths: [], fallback: 'blocking' };
 };
 
 export default NodeShow;
