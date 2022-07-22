@@ -47,7 +47,7 @@ const SubgraphSidebar: FC<Props> = ({
   clearImage,
   reloadData,
   betaIsClosed,
-  autoOpenSidebarOnMobile
+  autoOpenSidebarOnMobile,
 }) => {
   const { openModal, closeModal } = useContext(ModalContext);
   const [mobileOpen, setMobileOpen] = useState(autoOpenSidebarOnMobile);
@@ -328,19 +328,19 @@ const SubgraphSidebar: FC<Props> = ({
                     Beta is closed
                   </div>
                 ) : (
-                <>
-                  <div className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center">
-                    Unsaved
-                  </div>
-                  <Button
-                    className="basis-0 flex-grow"
-                    disabled={
-                      formik.isSubmitting || !(formik.isValid && formik.dirty)
-                    }
-                    onClick={formik.handleSubmit}
-                    label={"Publish"}
-                  />
-                </>
+                  <>
+                    <div className="basis-0 flex-grow bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2 text-center">
+                      Unsaved
+                    </div>
+                    <Button
+                      className="basis-0 flex-grow"
+                      disabled={
+                        formik.isSubmitting || !(formik.isValid && formik.dirty)
+                      }
+                      onClick={formik.handleSubmit}
+                      label={"Publish"}
+                    />
+                  </>
                 )}
               </div>
             </div>

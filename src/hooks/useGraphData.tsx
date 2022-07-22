@@ -104,7 +104,7 @@ function GraphProvider({ children }) {
     try {
       setAccountData(await Client.fetchAccount(address));
       toast.success("Account data loaded.", { id });
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       toast.error("An error occured.", { id });
     }

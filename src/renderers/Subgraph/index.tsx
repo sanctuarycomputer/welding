@@ -36,8 +36,9 @@ const Subgraph: FC<Props> = ({ node, document }) => {
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
     : [];
-  const remainingForBeta =
-    shallowNodesLoading ? '?' : `${(50 - subgraphs.length)}`;
+  const remainingForBeta = shallowNodesLoading
+    ? "?"
+    : `${50 - subgraphs.length}`;
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -62,7 +63,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
           imageDidChange={imageDidChange}
           clearImage={clearImage}
           reloadData={reloadData}
-          betaIsClosed={IS_BETA && remainingForBeta === '0'}
+          betaIsClosed={IS_BETA && remainingForBeta === "0"}
           autoOpenSidebarOnMobile={node.tokenId.startsWith("-")}
         />
       )}

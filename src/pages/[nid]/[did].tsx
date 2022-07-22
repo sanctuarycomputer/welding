@@ -21,7 +21,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const [subgraph, document] = await Promise.all([
     Client.fetchBaseNodeByTokenId(nid),
-    Client.fetchBaseNodeByTokenId(did)
+    Client.fetchBaseNodeByTokenId(did),
   ]);
 
   if (!subgraph) return { notFound: true };

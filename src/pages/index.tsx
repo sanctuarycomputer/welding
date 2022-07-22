@@ -20,7 +20,7 @@ const NodeShow: FC<Props> = ({ subgraph, document }) => {
 export const getServerSideProps: GetServerSideProps = async () => {
   const [subgraph, document] = await Promise.all([
     Client.fetchBaseNodeByTokenId(WELDING_DOCS_SUBGRAPH_TOKEN_ID),
-    Client.fetchBaseNodeByTokenId(WELDING_DOCS_INTRO_DOC_TOKEN_ID)
+    Client.fetchBaseNodeByTokenId(WELDING_DOCS_INTRO_DOC_TOKEN_ID),
   ]);
 
   if (!subgraph) return { notFound: true };
