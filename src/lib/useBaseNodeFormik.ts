@@ -165,7 +165,13 @@ const useBaseNodeFormik = (
         status = PublishStep.CONFIRM;
         formik.setStatus({ status });
         toast.loading("Confirming...", { id });
-        await Client.fastForward(tx.blockNumber);
+
+        let tokenId = node.tokenId;
+        if (tokenId.startsWith("-")) {
+          const transferEvent = tx.events.find((e: any) => e.event === "Transfer");
+          tokenId = transferEvent.args.tokenId || "";
+        }
+        await Client.fastForward(tx.blockNumber, tokenId);
 
         /* Success */
         status = PublishStep.COMPLETE;

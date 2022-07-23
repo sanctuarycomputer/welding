@@ -4,7 +4,7 @@ export type BaseNodeFormValues = {
   name: string;
   description: string;
   emoji: BaseEmoji;
-  ui: {};
+  ui: any;
   content?: any;
   image: any;
   related: BaseNode[];

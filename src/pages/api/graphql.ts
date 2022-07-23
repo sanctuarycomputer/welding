@@ -41,7 +41,7 @@ const typeDefs = gql`
       )
 
     related: [BaseNode!]!
-      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN n")
+      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN DISTINCT n")
     incoming: [Edge!]!
       @cypher(
         statement: "MATCH (this)<-[r]-(n:BaseNode) RETURN { name: TYPE(r), tokenId: n.tokenId, active: r.active, pivotTokenId: r.pivotTokenId }"
@@ -66,7 +66,7 @@ const typeDefs = gql`
         statement: "MATCH (this)-[r:_CAN|_OWNS]->(n:BaseNode) RETURN { role: r.role, tokenId: n.tokenId }"
       )
     related: [BaseNode!]!
-      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN n")
+      @cypher(statement: "MATCH (this)-[]-(n:BaseNode) RETURN DISTINCT n")
   }
 
   type Role {

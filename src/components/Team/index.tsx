@@ -98,7 +98,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         toast.loading("Confirming transaction...", {
           id: toastId,
         });
-        await Client.fastForward(tx.blockNumber);
+        await Client.fastForward(tx.blockNumber, node.tokenId);
         await reloadData();
         toast.success("Success!", {
           id: toastId,
@@ -154,7 +154,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
           toast.loading("Confirming transaction...", {
             id: toastId,
           });
-          await Client.fastForward(tx.blockNumber);
+          await Client.fastForward(tx.blockNumber, node.tokenId);
           await reloadData();
           toast.success("Success!", {
             id: toastId,
@@ -219,7 +219,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
 
-      await Client.fastForward(tx.blockNumber);
+      await Client.fastForward(tx.blockNumber, node.tokenId);
       await reloadData();
       toast.success("Success!", {
         id: toastId,
@@ -261,7 +261,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
 
-      await Client.fastForward(tx.blockNumber);
+      await Client.fastForward(tx.blockNumber, node.tokenId);
       await reloadData();
       toast.success("Success!", {
         id: toastId,

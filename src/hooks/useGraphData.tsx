@@ -39,16 +39,16 @@ const GraphContext = createContext<IGraphData>({
   accountData: null,
   accountNodesByCollectionType: {},
   accountDataLoading: true,
-  loadAccountData: (address: string) => undefined,
+  loadAccountData: () => undefined,
   shallowNodes: [],
   shallowNodesLoading: true,
   loadShallowNodes: () => null,
   purgeCache: () => null,
   revisionData: {},
-  loadRevisionsForBaseNode: (tokenId: string) => undefined,
-  canEditNode: (n: BaseNode) => false,
-  canAdministerNode: (n: BaseNode) => false,
-  doesOwnNode: (n: BaseNode) => false,
+  loadRevisionsForBaseNode: () => undefined,
+  canEditNode: () => false,
+  canAdministerNode: () => false,
+  doesOwnNode: () => false,
 });
 const { Provider } = GraphContext;
 
@@ -98,7 +98,7 @@ function GraphProvider({ children }) {
     if (accountDataLoading) return;
     setAccountDataLoading(true);
 
-    let id = toast.loading("Loading account data...", {
+    const id = toast.loading("Loading account data...", {
       className: "toast",
     });
     try {

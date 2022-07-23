@@ -18,7 +18,7 @@ import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import { bg, border } from "src/utils/theme";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
-import withPublisher from "src/hooks/withPublisher";
+import usePublisher from "src/hooks/usePublisher";
 import { BaseEmoji } from "emoji-mart";
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
 
 const Topic: FC<Props> = ({ node }) => {
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
-    withPublisher(node);
+    usePublisher(node);
   const router = useRouter();
   let { collection } = router.query;
   collection =

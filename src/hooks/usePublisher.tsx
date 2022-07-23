@@ -18,7 +18,7 @@ export interface PublisherUtils {
   reloadData: (tx: any) => Promise<void>;
 }
 
-export default function withPublisher(initialNode: BaseNode): PublisherUtils {
+export default function usePublisher(initialNode: BaseNode): PublisherUtils {
   const router = useRouter();
   const { data: signer } = useSigner();
   const { accountData, loadAccountData } = useContext(GraphContext);

@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import Welding from "src/lib/Welding";
-import neo4j from "neo4j-driver";
 import * as Sentry from "@sentry/nextjs";
+import neo4j from "neo4j-driver";
+
+import Client from "src/lib/Client";
+import Welding from "src/lib/Welding";
+import getRelatedNodes from "src/utils/getRelatedNodes";
+import slugifyNode from "src/utils/slugifyNode";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -255,11 +259,70 @@ const merge = async (e, session) => {
   }
 };
 
+const invalidationPathsForRelatedNode = async (n) => {
+  const label = n.labels.filter((l) => l !== "BaseNode")[0];
+  switch(label) {
+    case "Subgraph":
+      const subgraph = await Client.fetchBaseNodeByTokenId(n.tokenId);
+      if (!subgraph) return [];
+      const subgraphDocuments = getRelatedNodes(
+        subgraph,
+        "incoming",
+        "Document",
+        "BELONGS_TO"
+      );
+      return subgraphDocuments.map(sd =>
+        `/${slugifyNode(n)}/${slugifyNode(sd)}`
+      );
+    case "Document":
+      const document = await Client.fetchBaseNodeByTokenId(n.tokenId);
+      if (!document) return [];
+      const documentSubgraphs = getRelatedNodes(
+        document,
+        "outgoing",
+        "Subgraph",
+        "BELONGS_TO"
+      );
+      if (documentSubgraphs.length) {
+        return [`/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(document)}`];
+      } else {
+        return [`/${slugifyNode(document)}`];
+      }
+    default:
+      return [`/${slugifyNode(n)}`];
+  }
+};
+
+const makeInvalidations = async (res: NextApiResponse, nid: string) => {
+  const node = await Client.fetchBaseNodeByTokenId(nid);
+  if (!node) return;
+  // Ensure related is unique
+  const related = [...node.related.reduce((acc, n) => {
+    acc.set(n.tokenId, n);
+    return acc;
+  }, new Map()).values()];
+  const paths = new Set<string>();
+  paths.add(`/${slugifyNode(node)}`);
+  const pathSets =
+    await Promise.all(related.map(invalidationPathsForRelatedNode));
+  for (const pathSet of pathSets) {
+    pathSet.forEach(p => paths.add(p));
+  }
+  await Promise.all([...paths.values()].map(p => {
+    return res.revalidate(p, {
+      unstable_onlyGenerated: true
+    });
+  }));
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
+    let { nid } = req.query;
+    nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
+
     const session = driver.session();
 
     if (false) {
@@ -306,8 +369,10 @@ export default async function handler(
       ensureInt = parseInt(Array.isArray(ensure) ? ensure[0] : ensure);
       if (ensureInt > latestBlock)
         throw new Error("invalid_ensure_block_given");
-      if (cursor >= ensureInt)
+      if (cursor >= ensureInt) {
+        if (nid) await makeInvalidations(res, nid);
         return res.status(200).json({ status: "already_processed", cursor });
+      }
     }
 
     const { endAt, events } = await Welding.queryEvents(
@@ -330,6 +395,7 @@ export default async function handler(
       })
     );
 
+    if (nid) await makeInvalidations(res, nid);
     res.status(200).json({ status: "synced", cursor: endAt });
   } catch (e) {
     console.log(e);

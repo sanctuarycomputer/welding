@@ -5,7 +5,7 @@ import { GraphContext } from "src/hooks/useGraphData";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import { useAccount } from "wagmi";
 import Document from "src/renderers/Document";
-import withPublisher from "src/hooks/withPublisher";
+import usePublisher from "src/hooks/usePublisher";
 import Link from "next/link";
 import cx from "classnames";
 import Graph from "src/components/Icons/Graph";
@@ -26,7 +26,7 @@ interface Props {
 
 const Subgraph: FC<Props> = ({ node, document }) => {
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
-    withPublisher(node);
+    usePublisher(node);
 
   const { data: account } = useAccount();
   const { canEditNode, shallowNodes, shallowNodesLoading } =

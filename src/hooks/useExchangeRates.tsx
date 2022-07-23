@@ -4,7 +4,7 @@ import { useNetwork } from "wagmi";
 interface IExchangeRateContext {
   exchangeRate: number | null;
   exchangeRateLoading: boolean;
-  loadExchangeRate: Function;
+  loadExchangeRate: () => void;
 }
 
 const ExchangeRateContext = createContext<IExchangeRateContext>({

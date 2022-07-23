@@ -8,6 +8,11 @@ export default async function handler(
 ) {
   // TODO Cors
   try {
+    if (!req.query?.url) {
+      return res.status(500).json({
+        error: "No url param given",
+      });
+    }
     const url = decodeURIComponent(
       Array.isArray(req.query?.url) ? req.query?.url[0] : req.query.url
     );

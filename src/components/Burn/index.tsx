@@ -36,7 +36,7 @@ const Burn = ({ node, setLocked, reloadData }) => {
         id: toastId,
       });
       NProgress.done();
-      await Client.fastForward(tx.blockNumber);
+      await Client.fastForward(tx.blockNumber, node.tokenId);
       await purgeCache();
       await Promise.all([loadShallowNodes(), reloadData()]);
       toast.success("Success!", {

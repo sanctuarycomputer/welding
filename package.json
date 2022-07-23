@@ -52,7 +52,7 @@
     "micro": "^9.3.4",
     "mime": "^3.0.0",
     "neo4j-driver": "^4.4.5",
-    "next": "12.1.4",
+    "next": "^12.2.0",
     "nft.storage": "^6.2.0",
     "nprogress": "^0.2.0",
     "open-graph": "^0.2.6",
