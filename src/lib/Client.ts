@@ -123,7 +123,10 @@ const Client = {
     return await response.json();
   },
 
-  fastForward: async function (blockNumber: number, nid: string): Promise<void> {
+  fastForward: async function (
+    blockNumber: number,
+    nid: string
+  ): Promise<void> {
     const response = await fetch(
       `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&nid=${nid}`
     );

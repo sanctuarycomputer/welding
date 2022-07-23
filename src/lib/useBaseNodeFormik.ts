@@ -168,7 +168,9 @@ const useBaseNodeFormik = (
 
         let tokenId = node.tokenId;
         if (tokenId.startsWith("-")) {
-          const transferEvent = tx.events.find((e: any) => e.event === "Transfer");
+          const transferEvent = tx.events.find(
+            (e: any) => e.event === "Transfer"
+          );
           tokenId = transferEvent.args.tokenId || "";
         }
         await Client.fastForward(tx.blockNumber, tokenId);

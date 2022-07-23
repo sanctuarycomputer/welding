@@ -261,7 +261,7 @@ const merge = async (e, session) => {
 
 const invalidationPathsForRelatedNode = async (n) => {
   const label = n.labels.filter((l) => l !== "BaseNode")[0];
-  switch(label) {
+  switch (label) {
     case "Subgraph":
       const subgraph = await Client.fetchBaseNodeByTokenId(n.tokenId);
       if (!subgraph) return [];
@@ -271,8 +271,8 @@ const invalidationPathsForRelatedNode = async (n) => {
         "Document",
         "BELONGS_TO"
       );
-      return subgraphDocuments.map(sd =>
-        `/${slugifyNode(n)}/${slugifyNode(sd)}`
+      return subgraphDocuments.map(
+        (sd) => `/${slugifyNode(n)}/${slugifyNode(sd)}`
       );
     case "Document":
       const document = await Client.fetchBaseNodeByTokenId(n.tokenId);
@@ -284,7 +284,9 @@ const invalidationPathsForRelatedNode = async (n) => {
         "BELONGS_TO"
       );
       if (documentSubgraphs.length) {
-        return [`/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(document)}`];
+        return [
+          `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(document)}`,
+        ];
       } else {
         return [`/${slugifyNode(document)}`];
       }
@@ -297,22 +299,29 @@ const makeInvalidations = async (res: NextApiResponse, nid: string) => {
   const node = await Client.fetchBaseNodeByTokenId(nid);
   if (!node) return;
   // Ensure related is unique
-  const related = [...node.related.reduce((acc, n) => {
-    acc.set(n.tokenId, n);
-    return acc;
-  }, new Map()).values()];
+  const related = [
+    ...node.related
+      .reduce((acc, n) => {
+        acc.set(n.tokenId, n);
+        return acc;
+      }, new Map())
+      .values(),
+  ];
   const paths = new Set<string>();
   paths.add(`/${slugifyNode(node)}`);
-  const pathSets =
-    await Promise.all(related.map(invalidationPathsForRelatedNode));
+  const pathSets = await Promise.all(
+    related.map(invalidationPathsForRelatedNode)
+  );
   for (const pathSet of pathSets) {
-    pathSet.forEach(p => paths.add(p));
+    pathSet.forEach((p) => paths.add(p));
   }
-  await Promise.all([...paths.values()].map(p => {
-    return res.revalidate(p, {
-      unstable_onlyGenerated: true
-    });
-  }));
+  await Promise.all(
+    [...paths.values()].map((p) => {
+      return res.revalidate(p, {
+        unstable_onlyGenerated: true,
+      });
+    })
+  );
 };
 
 export default async function handler(
