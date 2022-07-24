@@ -59,4 +59,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
   };
 };
 
+export async function getStaticPaths() {
+  return { paths: [], fallback: "blocking" };
+};
+
 export default NodeShow;
