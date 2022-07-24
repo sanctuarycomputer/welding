@@ -17,7 +17,7 @@ const Address = dynamic(() => import("src/components/Address"), {
 const Wallet = () => {
   const { openModal } = useContext(ModalContext);
   const { content } = useContext(NavContext);
-  const { accountData, accountNodesByCollectionType } =
+  const { accountData, accountDataLoading, accountNodesByCollectionType } =
     useContext(GraphContext);
   const { data: account } = useAccount();
   const { activeChain } = useNetwork();
@@ -72,6 +72,14 @@ const Wallet = () => {
                 </a>
               </Link>
 
+              {accountDataLoading && (
+                <p
+                  className={`pl-1 font-semibold w-32 truncate py-1`}
+                >
+                  Loading...
+                </p>
+              )}
+
               {subgraphs.map((item) => {
                 const name = item.node.currentRevision.metadata.name;
                 const emoji =
@@ -94,7 +102,7 @@ const Wallet = () => {
 
               <Link href={`/mint`}>
                 <a>
-                  <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
+                  <p className={`${bgHover} font-semibold w-32 truncate py-1 border-t`}>
                     + Mint Subgraph
                   </p>
                 </a>

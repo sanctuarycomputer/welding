@@ -324,9 +324,7 @@ const makeInvalidations = async (res: NextApiResponse, path: string) => {
   console.log(paths.values());
   await Promise.all(
     [...paths.values()].map((p) => {
-      return res.revalidate(p, {
-        unstable_onlyGenerated: true,
-      });
+      return res.revalidate(p);
     })
   );
 };
