@@ -11,8 +11,7 @@ const WrappedHead = ({ node }) => {
   let imageSrc = `https://www.welding.app/share.jpg`;
   let nameWithEmoji = `👩‍🏭 ${name}`;
   const nodeLabel =
-    node.labels.filter((l) => l !== "BaseNode")[0] ||
-    "Document";
+    node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
   let description = `Mint a ${nodeLabel.toLowerCase()}`;
   let emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
 
@@ -25,10 +24,9 @@ const WrappedHead = ({ node }) => {
     nameWithEmoji = `${node.currentRevision.metadata.properties.emoji.native} ${name}`;
     emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${node.currentRevision.metadata.properties.emoji.unified}.png`;
     if (node.currentRevision.metadata.image) {
-      imageSrc = `${Welding.ipfsGateways[0]}${node.currentRevision.metadata.image.replace(
-        "ipfs://",
-        "/ipfs/"
-      )}`;
+      imageSrc = `${
+        Welding.ipfsGateways[0]
+      }${node.currentRevision.metadata.image.replace("ipfs://", "/ipfs/")}`;
     }
   }
 

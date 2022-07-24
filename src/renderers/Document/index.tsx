@@ -57,8 +57,7 @@ const Document: FC<Props> = ({ node }) => {
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { shallowNodes, shallowNodesLoading } =
-    useContext(GraphContext);
+  const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
   const { setContent } = useContext(NavContext);
 
   const subgraphParent = getRelatedNodes(

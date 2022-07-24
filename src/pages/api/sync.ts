@@ -337,7 +337,7 @@ export default async function handler(
 ) {
   try {
     let { path } = req.query;
-    path = ((Array.isArray(path) ? path[0] : path) || "")
+    path = (Array.isArray(path) ? path[0] : path) || "";
 
     const session = driver.session();
 

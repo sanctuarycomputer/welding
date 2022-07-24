@@ -19,11 +19,16 @@ const Info = () => {
 
   return (
     <div className="fixed bottom-0 right-0 z-10 mb-4 mr-4 flex">
-      {(IS_BETA && !account?.address) ? (
-        <div className={cx(`shadow-md	bg-yellow-400 flex rounded-full pl-2 pr-1 py-1 mr-2 transition-transform ease-in-out duration-500`, {
-          "translate-y-12": shallowNodesLoading,
-          "translate-y-0": !shallowNodesLoading
-        })}>
+      {IS_BETA && !account?.address ? (
+        <div
+          className={cx(
+            `shadow-md	bg-yellow-400 flex rounded-full pl-2 pr-1 py-1 mr-2 transition-transform ease-in-out duration-500`,
+            {
+              "translate-y-12": shallowNodesLoading,
+              "translate-y-0": !shallowNodesLoading,
+            }
+          )}
+        >
           {remainingForBeta === "0" ? (
             <>
               <p className="text-stone-800 mr-1 font-medium">

@@ -29,9 +29,9 @@ const Subgraph: FC<Props> = ({ node, document }) => {
     usePublisher(node);
 
   const { data: account } = useAccount();
-  const { shallowNodes, shallowNodesLoading } =
-    useContext(GraphContext);
-  const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node, account?.address);
+  const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
+  const canEditSubgraph =
+    node.tokenId.startsWith("-") || canEditNode(node, account?.address);
 
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
