@@ -57,15 +57,17 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
+- [ ] If calculated slug changes, push state
+- [ ] Move everything to ISR (invalidate accounts)
 - [ ] Textwrap frontmatter
 - [ ] Max width (overflow?) connection maker
-- [ ] Move everything to ISR (invalidate accounts)
 - [ ] Feature Flag revisions
 - [ ] A11Y & Lighthouse
 - [ ] CORS
 
 ---
 
+- [ ] Retryable minting
 - [ ] Verify contract ABI?
 - [ ] Next.js Image Loader?
 - [ ] Bug: I should be able to search Emojis
@@ -76,7 +78,7 @@ Must Have
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
-- [ ] i18n (chinese)
+- [ ] i18n & translations
 - [ ] I should be able to view a revision for subgraph
 - [ ] Global activity loader?
 - [ ] Editor: Support callouts
