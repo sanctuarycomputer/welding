@@ -5,9 +5,9 @@ import { GraphContext } from "src/hooks/useGraphData";
 import { NavContext } from "src/hooks/useNav";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import slugifyNode from "src/utils/slugifyNode";
+import canEditNode from "src/utils/canEditNode";
 import EditNav from "src/components/EditNav";
 import NodeImage from "src/components/NodeImage";
-import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
@@ -15,6 +15,7 @@ import usePublisher from "src/hooks/usePublisher";
 import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
+import { useAccount } from "wagmi";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -48,6 +49,7 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
+  const { data: account } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
 
@@ -55,7 +57,7 @@ const Document: FC<Props> = ({ node }) => {
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { canEditNode, shallowNodes, shallowNodesLoading } =
+  const { shallowNodes, shallowNodesLoading } =
     useContext(GraphContext);
   const { setContent } = useContext(NavContext);
 
@@ -67,8 +69,8 @@ const Document: FC<Props> = ({ node }) => {
   )[0];
 
   const canEdit = node.tokenId.startsWith("-")
-    ? canEditNode(subgraphParent)
-    : canEditNode(node);
+    ? canEditNode(subgraphParent, account?.address)
+    : canEditNode(node, account?.address);
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
@@ -173,7 +175,6 @@ const Document: FC<Props> = ({ node }) => {
 
   return (
     <>
-      <NodeMeta formik={formik} />
       <div className="pt-2 md:pt-8">
         <div className="content pb-4 mx-auto">
           <div

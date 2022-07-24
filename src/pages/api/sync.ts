@@ -295,9 +295,14 @@ const invalidationPathsForRelatedNode = async (n) => {
   }
 };
 
-const makeInvalidations = async (res: NextApiResponse, nid: string) => {
+const makeInvalidations = async (res: NextApiResponse, path: string) => {
+  const splat = path.split("/");
+  const nid = splat[splat.length - 1].split("-")[0];
+
+  if (!nid) return;
   const node = await Client.fetchBaseNodeByTokenId(nid);
   if (!node) return;
+
   // Ensure related is unique
   const related = [
     ...node.related
@@ -308,6 +313,7 @@ const makeInvalidations = async (res: NextApiResponse, nid: string) => {
       .values(),
   ];
   const paths = new Set<string>();
+  paths.add(path);
   paths.add(`/${slugifyNode(node)}`);
   const pathSets = await Promise.all(
     related.map(invalidationPathsForRelatedNode)
@@ -315,6 +321,7 @@ const makeInvalidations = async (res: NextApiResponse, nid: string) => {
   for (const pathSet of pathSets) {
     pathSet.forEach((p) => paths.add(p));
   }
+  console.log(paths.values());
   await Promise.all(
     [...paths.values()].map((p) => {
       return res.revalidate(p, {
@@ -329,8 +336,8 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    let { nid } = req.query;
-    nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
+    let { path } = req.query;
+    path = ((Array.isArray(path) ? path[0] : path) || "")
 
     const session = driver.session();
 
@@ -379,7 +386,7 @@ export default async function handler(
       if (ensureInt > latestBlock)
         throw new Error("invalid_ensure_block_given");
       if (cursor >= ensureInt) {
-        if (nid) await makeInvalidations(res, nid);
+        if (path) await makeInvalidations(res, path);
         return res.status(200).json({ status: "already_processed", cursor });
       }
     }
@@ -404,7 +411,7 @@ export default async function handler(
       })
     );
 
-    if (nid) await makeInvalidations(res, nid);
+    if (path) await makeInvalidations(res, path);
     res.status(200).json({ status: "synced", cursor: endAt });
   } catch (e) {
     console.log(e);

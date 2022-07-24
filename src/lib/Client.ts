@@ -125,10 +125,10 @@ const Client = {
 
   fastForward: async function (
     blockNumber: number,
-    nid: string
+    path: string
   ): Promise<void> {
     const response = await fetch(
-      `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&nid=${nid}`
+      `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&path=${path}`
     );
     if (!response.ok) throw new Error("could_not_fastforward");
   },

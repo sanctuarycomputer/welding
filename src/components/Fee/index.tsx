@@ -53,7 +53,7 @@ const Fee = ({ node, setLocked, reloadData }) => {
           id: toastId,
         });
         NProgress.done();
-        await Client.fastForward(tx.blockNumber, node.tokenId);
+        await Client.fastForward(tx.blockNumber, window.location.pathname);
         await purgeCache();
         await Promise.all([loadShallowNodes(), reloadData()]);
         toast.success("Success!", {

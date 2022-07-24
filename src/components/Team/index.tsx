@@ -98,7 +98,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         toast.loading("Confirming transaction...", {
           id: toastId,
         });
-        await Client.fastForward(tx.blockNumber, node.tokenId);
+        await Client.fastForward(tx.blockNumber, window.location.pathname);
         await reloadData();
         toast.success("Success!", {
           id: toastId,
@@ -154,7 +154,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
           toast.loading("Confirming transaction...", {
             id: toastId,
           });
-          await Client.fastForward(tx.blockNumber, node.tokenId);
+          await Client.fastForward(tx.blockNumber, window.location.pathname);
           await reloadData();
           toast.success("Success!", {
             id: toastId,
@@ -219,7 +219,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
 
-      await Client.fastForward(tx.blockNumber, node.tokenId);
+      await Client.fastForward(tx.blockNumber, window.location.pathname);
       await reloadData();
       toast.success("Success!", {
         id: toastId,
@@ -261,7 +261,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
         id: toastId,
       });
 
-      await Client.fastForward(tx.blockNumber, node.tokenId);
+      await Client.fastForward(tx.blockNumber, window.location.pathname);
       await reloadData();
       toast.success("Success!", {
         id: toastId,
@@ -359,7 +359,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                 <Button
                   label="+ Add Member"
                   disabled={
-                    formik.isSubmitting || !(formik.isValid && !formik.dirty)
+                    formik.isSubmitting || !(formik.isValid && formik.dirty)
                   }
                   onClick={formik.handleSubmit}
                 />

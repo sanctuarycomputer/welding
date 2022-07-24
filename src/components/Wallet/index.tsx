@@ -45,7 +45,13 @@ const Wallet = () => {
   if (account?.address) {
     return (
       <>
-        {content}
+        {content || (
+          <div className="pr-2 mr-2 border-r border-color flex items-center">
+            <Link href="/mint">
+              <a className="Button text-xs font-semibold">+ Mint Subgraph</a>
+            </Link>
+          </div>
+        )}
         <button
           className="relative z-10"
           onClick={() => setDropDownOpen(!dropDownOpen)}
@@ -89,7 +95,7 @@ const Wallet = () => {
               <Link href={`/mint`}>
                 <a>
                   <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
-                    + New Subgraph
+                    + Mint Subgraph
                   </p>
                 </a>
               </Link>

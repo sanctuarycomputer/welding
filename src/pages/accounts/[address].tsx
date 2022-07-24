@@ -1,9 +1,8 @@
-import { FC, useContext, useEffect } from "react";
+import { FC } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import type { GetServerSideProps } from "next";
+import type { GetStaticProps } from "next";
 import type { Account, BaseNode, Role } from "src/types";
-import { NavContext } from "src/hooks/useNav";
 import Client from "src/lib/Client";
 import Document from "src/components/Icons/Document";
 import Graph from "src/components/Icons/Graph";
@@ -13,8 +12,6 @@ import Card from "src/components/Card";
 import TopicTile from "src/components/TopicTile";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import slugifyNode from "src/utils/slugifyNode";
-
-import { useAccount } from "wagmi";
 import { fetchEnsAddress } from "@wagmi/core";
 
 const Address = dynamic(() => import("src/components/Address"), {
@@ -34,20 +31,6 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
   let { collection } = router.query;
   collection =
     (Array.isArray(collection) ? collection[0] : collection) || "Subgraph";
-
-  const { data: account } = useAccount();
-  const { setContent } = useContext(NavContext);
-
-  useEffect(() => {
-    if (!account?.address) return setContent(null);
-    setContent(
-      <div className="pr-2 mr-2 border-r border-color flex items-center">
-        <Link href="/mint">
-          <a className="Button text-xs font-semibold">+ Mint Subgraph</a>
-        </Link>
-      </div>
-    );
-  }, [account?.address, setContent]);
 
   let accountNodesByCollectionType = {};
   if (accountData) {
@@ -219,14 +202,15 @@ const AccountsShow: FC<Props> = ({ accountData, address }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { address } = context.query;
+export const getStaticProps: GetStaticProps = async (context) => {
+  let address = context.params?.address;
   address = (Array.isArray(address) ? address[0] : address) || "";
   const resolvedAddress = await fetchEnsAddress({ chainId: 1, name: address });
   if (resolvedAddress) address = resolvedAddress;
   const accountData = await Client.fetchAccount(address);
   return {
     props: { accountData, address },
+    revalidate: 1440,
   };
 };
 

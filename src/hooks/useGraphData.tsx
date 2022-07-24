@@ -4,7 +4,6 @@ import Client from "src/lib/Client";
 import { useAccount } from "wagmi";
 import { ObservableQuery } from "@apollo/client";
 import { notEmpty } from "src/utils/predicates";
-import toast from "react-hot-toast";
 
 type RevisionLoadingData = {
   [tokenId: string]: {
@@ -32,7 +31,6 @@ interface IGraphData {
   revisionData: RevisionLoadingData;
   doesOwnNode: (n: BaseNode) => boolean;
   canAdministerNode: (n: BaseNode) => boolean;
-  canEditNode: (n: BaseNode) => boolean;
 }
 
 const GraphContext = createContext<IGraphData>({
@@ -46,7 +44,6 @@ const GraphContext = createContext<IGraphData>({
   purgeCache: () => null,
   revisionData: {},
   loadRevisionsForBaseNode: () => undefined,
-  canEditNode: () => false,
   canAdministerNode: () => false,
   doesOwnNode: () => false,
 });
@@ -97,17 +94,7 @@ function GraphProvider({ children }) {
 
     if (accountDataLoading) return;
     setAccountDataLoading(true);
-
-    const id = toast.loading("Loading account data...", {
-      className: "toast",
-    });
-    try {
-      setAccountData(await Client.fetchAccount(address));
-      toast.success("Account data loaded.", { id });
-    } catch (e) {
-      console.log(e);
-      toast.error("An error occured.", { id });
-    }
+    setAccountData(await Client.fetchAccount(address));
     setAccountDataLoading(false);
   };
 
@@ -157,22 +144,6 @@ function GraphProvider({ children }) {
     );
   }
 
-  const canEditNode = (baseNode) => {
-    if (baseNode.burnt) return false;
-
-    const directPermissions = !!accountData?.roles.find((r) => {
-      return r.tokenId === baseNode.tokenId && r.role !== null;
-    });
-    if (directPermissions) return true;
-
-    return baseNode.outgoing.some((e) => {
-      if (e.name !== "_DELEGATES_PERMISSIONS_TO") return false;
-      return !!accountData?.roles.find((r) => {
-        return r.tokenId === e.tokenId && r.role !== null;
-      });
-    });
-  };
-
   const canAdministerNode = (baseNode) => {
     if (baseNode.burnt) return false;
 
@@ -209,7 +180,6 @@ function GraphProvider({ children }) {
         purgeCache,
         revisionData,
         loadRevisionsForBaseNode,
-        canEditNode,
         canAdministerNode,
         doesOwnNode,
       }}

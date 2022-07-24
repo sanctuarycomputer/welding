@@ -1,9 +1,9 @@
 import Head from "next/head";
 import Welding from "src/lib/Welding";
 
-const NodeMeta = ({ formik }) => {
-  const belongsTo = formik.values.outgoing.find((e) => e.name === "BELONGS_TO");
-  const belongsToNode = formik.values.related.find(
+const WrappedHead = ({ node }) => {
+  const belongsTo = node.outgoing.find((e) => e.name === "BELONGS_TO");
+  const belongsToNode = node.related.find(
     (n) => n.tokenId === belongsTo?.tokenId
   );
 
@@ -11,21 +11,21 @@ const NodeMeta = ({ formik }) => {
   let imageSrc = `https://www.welding.app/share.jpg`;
   let nameWithEmoji = `👩‍🏭 ${name}`;
   const nodeLabel =
-    formik.values.__node__.labels.filter((l) => l !== "BaseNode")[0] ||
+    node.labels.filter((l) => l !== "BaseNode")[0] ||
     "Document";
   let description = `Mint a ${nodeLabel.toLowerCase()}`;
   let emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
 
-  if (!formik.values.__node__.tokenId.startsWith("-")) {
-    name = `${formik.values.name}`;
-    description = `${formik.values.description}`;
+  if (!node.tokenId.startsWith("-")) {
+    name = `${node.currentRevision.metadata.name}`;
+    description = `${node.currentRevision.metadata.description}`;
     if (belongsToNode) {
       name = `${name} • ${belongsToNode.currentRevision.metadata.name}`;
     }
-    nameWithEmoji = `${formik.values.emoji.native} ${name}`;
-    emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${formik.values.emoji.unified}.png`;
-    if (formik.values.image) {
-      imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(
+    nameWithEmoji = `${node.currentRevision.metadata.properties.emoji.native} ${name}`;
+    emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${node.currentRevision.metadata.properties.emoji.unified}.png`;
+    if (node.currentRevision.metadata.image) {
+      imageSrc = `${Welding.ipfsGateways[0]}${node.currentRevision.metadata.image.replace(
         "ipfs://",
         "/ipfs/"
       )}`;
@@ -57,4 +57,4 @@ const NodeMeta = ({ formik }) => {
   );
 };
 
-export default NodeMeta;
+export default WrappedHead;

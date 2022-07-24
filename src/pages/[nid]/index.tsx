@@ -1,12 +1,21 @@
 import Client from "src/lib/Client";
-import Document from "src/renderers/Document";
-import Subgraph from "src/renderers/Subgraph";
-import Topic from "src/renderers/Topic";
 import slugifyNode from "src/utils/slugifyNode";
 import getRelatedNodes from "src/utils/getRelatedNodes";
 import { BaseNode } from "src/types";
 import { GetStaticProps } from "next";
 import { FC } from "react";
+import Head from "src/components/Head";
+import dynamic from "next/dynamic";
+
+const Subgraph = dynamic(() => import("src/renderers/Subgraph"), {
+  ssr: false,
+});
+const Document = dynamic(() => import("src/renderers/Document"), {
+  ssr: false,
+});
+const Topic = dynamic(() => import("src/renderers/Topic"), {
+  ssr: false,
+});
 
 type Props = {
   node: BaseNode;
@@ -16,11 +25,26 @@ const NodeShow: FC<Props> = ({ node }) => {
   const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
   switch (nodeType) {
     case "Subgraph":
-      return <Subgraph node={node} />;
+      return (
+        <>
+          <Head node={node} />
+          <Subgraph node={node} />
+        </>
+      );
     case "Document":
-      return <Document node={node} />;
+      return (
+        <>
+          <Head node={node} />
+          <Document node={node} />
+        </>
+      );
     case "Topic":
-      return <Topic node={node} />;
+      return (
+        <>
+          <Head node={node} />
+          <Topic node={node} />
+        </>
+      );
   }
   return null;
 };

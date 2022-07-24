@@ -2,8 +2,9 @@ import slugifyNode from "src/utils/slugifyNode";
 import Client from "src/lib/Client";
 import makeDummyNode from "src/utils/makeDummyNode";
 import { FC } from "react";
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import { BaseNode } from "src/types";
+import Head from "src/components/Head";
 
 import dynamic from "next/dynamic";
 const Subgraph = dynamic(() => import("src/renderers/Subgraph"), {
@@ -16,11 +17,16 @@ type Props = {
 };
 
 const NodeShow: FC<Props> = ({ node, document }) => {
-  return <Subgraph node={node} document={document} />;
+  return (
+    <>
+      <Head node={node} />
+      <Subgraph node={node} document={document} />
+    </>
+  );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { nid } = context.query;
+export const getStaticProps: GetStaticProps = async (context) => {
+  let nid = context.params?.nid;
   nid = ((Array.isArray(nid) ? nid[0] : nid) || "").split("-")[0];
   const node = await Client.fetchBaseNodeByTokenId(nid);
   if (!node) return { notFound: true };
@@ -49,6 +55,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: { node, document },
+    revalidate: 1440,
   };
 };
 

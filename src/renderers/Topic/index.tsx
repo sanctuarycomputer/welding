@@ -1,43 +1,40 @@
 import { FC, useContext, useEffect } from "react";
 import { ModalContext, ModalType } from "src/hooks/useModal";
-import type { GetServerSideProps } from "next";
-import { GraphContext } from "src/hooks/useGraphData";
 import { NavContext } from "src/hooks/useNav";
 import EditNav from "src/components/EditNav";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import TopicTile from "src/components/TopicTile";
 import type { BaseNode, Edge } from "src/types";
-import Client from "src/lib/Client";
 import slugifyNode from "src/utils/slugifyNode";
 import Document from "src/components/Icons/Document";
 import Graph from "src/components/Icons/Graph";
 import Card from "src/components/Card";
 import NodeImage from "src/components/NodeImage";
-import NodeMeta from "src/components/NodeMeta";
 import Actions from "src/components/Actions";
 import { bg, border } from "src/utils/theme";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import usePublisher from "src/hooks/usePublisher";
 import { BaseEmoji } from "emoji-mart";
+import { useAccount } from "wagmi";
+import canEditNode from "src/utils/canEditNode";
 
 interface Props {
   node: BaseNode;
 }
 
 const Topic: FC<Props> = ({ node }) => {
+  const { data: account } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
   const router = useRouter();
   let { collection } = router.query;
   collection =
     (Array.isArray(collection) ? collection[0] : collection) || "subgraphs";
-
-  const { canEditNode } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
 
-  const canEdit = canEditNode(node);
+  const canEdit = canEditNode(node, account?.address);
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -49,13 +46,14 @@ const Topic: FC<Props> = ({ node }) => {
   );
 
   useEffect(() => {
+    if (!canEdit || !formik.dirty) return setContent(null);
     setContent(
       <EditNav
         formik={formik}
         buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
     );
-  }, [formik.isSubmitting, formik.isValid, formik.dirty]);
+  }, [canEdit, formik]);
 
   const nodesByCollectionType = {
     subgraphs: {},
@@ -74,8 +72,6 @@ const Topic: FC<Props> = ({ node }) => {
 
   return (
     <>
-      <NodeMeta formik={formik} />
-
       <div className="pt-12 md:pt-20">
         <div className="content py-4 mx-auto">
           <div
@@ -229,19 +225,6 @@ const Topic: FC<Props> = ({ node }) => {
       </div>
     </>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let { tid } = context.query;
-  tid = ((Array.isArray(tid) ? tid[0] : tid) || "").split("-")[0];
-  const node = await Client.fetchBaseNodeByTokenId(tid);
-  if (!node || !node.labels.includes("Topic"))
-    return {
-      redirect: { permanent: false, destination: `/` },
-      props: {},
-    };
-
-  return { props: { node } };
 };
 
 export default Topic;

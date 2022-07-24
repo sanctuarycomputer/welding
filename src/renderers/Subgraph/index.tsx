@@ -1,6 +1,5 @@
 import { FC, useContext } from "react";
 import type { BaseNode } from "src/types";
-import NodeMeta from "src/components/NodeMeta";
 import { GraphContext } from "src/hooks/useGraphData";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
 import { useAccount } from "wagmi";
@@ -10,6 +9,7 @@ import Link from "next/link";
 import cx from "classnames";
 import Graph from "src/components/Icons/Graph";
 import { IS_BETA } from "src/utils/constants";
+import canEditNode from "src/utils/canEditNode";
 
 import dynamic from "next/dynamic";
 const SubgraphSidebar = dynamic(
@@ -29,9 +29,9 @@ const Subgraph: FC<Props> = ({ node, document }) => {
     usePublisher(node);
 
   const { data: account } = useAccount();
-  const { canEditNode, shallowNodes, shallowNodesLoading } =
+  const { shallowNodes, shallowNodesLoading } =
     useContext(GraphContext);
-  const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node);
+  const canEditSubgraph = node.tokenId.startsWith("-") || canEditNode(node, account?.address);
 
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
@@ -52,8 +52,6 @@ const Subgraph: FC<Props> = ({ node, document }) => {
   const showSubgraph = node.tokenId.startsWith("-") ? !!account?.address : true;
   return (
     <>
-      {!document && <NodeMeta formik={formik} />}
-
       {showSubgraph && (
         <SubgraphSidebar
           formik={formik}

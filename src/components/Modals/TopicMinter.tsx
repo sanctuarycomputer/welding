@@ -117,7 +117,7 @@ const IndividualTopicMinter: FC<{
       const transferEvent = tx.events.find((e: any) => e.event === "Transfer");
       if (!transferEvent) return;
       const topicId = transferEvent.args.tokenId;
-      await Client.fastForward(tx.blockNumber, topicId);
+      await Client.fastForward(tx.blockNumber, window.location.pathname);
       await loadShallowNodes();
       toast.success("Success!", {
         id: toastId,

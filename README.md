@@ -57,16 +57,18 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
+- [ ] Textwrap frontmatter
+- [ ] Max width (overflow?) connection maker
+- [ ] Move everything to ISR (invalidate accounts)
 - [ ] Feature Flag revisions
-- [ ] Fix mobile full height
 - [ ] A11Y & Lighthouse
 - [ ] CORS
-- [ ] Verify contract ABI?
 
 ---
 
+- [ ] Verify contract ABI?
+- [ ] Next.js Image Loader?
 - [ ] Bug: I should be able to search Emojis
-- [ ] Switch to ISR
 - [ ] Bug: Scope local drafts to the current account
 - [ ] Ability to withdraw Welding Balance
 - [ ] Gif of withdrawing your Connection Fees
