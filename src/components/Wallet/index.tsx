@@ -73,9 +73,7 @@ const Wallet = () => {
               </Link>
 
               {accountDataLoading && (
-                <p
-                  className={`pl-1 font-semibold w-32 truncate py-1`}
-                >
+                <p className={`pl-1 font-semibold w-32 truncate py-1`}>
                   Loading...
                 </p>
               )}
@@ -102,7 +100,9 @@ const Wallet = () => {
 
               <Link href={`/mint`}>
                 <a>
-                  <p className={`${bgHover} font-semibold w-32 truncate py-1 border-t`}>
+                  <p
+                    className={`${bgHover} font-semibold w-32 truncate py-1 border-t`}
+                  >
                     + Mint Subgraph
                   </p>
                 </a>
