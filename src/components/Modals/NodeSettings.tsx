@@ -127,10 +127,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             )}
             {level === SettingsLevel.HISTORY && <Revisions node={meta.node} />}
             {level === SettingsLevel.FEE && (
-              <Fee
-                node={meta.node}
-                setLocked={setLocked}
-              />
+              <Fee node={meta.node} setLocked={setLocked} />
             )}
             {level === SettingsLevel.BURN && (
               <Burn node={meta.node} setLocked={setLocked} />

@@ -20,8 +20,7 @@ type FeeFormValues = {
 const Fee = ({ node, setLocked }) => {
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
-  const { purgeCache, doesOwnNode } =
-    useContext(GraphContext);
+  const { purgeCache, doesOwnNode } = useContext(GraphContext);
   const [USDEstimate, setUSDEstimate] = useState<string | null>(null);
 
   const formik: FormikProps<FeeFormValues> = useFormik<FeeFormValues>({
