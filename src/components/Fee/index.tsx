@@ -17,10 +17,10 @@ type FeeFormValues = {
   fee: number;
 };
 
-const Fee = ({ node, setLocked, reloadData }) => {
+const Fee = ({ node, setLocked }) => {
   const { data: signer } = useSigner();
   const { exchangeRate } = useContext(ExchangeRateContext);
-  const { purgeCache, canAdministerNode, loadShallowNodes } =
+  const { purgeCache, doesOwnNode } =
     useContext(GraphContext);
   const [USDEstimate, setUSDEstimate] = useState<string | null>(null);
 
@@ -55,12 +55,10 @@ const Fee = ({ node, setLocked, reloadData }) => {
         NProgress.done();
         await Client.fastForward(tx.blockNumber, window.location.pathname);
         await purgeCache();
-        await Promise.all([loadShallowNodes(), reloadData()]);
         toast.success("Success!", {
           id: toastId,
         });
-
-        formik.resetForm({ values });
+        window.location.reload();
       } catch (e) {
         NProgress.done();
         toast.error("An error occured.", {
@@ -109,19 +107,19 @@ const Fee = ({ node, setLocked, reloadData }) => {
                     type="number"
                     inputMode="decimal"
                     min="0"
-                    readOnly={!canAdministerNode(node)}
+                    readOnly={!doesOwnNode(node)}
                   />
                 </form>
               </td>
               <td className="py-4 px-2 text-right">
                 <p>MATIC / {USDEstimate || "?"} USD</p>
               </td>
-              {canAdministerNode(node) && (
+              {doesOwnNode(node) && (
                 <td className="text-right pr-2">
                   <Button
                     label="Update Fee"
                     disabled={
-                      !canAdministerNode(node) ||
+                      !doesOwnNode(node) ||
                       formik.isSubmitting ||
                       !(formik.isValid && formik.dirty)
                     }

@@ -130,7 +130,6 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               <Fee
                 node={meta.node}
                 setLocked={setLocked}
-                reloadData={meta.reloadData}
               />
             )}
             {level === SettingsLevel.BURN && (
