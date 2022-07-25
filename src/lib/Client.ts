@@ -157,6 +157,7 @@ const Client = {
       data: { accounts },
     } = await client.query({
       variables: { accountAddress },
+      fetchPolicy: "network-only",
       query: gql`
         query Account($accountAddress: String) {
           accounts(where: { address: $accountAddress }) {
