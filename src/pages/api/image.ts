@@ -20,7 +20,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const form = new formidable.IncomingForm();
+    const form = new formidable.IncomingForm({
+      uploadDir: '/tmp'
+    });
     form.uploadDir = "./";
     form.keepExtensions = true;
     form.parse(req, async (err, fields, files) => {

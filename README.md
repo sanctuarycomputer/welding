@@ -61,8 +61,7 @@ Must Have
 - [ ] Move everything to ISR (invalidate accounts)
 - [ ] Textwrap frontmatter
 - [ ] Max width (overflow?) connection maker
-- [ ] Feature Flag revisions
-- [ ] A11Y & Lighthouse
+- [ ] Disable revision linking
 - [ ] CORS
 
 ---
