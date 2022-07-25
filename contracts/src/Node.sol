@@ -386,7 +386,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Reen
 
     function setConnectionFee(uint256 tokenId, uint256 connectionFee)
       external
-      onlyRole(tokenId, ADMIN_ROLE)
+      onlyOwner(tokenId)
     {
         _connectionFees[tokenId] = connectionFee;
         emit ConnectionFeeSet(tokenId, connectionFee, _msgSender());

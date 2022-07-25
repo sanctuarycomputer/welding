@@ -49,10 +49,6 @@ Check out the following places for more Welding-related content:
 
 # Roadmap
 
-- [ ] Loom: What is Welding?
-- [ ] Loom: Getting Started
-- [ ] Gif of Connecting to Polygon
-- [ ] Gif of Publishing a Document
 - [ ] Gif of setting a Connection Fee
 
 Must Have

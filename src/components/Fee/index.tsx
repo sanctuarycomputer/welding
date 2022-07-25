@@ -123,7 +123,7 @@ const Fee = ({ node, setLocked, reloadData }) => {
                     disabled={
                       !canAdministerNode(node) ||
                       formik.isSubmitting ||
-                      !(formik.isValid && !formik.dirty)
+                      !(formik.isValid && formik.dirty)
                     }
                     onClick={formik.handleSubmit}
                   />

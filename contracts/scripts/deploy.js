@@ -1,13 +1,13 @@
 const WELDING_SUBGRAPH_METADATA =
-  'bafyreic2cpdw3fqxwtpasvokrf5tkozk2bk63gb7scaojvlief2iazmpbe';
+  'bafyreieuckykhmoltvk7v3y6omgu5lsyx3qqmrxjxtyfrj7cdhuayl4a3e';
 const INTRO_DOC_METADATA =
-  'bafyreih6nuukqnfaiwnsejxfrczsnhfwq5dtg7gl7ehajabg7b6jwdy6aq';
+  'bafybeifgqhh3u6ksbbrn3rh46dcisdp6ziuiuvhcu4hwvngkbmr4uprcta';
 const ETH_TOPIC_METADATA =
-  'bafyreiaxhjverhyncf3gdmaxkqpk5hgxtxgmzdw2lyqewn7t23aotujuui';
+  'bafyreiedhcvbl4p2gs5xu5tucxn3eibeptxb52ilqxxplxgtzg3j6qx5de';
 const IPFS_TOPIC_METADATA =
-  'bafyreiejobhfsq7ysnwny2kxq7enoak6n66pjzcnv6jr2pq46abrhh2dfm';
+  'bafyreibrsrjoiyracuglprgepht3opxtzruar6ost2mujxhsve4mzptjka';
 const WELDING_TOPIC_METADATA =
-  'bafyreihss6dihabqagwi2vgevgkndxmt2tjjayj7rtwatmhdsbctzoqgeu';
+  'bafyreifmtnsaaehszio5zuujdyhszadlfhxm5uzynfeeqqjctu2oafy5iy';
 
 async function seed(contract) {
   console.log(`Seeding initial nodes...`);

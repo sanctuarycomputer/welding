@@ -20,7 +20,7 @@ describe("Behavior: Payable", function () {
     EDITOR_ROLE = await contract.EDITOR_ROLE();
   });
 
-  it("can set connection fees", async function () {
+  it("the owner can set connection fees", async function () {
     let tx = await contract.connect(addr1).mint('document', '123', [], [], []);
     tx = await tx.wait();
     const transferEvent = tx.events.find(e => e.event === "Transfer");
