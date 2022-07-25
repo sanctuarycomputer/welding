@@ -66,6 +66,8 @@ Must Have
 
 ---
 
+- [ ] Tidy up burning experience
+- [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
 - [ ] Verify contract ABI?
 - [ ] Next.js Image Loader?

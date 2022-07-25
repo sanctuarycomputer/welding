@@ -9,9 +9,9 @@ import NProgress from "nprogress";
 import toast from "react-hot-toast";
 import * as Sentry from "@sentry/nextjs";
 
-const Burn = ({ node, setLocked, reloadData }) => {
+const Burn = ({ node, setLocked }) => {
   const { data: signer } = useSigner();
-  const { purgeCache, doesOwnNode, loadShallowNodes } =
+  const { purgeCache, doesOwnNode } =
     useContext(GraphContext);
   const [burning, setBurning] = useState(false);
 
@@ -35,13 +35,12 @@ const Burn = ({ node, setLocked, reloadData }) => {
       toast.loading("Confirming transaction...", {
         id: toastId,
       });
-      NProgress.done();
       await Client.fastForward(tx.blockNumber, window.location.pathname);
       await purgeCache();
-      await Promise.all([loadShallowNodes(), reloadData()]);
       toast.success("Success!", {
         id: toastId,
       });
+      window.location.reload();
     } catch (e) {
       NProgress.done();
       toast.error("An error occured.", {
