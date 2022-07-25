@@ -32,7 +32,7 @@ export default function usePublisher(initialNode: BaseNode): PublisherUtils {
     if (node.tokenId.startsWith("-")) {
       const transferEvent = tx?.events.find((e) => e.event === "Transfer");
       if (transferEvent) {
-        window.location.href = `/${transferEvent.args.tokenId.toString()}`
+        window.location.href = `/${transferEvent.args.tokenId.toString()}`;
         return;
       } else {
         router.reload();

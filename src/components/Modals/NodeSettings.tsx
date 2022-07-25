@@ -134,10 +134,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               />
             )}
             {level === SettingsLevel.BURN && (
-              <Burn
-                node={meta.node}
-                setLocked={setLocked}
-              />
+              <Burn node={meta.node} setLocked={setLocked} />
             )}
           </div>
         </div>

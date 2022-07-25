@@ -11,8 +11,7 @@ import * as Sentry from "@sentry/nextjs";
 
 const Burn = ({ node, setLocked }) => {
   const { data: signer } = useSigner();
-  const { purgeCache, doesOwnNode } =
-    useContext(GraphContext);
+  const { purgeCache, doesOwnNode } = useContext(GraphContext);
   const [burning, setBurning] = useState(false);
 
   const triggerBurn = async () => {
