@@ -95,7 +95,10 @@ const NodeTile = ({ node }) => {
   }
 
   return (
-    <p style={{maxWidth: '140px'}} className="py-1 px-2 whitespace-nowrap border rounded-full border-color truncate">
+    <p
+      style={{ maxWidth: "140px" }}
+      className="py-1 px-2 whitespace-nowrap border rounded-full border-color truncate"
+    >
       {emoji} {name}
     </p>
   );
