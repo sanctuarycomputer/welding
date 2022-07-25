@@ -21,7 +21,7 @@ export default async function handler(
 ) {
   try {
     const form = new formidable.IncomingForm({
-      uploadDir: '/tmp'
+      uploadDir: "/tmp",
     });
     form.uploadDir = "./";
     form.keepExtensions = true;
