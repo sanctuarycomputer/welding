@@ -56,7 +56,6 @@ Must Have
 - [ ] If calculated slug changes, push state
 - [ ] Move everything to ISR (invalidate accounts)
 - [ ] Textwrap frontmatter
-- [ ] Max width (overflow?) connection maker
 - [ ] Disable revision linking
 - [ ] CORS
 

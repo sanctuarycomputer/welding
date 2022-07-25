@@ -95,7 +95,7 @@ const NodeTile = ({ node }) => {
   }
 
   return (
-    <p className="py-1 px-2 whitespace-nowrap border rounded-full border-color">
+    <p style={{maxWidth: '140px'}} className="py-1 px-2 whitespace-nowrap border rounded-full border-color truncate">
       {emoji} {name}
     </p>
   );
@@ -142,11 +142,11 @@ const ConnectionTile = ({ to, from, edge, prevConnected, owned }) => {
 
       <td className="text-right" style={{ width: "99%" }}>
         {prevConnected ? (
-          <p>Prev. Connected ✓</p>
+          <p className="whitespace-nowrap">Prev. Connected ✓</p>
         ) : from.fee === "0" || owned ? (
-          <p>No Fee ✓</p>
+          <p className="whitespace-nowrap">No Fee ✓</p>
         ) : (
-          <p>
+          <p className="whitespace-nowrap">
             {formatUnits(from.fee, "ether")} {symbol} / {USDEstimate || "??"}{" "}
             USD
           </p>
@@ -170,7 +170,7 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-scroll">
       {addedConnections.length > 0 || toggledOnConnections.length > 0 ? (
         <table className="w-full mb-2">
           <tbody>
