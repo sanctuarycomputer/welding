@@ -49,20 +49,15 @@ Check out the following places for more Welding-related content:
 
 # Roadmap
 
-- [ ] Gif of setting a Connection Fee
-
 Must Have
-
-- [ ] Discardable Drafts
-- [ ] Blocktune Z-index
 - [ ] Move everything to ISR (invalidate accounts)
-- [ ] Collect effected TokenIds in Sync
-- [ ] Textwrap frontmatter
-- [ ] Disable revision linking
 - [ ] CORS
 
 ---
 
+- [ ] Collect effected TokenIds in Sync
+- [ ] Textwrap frontmatter
+- [ ] Discardable Drafts
 - [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
@@ -77,7 +72,6 @@ Must Have
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n & translations
 - [ ] I should be able to view a revision for subgraph
-- [ ] Global activity loader?
 - [ ] Editor: Support callouts
 - [ ] Editor: Support Text Color
 - [ ] Editor: Support Deeplinks into Blocks

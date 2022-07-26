@@ -207,10 +207,12 @@ const Document: FC<Props> = ({ node }) => {
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
           />
-          <TopicManager
-            formik={formik}
-            readOnly={!canEdit || formik.isSubmitting}
-          />
+          <div className="pl-2 md:pl-0">
+            <TopicManager
+              formik={formik}
+              readOnly={!canEdit || formik.isSubmitting}
+            />
+          </div>
           <Editor
             readOnly={!canEdit || formik.isSubmitting}
             content={formik.values.content}

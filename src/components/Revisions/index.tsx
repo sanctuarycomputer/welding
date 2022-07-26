@@ -3,7 +3,6 @@ import copyToClipboard from "src/utils/copyToClipboard";
 import Copy from "src/components/Icons/Copy";
 import { GraphContext } from "src/hooks/useGraphData";
 import History from "src/components/Icons/History";
-import slugifyNode from "src/utils/slugifyNode";
 
 const metadataLink = (hash) => {
   return `https://ipfs.io/ipfs/${hash}/metadata.json`;
@@ -14,17 +13,6 @@ const Revision = ({ node, revision, current }) => {
     <tr className="border-b border-color border-dashed">
       <td className="pl-2 py-4 whitespace-nowrap truncate">
         <p className="font-semibold">{revision.block}</p>
-      </td>
-      <td className="px-2 py-4 text-center whitespace-nowrap truncate">
-        {current ? (
-          <a href={`/${slugifyNode(node)}`}>
-            <p className="underline">Current ↗</p>
-          </a>
-        ) : (
-          <a href={`./${slugifyNode(node)}?hash=${revision.hash}`}>
-            <p className="underline">Time Travel ↗</p>
-          </a>
-        )}
       </td>
       <td className="px-2 py-4 text-center whitespace-nowrap truncate">
         <a href={metadataLink(revision.hash)} target="_blank" rel="noreferrer">

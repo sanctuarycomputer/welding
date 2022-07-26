@@ -22,7 +22,7 @@ const TopicManager: FC<Props> = ({ formik, readOnly }) => {
   const topics = getRelatedNodes(formik, "incoming", "Topic", "DESCRIBES");
 
   return (
-    <div className="mb-4 pl-2 md:pl-0">
+    <div className="mb-4">
       {topics.map((t) => {
         return (
           <Link key={t.tokenId} href={`/${slugifyNode(t)}`}>

@@ -321,13 +321,17 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                   <Address address={k} />
                 </td>
                 <td className="pr-2 text-right">
-                  {v.map((r) => (
-                    <Tile
-                      key={r}
-                      label={r}
-                      onClick={() => onClickHandlerForRole(k, r)}
-                    />
-                  ))}
+                  {v.map((r) => {
+                    const handler = onClickHandlerForRole(k, r);
+                    if (!handler) return <Tile key={r} label={r} />;
+                    return (
+                      <Tile
+                        key={r}
+                        label={r}
+                        onClick={() => handler()}
+                      />
+                    );
+                  })}
                 </td>
               </tr>
             );

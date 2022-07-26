@@ -1,3 +1,7 @@
+.codex-editor {
+  z-index: 50;
+}
+
 .tc-wrap {
   --color-border: var(--border-color) !important;
   --color-background: var(--background-color-passive) !important;
@@ -34,10 +38,15 @@
 .ce-settings,
 .ce-settings__button,
 .ce-toolbar,
+.tc-toolbox__toggler,
 .cdx-button {
   background: var(--background-color-passive) !important;
   color: inherit;
   border: none;
+}
+
+.tc-popover__item:last-of-type .tc-popover__item-icon {
+  background: var(--background-color-passive) !important;
 }
 
 .ce-inline-tool,
@@ -58,10 +67,17 @@
 .ce-toolbar__plus:hover,
 .ce-toolbar__settings-btn:hover,
 .ce-conversion-tool:hover,
+.tc-toolbox__toggler:hover,
 .ce-inline-tool:hover {
   background-color: var(--background-color) !important;
   color: inherit;
   border: none;
+}
+
+.tc-popover--opened {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: var(--background-color-passive) !important;
 }
 
 .ce-conversion-tool--focused {
