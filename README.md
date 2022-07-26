@@ -52,13 +52,13 @@ Check out the following places for more Welding-related content:
 Must Have
 
 - [ ] Move everything to ISR (invalidate accounts)
+- [ ] Collect effected TokenIds in Sync
+- [ ] Textwrap frontmatter (remove readonly)
 - [ ] CORS
 
 ---
 
-- [ ] Collect effected TokenIds in Sync
-- [ ] Textwrap frontmatter (remove readonly)
-- [ ] Discardable Drafts
+- [ ] Drafts
 - [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
@@ -66,30 +66,17 @@ Must Have
 - [ ] Next.js Image Loader?
 - [ ] Bug: I should be able to search Emojis
 - [ ] Ability to withdraw Welding Balance
-- [ ] Gif of withdrawing your Connection Fees
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
 - [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n & translations
-- [ ] I should be able to view a revision for subgraph
 - [ ] Editor: Support callouts
 - [ ] Editor: Support Text Color
 - [ ] Editor: Support Deeplinks into Blocks
 - [ ] Editor: Sync'd blocks
+- [ ] Support browsing revisions
 - [ ] When viewing a revision, I should see a message so that I realize
+- [ ] Referenced documents should show backlinks
 - [ ] Ability to color your Node's background
-- [ ] Referenced documents should have backlinks
 - [ ] Custom subdomains & domains
-
-Ideas for Writing:
-
-- [ ] What is Welding
-- [ ] How to get MATIC
-- [ ] How it Works
-- [ ] NFT Contracts as a Database
-- [ ] Smart Contract as Event Emitter
-- [ ] How to file bugs
-- [ ] Non Fungible Protocols
-- [ ] Monetizing your nodes
-- [ ] Open Source Shoutouts

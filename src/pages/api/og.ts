@@ -1,12 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import og from "open-graph";
 import * as Sentry from "@sentry/nextjs";
+import cors from 'nextjs-cors';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // TODO Cors
+  await cors(req, res, {
+    methods: ['GET'],
+    origin: `https://${process.env.NEXT_PUBLIC_BASE_HOST}`,
+    optionsSuccessStatus: 200,
+  });
+
   try {
     if (!req.query?.url) {
       return res.status(500).json({
