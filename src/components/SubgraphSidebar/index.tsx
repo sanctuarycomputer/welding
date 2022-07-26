@@ -15,6 +15,7 @@ import type { FormikProps } from "formik";
 import Button from "src/components/Button";
 import slugifyNode from "src/utils/slugifyNode";
 
+import TextareaAutosize from 'react-textarea-autosize';
 import DraggableDocumentLink from "./DraggableDocumentLink";
 import Document from "src/components/Icons/Document";
 import Menu from "src/components/Icons/Menu";
@@ -158,7 +159,7 @@ const SubgraphSidebar: FC<Props> = ({
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 fixed top-0 bottom-0 inline-block w-64 md:w-52 lg:w-64 border-r z-50 transition-transform ease-in-out duration-500`}
       >
-        <div className="pl-2 pr-1 py-4 text-xs flex items-center">
+        <div className="pl-2 pr-1 pt-4 text-xs flex items-center">
           <p
             className={`${
               canEdit ? "cursor-pointer" : "pointer-events-none"
@@ -217,12 +218,13 @@ const SubgraphSidebar: FC<Props> = ({
 
           {(descriptionPresent || canEdit) && (
             <div className={`border-b ${border}`}>
-              <textarea
+              <TextareaAutosize
+                minRows={2}
                 style={{ resize: "none" }}
                 readOnly={!canEdit}
                 className={`${
                   canEdit ? "cursor-edit" : "pointer-events-none"
-                } block pb-4 w-full bg-transparent text-xs px-2 pt-1`}
+                } block pb-2 w-full bg-transparent text-xs px-2 pt-1`}
                 name="description"
                 placeholder="Add a description"
                 value={formik.values.description}

@@ -53,7 +53,6 @@ Must Have
 
 - [ ] Move everything to ISR (invalidate accounts)
 - [ ] Collect effected TokenIds in Sync
-- [ ] Textwrap frontmatter (remove readonly)
 
 ---
 
