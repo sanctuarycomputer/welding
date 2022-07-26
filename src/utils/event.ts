@@ -8,7 +8,7 @@ if (
 ) {
   mixpanel.init("8bc32414aaddeb0ce996c598d8875e4c", { debug: true });
   mixpanelEnabled = true;
-};
+}
 
 export const event = (eventName, params) => {
   if (mixpanelEnabled) mixpanel.track(eventName, params);
