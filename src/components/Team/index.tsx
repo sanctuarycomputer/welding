@@ -324,13 +324,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                   {v.map((r) => {
                     const handler = onClickHandlerForRole(k, r);
                     if (!handler) return <Tile key={r} label={r} />;
-                    return (
-                      <Tile
-                        key={r}
-                        label={r}
-                        onClick={() => handler()}
-                      />
-                    );
+                    return <Tile key={r} label={r} onClick={() => handler()} />;
                   })}
                 </td>
               </tr>
