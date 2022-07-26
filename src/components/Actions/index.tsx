@@ -159,7 +159,9 @@ const Actions = ({
           ref={pickerRef}
           className={`${bg} w-fit border border-color absolute top-5 right-0 shadow-lg rounded z-10`}
         >
-          <p className="pl-1 w-32 truncate py-1 border-b text-neutral-600 dark:text-neutral-400 font-semibold tracking-wide uppercase">Stash</p>
+          <p className="pl-1 w-32 truncate py-1 border-b text-neutral-600 dark:text-neutral-400 font-semibold tracking-wide uppercase">
+            Stash
+          </p>
 
           {accountDataLoading && (
             <p className={`pl-1 font-semibold w-32 truncate py-1`}>
