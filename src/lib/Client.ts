@@ -10,7 +10,7 @@ import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
 import { fetchEnsName } from "@wagmi/core";
 import { emojiIndex, BaseEmoji } from "emoji-mart";
 import * as Sentry from "@sentry/nextjs";
-import retry from 'async-retry';
+import retry from "async-retry";
 
 let baseHostWithProtocol = process.env.NEXT_PUBLIC_BASE_HOST;
 if (baseHostWithProtocol === "localhost:3000") {
@@ -118,11 +118,12 @@ const Client = {
   },
 
   fetchMetadataForHash: async function (hash: string): Promise<Metadata> {
-    const response = await retry(async () => {
-      return await fetch(
-        `${baseHostWithProtocol}/api/metadata/${hash}`
-      );
-    }, { retries: 3 });
+    const response = await retry(
+      async () => {
+        return await fetch(`${baseHostWithProtocol}/api/metadata/${hash}`);
+      },
+      { retries: 3 }
+    );
     if (!response.ok) return Promise.resolve(ERROR_METADATA);
     return await response.json();
   },
@@ -131,11 +132,14 @@ const Client = {
     blockNumber: number,
     path: string
   ): Promise<void> {
-    const response = await retry(async () => {
-      return await fetch(
-        `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&path=${path}`
-      );
-    }, { retries: 3 });
+    const response = await retry(
+      async () => {
+        return await fetch(
+          `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&path=${path}`
+        );
+      },
+      { retries: 3 }
+    );
     if (!response.ok) throw new Error("could_not_fastforward");
   },
 

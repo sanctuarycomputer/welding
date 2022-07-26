@@ -35,7 +35,7 @@ const Info = dynamic(() => import("src/components/Info"), {
   ssr: false,
 });
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   event("Page View", { pathname: window.location.pathname });
 }
 NProgress.configure({ showSpinner: false });
