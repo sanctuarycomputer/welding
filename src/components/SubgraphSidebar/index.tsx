@@ -15,7 +15,7 @@ import type { FormikProps } from "formik";
 import Button from "src/components/Button";
 import slugifyNode from "src/utils/slugifyNode";
 
-import TextareaAutosize from 'react-textarea-autosize';
+import TextareaAutosize from "react-textarea-autosize";
 import DraggableDocumentLink from "./DraggableDocumentLink";
 import Document from "src/components/Icons/Document";
 import Menu from "src/components/Icons/Menu";

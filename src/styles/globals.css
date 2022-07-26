@@ -125,7 +125,8 @@ p {
 }
 
 /* Editor.js */
-input, textarea {
+input,
+textarea {
   background-color: transparent;
   width: 100%;
 }
