@@ -9,6 +9,7 @@ const metadataLink = (hash) => {
 };
 
 const Revision = ({ node, revision, current }) => {
+  console.log(node, current);
   return (
     <tr className="border-b border-color border-dashed">
       <td className="pl-2 py-4 whitespace-nowrap truncate">
