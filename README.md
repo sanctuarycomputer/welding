@@ -53,10 +53,8 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
-- [ ] Connection Fees aren't being calc'd properly
-- [ ] Tokens aren't being extracted properly
-- [ ] Analytics
-- [ ] If calculated slug changes, push state
+- [ ] Discardable Drafts
+- [ ] Blocktune Z-index
 - [ ] Move everything to ISR (invalidate accounts)
 - [ ] Collect effected TokenIds in Sync
 - [ ] Textwrap frontmatter
@@ -65,6 +63,7 @@ Must Have
 
 ---
 
+- [ ] Mixpanel Identify
 - [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting

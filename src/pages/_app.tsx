@@ -19,6 +19,7 @@ import { Toaster } from "react-hot-toast";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ErrorBoundary from "src/components/ErrorBoundary";
+import event from "src/utils/event";
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -34,11 +35,17 @@ const Info = dynamic(() => import("src/components/Info"), {
   ssr: false,
 });
 
+if (typeof window !== 'undefined') {
+  event("Page View", { pathname: window.location.pathname });
+}
 NProgress.configure({ showSpinner: false });
 Router.events.on("routeChangeStart", () => {
   NProgress.start();
 });
-Router.events.on("routeChangeComplete", () => NProgress.done());
+Router.events.on("routeChangeComplete", (pathname) => {
+  event("Page View", { pathname });
+  NProgress.done();
+});
 Router.events.on("routeChangeError", () => NProgress.done());
 
 Modal.setAppElement("#__next");

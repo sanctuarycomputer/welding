@@ -1,12 +1,9 @@
-import { useState, useContext, useEffect, ChangeEvent } from "react";
-import { useRouter } from "next/router";
-import Client from "src/lib/Client";
+import { useContext, useEffect, ChangeEvent } from "react";
 import makeFormikForBaseNode from "src/lib/useBaseNodeFormik";
 import useEditableImage from "src/hooks/useEditableImage";
 import { useSigner } from "wagmi";
 import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
-import NProgress from "nprogress";
 import { BaseNode, BaseNodeFormValues } from "src/types";
 import { FormikProps } from "formik";
 
@@ -18,31 +15,22 @@ export interface PublisherUtils {
   reloadData: (tx: any) => Promise<void>;
 }
 
-export default function usePublisher(initialNode: BaseNode): PublisherUtils {
-  const router = useRouter();
+export default function usePublisher(node: BaseNode): PublisherUtils {
   const { data: signer } = useSigner();
-  const { accountData, loadAccountData } = useContext(GraphContext);
+  const { accountData } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
-  const [node, setNode] = useState<BaseNode>(initialNode);
   const formik = makeFormikForBaseNode(signer, accountData, node);
   const [imagePreview, imageDidChange, clearImage] = useEditableImage(formik);
 
   const reloadData = async (tx) => {
-    if (accountData?.address) loadAccountData(accountData.address);
     if (node.tokenId.startsWith("-")) {
       const transferEvent = tx?.events.find((e) => e.event === "Transfer");
       if (transferEvent) {
         window.location.href = `/${transferEvent.args.tokenId.toString()}`;
         return;
-      } else {
-        router.reload();
       }
-    } else {
-      const reloadedNode = await Client.fetchBaseNodeByTokenId(node.tokenId);
-      if (reloadedNode) setNode(reloadedNode);
     }
-    NProgress.done();
-    formik.setStatus(null);
+    window.location.reload();
   };
 
   useEffect(() => {
