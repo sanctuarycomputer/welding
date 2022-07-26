@@ -53,21 +53,24 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
+- [ ] Connection Fees aren't being calc'd properly
+- [ ] Tokens aren't being extracted properly
+- [ ] Analytics
 - [ ] If calculated slug changes, push state
 - [ ] Move everything to ISR (invalidate accounts)
+- [ ] Collect effected TokenIds in Sync
 - [ ] Textwrap frontmatter
 - [ ] Disable revision linking
 - [ ] CORS
 
 ---
 
-- [ ] Tidy up burning experience
+- [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
 - [ ] Verify contract ABI?
 - [ ] Next.js Image Loader?
 - [ ] Bug: I should be able to search Emojis
-- [ ] Bug: Scope local drafts to the current account
 - [ ] Ability to withdraw Welding Balance
 - [ ] Gif of withdrawing your Connection Fees
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them

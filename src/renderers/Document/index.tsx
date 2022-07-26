@@ -91,6 +91,7 @@ const Document: FC<Props> = ({ node }) => {
   );
 
   useEffect(() => {
+    if (!canEdit) return;
     if (shallowNodesLoading) return;
     if (shallowNodes.length === 0) return;
     const tokenIds = extractTokenIdsFromContentBlocks(

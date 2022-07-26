@@ -9,6 +9,7 @@ import { Account, BaseNode, Metadata, Revision } from "src/types";
 import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
 import { fetchEnsName } from "@wagmi/core";
 import { emojiIndex, BaseEmoji } from "emoji-mart";
+import * as Sentry from "@sentry/nextjs";
 
 let baseHostWithProtocol = process.env.NEXT_PUBLIC_BASE_HOST;
 if (baseHostWithProtocol === "localhost:3000") {
@@ -152,7 +153,14 @@ const Client = {
   fetchAccount: async function (
     accountAddress: string
   ): Promise<Account | null> {
+    const tx = Sentry.startTransaction({ name: 'Client.fetchAccount()' });
+    Sentry.getCurrentHub().configureScope(scope => scope.setSpan(tx));
+
+    let span = tx.startChild({ op: 'Client.getClient()' });
     const client = await Client.getClient();
+    span.finish();
+
+    span = tx.startChild({ op: 'client.query()' });
     const {
       data: { accounts },
     } = await client.query({
@@ -171,16 +179,22 @@ const Client = {
             }
           }}`,
     });
+    span.finish();
 
+    span = tx.startChild({ op: 'JSON.stringify' });
     let account: Account = accounts[0];
     if (!account) return null;
     account = JSON.parse(JSON.stringify(account));
+    span.finish();
 
+    span = tx.startChild({ op: 'fetchEnsName' });
     account.ensName = await fetchEnsName({
       address: account.address,
       chainId: 1,
     });
+    span.finish();
 
+    span = tx.startChild({ op: 'Client.processRevision()' });
     for (const node of account.related) {
       await Client.processRevision(node.currentRevision);
       for (const related of node.related) {
@@ -188,13 +202,22 @@ const Client = {
       }
     }
 
+    span.finish();
+    tx.finish();
     return account;
   },
 
   fetchBaseNodeByTokenId: async function (
     tokenId: string
   ): Promise<BaseNode | null> {
+    const tx = Sentry.startTransaction({ name: 'Client.fetchAccount()' });
+    Sentry.getCurrentHub().configureScope(scope => scope.setSpan(tx));
+
+    let span = tx.startChild({ op: 'Client.getClient()' });
     const client = await Client.getClient();
+    span.finish();
+
+    span = tx.startChild({ op: 'client.query()' });
     const {
       data: { baseNodes },
     } = await client.query({
@@ -206,15 +229,21 @@ const Client = {
             ${baseNodeShape}
           }}`,
     });
+    span.finish();
 
+    span = tx.startChild({ op: 'JSON.stringify' });
     let baseNode: BaseNode = baseNodes[0];
     if (!baseNode) return null;
     baseNode = JSON.parse(JSON.stringify(baseNode));
+    span.finish();
 
+    span = tx.startChild({ op: 'Client.processRevision()' });
     await Client.processRevision(baseNode.currentRevision);
     for (const connection of baseNode.related)
       await Client.processRevision(connection.currentRevision);
 
+    span.finish();
+    tx.finish();
     return baseNode;
   },
 
