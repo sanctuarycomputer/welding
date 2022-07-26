@@ -7,7 +7,7 @@ import Connect from "src/components/Icons/Connect";
 import Upload from "src/components/Icons/Upload";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
 import Graph from "src/components/Icons/Graph";
-import { useSigner } from "wagmi";
+import { useSigner, useAccount } from "wagmi";
 import makeFormikForBaseNode, {
   stageNodeRelations,
   unstageNodeRelations,
@@ -48,8 +48,9 @@ const Actions = ({
   reloadData,
 }) => {
   const { data: signer } = useSigner();
+  const { data: account } = useAccount();
   const { openModal, closeModal } = useContext(ModalContext);
-  const { accountData, accountNodesByCollectionType } =
+  const { accountData, accountDataLoading, accountNodesByCollectionType } =
     useContext(GraphContext);
   const [subgraphPickerOpen, setSubgraphPickerOpen] = useState(false);
   const [focus, setFocus] = useState<{
@@ -144,7 +145,7 @@ const Actions = ({
         </label>
       )}
 
-      {allowConnect && (
+      {allowConnect && account?.address && (
         <div
           className="cursor-pointer opacity-50 hover:opacity-100 scale-75"
           onClick={() => setSubgraphPickerOpen(true)}
@@ -156,14 +157,23 @@ const Actions = ({
       {subgraphPickerOpen && (
         <div
           ref={pickerRef}
-          className={`${bg} w-fit border border-color absolute top-6 right-0 shadow-lg rounded z-10`}
+          className={`${bg} w-fit border border-color absolute top-5 right-0 shadow-lg rounded z-10`}
         >
-          {subgraphs.length === 0 && (
+          <p className="pl-1 w-32 truncate py-1 border-b text-neutral-600 dark:text-neutral-400 font-semibold tracking-wide uppercase">Stash</p>
+
+          {accountDataLoading && (
+            <p className={`pl-1 font-semibold w-32 truncate py-1`}>
+              Loading...
+            </p>
+          )}
+
+          {!accountDataLoading && subgraphs.length === 0 && (
             <div className="flex flex-col items-center p-2">
               <Graph />
               <p className="pt-1 whitespace-nowrap">No subgraphs.</p>
             </div>
           )}
+
           <List collection={subgraphs} didPick={setFocus} />
         </div>
       )}

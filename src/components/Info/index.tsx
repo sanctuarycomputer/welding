@@ -18,7 +18,7 @@ const Info = () => {
     : `${50 - subgraphs.length}`;
 
   return (
-    <div className="fixed bottom-0 right-0 z-10 mb-4 mr-4 flex">
+    <div className="fixed bottom-0 right-0 z-50 mb-4 mr-4 flex">
       {IS_BETA && !account?.address ? (
         <div
           className={cx(
@@ -39,7 +39,7 @@ const Info = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                <p className="rounded-full bg-stone-800 px-2 font-medium">
+                <p className="rounded-full bg-stone-800 text-stone-100 px-2 font-medium">
                   Join Waitlist
                 </p>
               </a>
@@ -51,7 +51,7 @@ const Info = () => {
               </p>
               <Link href="/mint">
                 <a>
-                  <p className="rounded-full bg-stone-800 px-2 font-medium">
+                  <p className="rounded-full bg-stone-800 text-stone-100 px-2 font-medium">
                     Join Beta
                   </p>
                 </a>

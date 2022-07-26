@@ -57,7 +57,7 @@ Must Have
 ---
 
 - [ ] Collect effected TokenIds in Sync
-- [ ] Textwrap frontmatter
+- [ ] Textwrap frontmatter (remove readonly)
 - [ ] Discardable Drafts
 - [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"

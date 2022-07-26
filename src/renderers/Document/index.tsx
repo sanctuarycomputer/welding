@@ -109,60 +109,6 @@ const Document: FC<Props> = ({ node }) => {
     );
   }, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
-  //if (LOCAL_DRAFTS_ENABLED) {
-  //  const isMounted = useRef(false);
-  //  const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
-  //  useEffect(() => {
-  //    const draftKey = `-welding:${account?.address}:Drafts:${label}:${node.tokenId}`;
-
-  //    if (typeof window !== "undefined") {
-  //      if (isMounted.current) {
-  //        if (formik.dirty && account?.address) {
-  //          const draft = {
-  //            name: formik.values.name,
-  //            description: formik.values.description,
-  //            content: formik.values.content,
-  //          };
-  //          window.localStorage.setItem(draftKey, JSON.stringify(draft));
-  //        }
-  //      } else {
-  //        let draft: any = window.localStorage.getItem(draftKey);
-  //        if (draft) {
-  //          draft = JSON.parse(draft);
-  //          if (draft && draft.name && draft.name !== formik.values.name) {
-  //            formik.setFieldValue("name", draft.name);
-  //          }
-  //          if (
-  //            draft &&
-  //            draft.description &&
-  //            draft.description !== formik.values.description
-  //          ) {
-  //            formik.setFieldValue("description", draft.description);
-  //          }
-  //          try {
-  //            if (draft && draft.content) {
-  //              const contentDiff: any = diff(
-  //                formik.values.content || {},
-  //                draft.content
-  //              );
-  //              if (contentDiff.blocks)
-  //                formik.setFieldValue("content", draft.content);
-  //            }
-  //          } catch (e) {
-  //            Sentry.configureScope((scope: any) => {
-  //              scope.setExtra("draft.content", draft.content);
-  //              scope.setExtra("formik.values.content", formik.values.content);
-  //              Sentry.captureException(e, scope);
-  //            });
-  //            throw e;
-  //          }
-  //        }
-  //        isMounted.current = true;
-  //      }
-  //    }
-  //  }, [formik.values, account?.address]);
-  //}
-
   const references = getRelatedNodes(
     formik,
     "incoming",
