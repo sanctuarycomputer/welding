@@ -8,6 +8,7 @@ import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import slugifyNode from "src/utils/slugifyNode";
 import { bg, bgHover } from "src/utils/theme";
+import { didConnect, setEnsName, didDisconnect } from "src/utils/event";
 
 import dynamic from "next/dynamic";
 const Address = dynamic(() => import("src/components/Address"), {
@@ -41,6 +42,14 @@ const Wallet = () => {
   const subgraphs = Object.values(
     accountNodesByCollectionType["Subgraph"] || {}
   );
+
+  useEffect(() => {
+    if (!account?.address) return;
+    didConnect(account.address);
+    if (accountData?.ensName) {
+      setEnsName(account.address, accountData.ensName);
+    }
+  }, [account?.address, accountData?.ensName]);
 
   if (account?.address) {
     return (
@@ -110,7 +119,10 @@ const Wallet = () => {
 
               <a
                 className="text-center flex flex-row items-center flex-grow"
-                onClick={() => disconnect()}
+                onClick={() => {
+                  disconnect();
+                  didDisconnect();
+                }}
               >
                 <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
                   Disconnect

@@ -63,7 +63,6 @@ Must Have
 
 ---
 
-- [ ] Mixpanel Identify
 - [ ] Manual Reload button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
