@@ -55,7 +55,6 @@
     "mixpanel-browser": "^2.45.0",
     "neo4j-driver": "^4.4.5",
     "next": "^12.2.0",
-    "nextjs-cors": "^2.1.1",
     "nft.storage": "^6.2.0",
     "nprogress": "^0.2.0",
     "open-graph": "^0.2.6",
