@@ -210,7 +210,9 @@ const Client = {
   fetchBaseNodeByTokenId: async function (
     tokenId: string
   ): Promise<BaseNode | null> {
-    const tx = Sentry.startTransaction({ name: "Client.fetchBaseNodeByTokenId()" });
+    const tx = Sentry.startTransaction({
+      name: "Client.fetchBaseNodeByTokenId()",
+    });
     Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(tx));
 
     let span = tx.startChild({ op: "Client.getClient()" });
