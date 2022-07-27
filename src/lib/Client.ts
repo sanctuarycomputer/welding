@@ -33,7 +33,6 @@ const ERROR_METADATA: Metadata = {
 };
 
 const revisionShape = `
-name,
 hash,
 block,
 content,
