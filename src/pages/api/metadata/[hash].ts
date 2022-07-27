@@ -27,7 +27,16 @@ export default async function handler(
     );
     if (readResult.records.length) {
       const rev = readResult.records[0].get("rev");
-      const { content, contentType } = rev.properties;
+      const { content, contentType, name } = rev.properties;
+
+      if (!name) {
+        const writeNameQ = `MERGE (rev:Revision {hash: $hash})
+          SET rev.name = $name`;
+        await session.writeTransaction((tx) =>
+          tx.run(writeNameQ, { hash, name: JSON.parse(content).name })
+        );
+      }
+
       if (content && contentType) {
         return res
           .status(200)
@@ -41,13 +50,19 @@ export default async function handler(
     );
     if (!response.ok) throw new Error("failed_to_fetch");
     const contentType = response.headers.get("content-type");
-    const content = await response.text();
+    const content = await response.json();
 
     const writeQ = `MERGE (rev:Revision {hash: $hash})
+       SET rev.name = $name
        SET rev.content = $content
        SET rev.contentType = $contentType`;
     await session.writeTransaction((tx) =>
-      tx.run(writeQ, { hash, content, contentType })
+      tx.run(writeQ, {
+        hash,
+        content: JSON.stringify(content),
+        contentType,
+        name: content.name
+      })
     );
 
     res

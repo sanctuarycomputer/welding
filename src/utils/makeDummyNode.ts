@@ -8,6 +8,7 @@ const makeDummyNode = (label: string): BaseNode => {
     burnt: false,
     fee: "0",
     currentRevision: {
+      name: "",
       hash: "",
       block: 0,
       content: "",

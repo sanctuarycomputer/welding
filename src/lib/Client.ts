@@ -33,6 +33,7 @@ const ERROR_METADATA: Metadata = {
 };
 
 const revisionShape = `
+name,
 hash,
 block,
 content,
@@ -256,6 +257,90 @@ const Client = {
     span.finish();
     tx.finish();
     return baseNode;
+  },
+
+  fetchSimpleBaseNodesByTokenIds: async function (
+    tokenIds: Array<string>
+  ): Promise<Array<BaseNode> | null> {
+    const tx = Sentry.startTransaction({
+      name: "Client.fetchSimpleBaseNodesByTokenIds()",
+    });
+    Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(tx));
+
+    let span = tx.startChild({ op: "Client.getClient()" });
+    const client = await Client.getClient();
+    span.finish();
+
+    span = tx.startChild({ op: "client.query()" });
+    let {
+      data: { baseNodes },
+    } = await client.query({
+      fetchPolicy: "network-only",
+      variables: { tokenIds },
+      query: gql`
+        query BaseNode($tokenIds: [String!]) {
+          baseNodes(where: { tokenId_IN: $tokenIds }) {
+            tokenId
+            labels
+            currentRevision { name }
+            incoming {
+              ${edgeShape}
+            }
+            outgoing {
+              ${edgeShape}
+            }
+            admins {
+              address
+            }
+            editors {
+              address
+            }
+            owner {
+              address
+            }
+            related {
+              tokenId
+              labels
+              currentRevision { name }
+              incoming {
+                ${edgeShape}
+              }
+              outgoing {
+                ${edgeShape}
+              }
+              admins {
+                address
+              }
+              editors {
+                address
+              }
+              owner {
+                address
+              }
+              related {
+                tokenId
+                labels
+                currentRevision { name }
+                admins {
+                  address
+                }
+                editors {
+                  address
+                }
+                owner {
+                  address
+                }
+              }
+            }
+          }}`,
+    });
+    span.finish();
+
+    span = tx.startChild({ op: "JSON.stringify" });
+    baseNodes = JSON.parse(JSON.stringify(baseNodes));
+    span.finish();
+    tx.finish();
+    return baseNodes;
   },
 
   fetchRevisionByHash: async function (hash: string): Promise<Revision | null> {

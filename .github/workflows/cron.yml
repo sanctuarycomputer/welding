@@ -1,7 +1,7 @@
-name: 15-minute-cron
+name: 1-minute-cron
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "* * * * *"
 jobs:
   cron:
     runs-on: ubuntu-latest
@@ -9,3 +9,6 @@ jobs:
       - name: Sync new blocks
         run: |
           curl --request GET --url 'https://www.welding.app/api/sync'
+      - name: Make invalidations
+        run: |
+          curl --request GET --url 'https://www.welding.app/api/invalidate'

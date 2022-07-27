@@ -1,7 +1,12 @@
 import s from "slugify";
 
 const slugify = (str: string) => {
-  return s(str, { lower: true });
+  s.extend({'.': '-'});
+  return s(str, {
+    replacement: '-',
+    lower: true,
+    strict: true,
+  });
 };
 
 export default slugify;

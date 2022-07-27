@@ -61,6 +61,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
       admins: [{ address: accountData?.address || "0x0" }],
       editors: [],
       currentRevision: {
+        name: tag["currentRevision.metadata.name"],
         hash: "",
         block: 0,
         content: "",

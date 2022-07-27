@@ -41,6 +41,7 @@ export type Metadata = {
 };
 
 export type Revision = {
+  name: string;
   hash: string;
   block: number;
   metadata: Metadata;

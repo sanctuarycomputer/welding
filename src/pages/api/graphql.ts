@@ -77,6 +77,7 @@ const typeDefs = gql`
   type Revision {
     hash: String!
     block: Int!
+    name: String
     content: String
     contentType: String
     baseNodes: [BaseNode!]! @relationship(type: "_REVISES", direction: OUT)

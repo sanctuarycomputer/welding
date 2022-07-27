@@ -51,13 +51,16 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
-- [ ] Move everything to ISR (invalidate accounts)
-- [ ] Collect effected TokenIds in Sync
+- [ ] Textarea color should be the same
+- [ ] Royalties should only be editable by original creators while they own it (sigh, redeploy needed)
+- [ ] https://twitter.com/tszzl/status/1551702792850460673
+- [ ] CSS for Code Blocks
 
 ---
 
+- [ ] Rethink ENS Names?
 - [ ] Drafts
-- [ ] Manual Reload button
+- [ ] Manual Reload Data button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
 - [ ] Verify contract ABI?
@@ -78,3 +81,4 @@ Must Have
 - [ ] Referenced documents should show backlinks
 - [ ] Ability to color your Node's background
 - [ ] Custom subdomains & domains
+- [ ] Mixpanel public dashboards

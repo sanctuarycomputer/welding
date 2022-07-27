@@ -1,11 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
-
-import Client from "src/lib/Client";
 import Welding from "src/lib/Welding";
-import getRelatedNodes from "src/utils/getRelatedNodes";
-import slugifyNode from "src/utils/slugifyNode";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -26,6 +22,7 @@ const merge = async (e, session) => {
       let q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
+          SET n.needsInvalidation = true
           SET n :${capitalizeFirstLetter(args.label)}
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
@@ -76,6 +73,7 @@ const merge = async (e, session) => {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
+          SET n.needsInvalidation = true
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
             SET rev.block = $block
@@ -99,6 +97,7 @@ const merge = async (e, session) => {
       let q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
+          SET n.needsInvalidation = true
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
             SET rev.block = $block
@@ -150,6 +149,7 @@ const merge = async (e, session) => {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
           ON CREATE
             SET n.fee = '0'
+          SET n.needsInvalidation = true
           MERGE (from:Account {address: $fromAddress})
           MERGE (to:Account {address: $toAddress})
           MERGE (from)-[:TRANSFERS_OWNERSHIP { tokenId: $tokenId }]->(to)
@@ -175,6 +175,7 @@ const merge = async (e, session) => {
 
     case "RoleGranted": {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
+         SET n.needsInvalidation = true
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
          MERGE (recipient)-[:_CAN {role: $role}]->(n)
@@ -192,6 +193,7 @@ const merge = async (e, session) => {
 
     case "RoleRevoked": {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
+         SET n.needsInvalidation = true
          MERGE (recipient:Account {address: $toAddress})
          MERGE (sender:Account {address: $senderAddress})
          WITH recipient, n OPTIONAL MATCH (recipient)-[r:_CAN {role: $role}]->(n) DELETE r
@@ -209,6 +211,7 @@ const merge = async (e, session) => {
 
     case "ConnectionFeeSet": {
       const q = `MERGE (n:BaseNode {tokenId: $tokenId})
+         SET n.needsInvalidation = true
          SET n.fee = $fee
          `;
       await session.writeTransaction((tx) => {
@@ -222,6 +225,7 @@ const merge = async (e, session) => {
 
     case "PermissionsDelegated": {
       const q = `MERGE (n:BaseNode {tokenId: $forTokenId})
+         SET n.needsInvalidation = true
          MERGE (o:BaseNode {tokenId: $toTokenId})
          MERGE (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
            SET r.active = true
@@ -237,6 +241,7 @@ const merge = async (e, session) => {
 
     case "DelegatePermissionsRenounced": {
       const q = `MERGE (n:BaseNode {tokenId: $forTokenId})
+         SET n.needsInvalidation = true
          MERGE (o:BaseNode {tokenId: $toTokenId})
          WITH n, o
          OPTIONAL MATCH (n)-[r:_DELEGATES_PERMISSIONS_TO { pivotTokenId: $forTokenId }]->(o)
@@ -259,76 +264,6 @@ const merge = async (e, session) => {
   }
 };
 
-const invalidationPathsForRelatedNode = async (n) => {
-  const label = n.labels.filter((l) => l !== "BaseNode")[0];
-  switch (label) {
-    case "Subgraph":
-      const subgraph = await Client.fetchBaseNodeByTokenId(n.tokenId);
-      if (!subgraph) return [];
-      const subgraphDocuments = getRelatedNodes(
-        subgraph,
-        "incoming",
-        "Document",
-        "BELONGS_TO"
-      );
-      return subgraphDocuments.map(
-        (sd) => `/${slugifyNode(n)}/${slugifyNode(sd)}`
-      );
-    case "Document":
-      const document = await Client.fetchBaseNodeByTokenId(n.tokenId);
-      if (!document) return [];
-      const documentSubgraphs = getRelatedNodes(
-        document,
-        "outgoing",
-        "Subgraph",
-        "BELONGS_TO"
-      );
-      if (documentSubgraphs.length) {
-        return [
-          `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(document)}`,
-        ];
-      } else {
-        return [`/${slugifyNode(document)}`];
-      }
-    default:
-      return [`/${slugifyNode(n)}`];
-  }
-};
-
-const makeInvalidations = async (res: NextApiResponse, path: string) => {
-  const splat = path.split("/");
-  const nid = splat[splat.length - 1].split("-")[0];
-
-  if (!nid) return;
-  const node = await Client.fetchBaseNodeByTokenId(nid);
-  if (!node) return;
-
-  // Ensure related is unique
-  const related = [
-    ...node.related
-      .reduce((acc, n) => {
-        acc.set(n.tokenId, n);
-        return acc;
-      }, new Map())
-      .values(),
-  ];
-  const paths = new Set<string>();
-  paths.add(path);
-  paths.add(`/${slugifyNode(node)}`);
-  const pathSets = await Promise.all(
-    related.map(invalidationPathsForRelatedNode)
-  );
-  for (const pathSet of pathSets) {
-    pathSet.forEach((p) => paths.add(p));
-  }
-  console.log(paths.values());
-  await Promise.all(
-    [...paths.values()].map((p) => {
-      return res.revalidate(p);
-    })
-  );
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -336,10 +271,9 @@ export default async function handler(
   try {
     let { path } = req.query;
     path = (Array.isArray(path) ? path[0] : path) || "";
-
     const session = driver.session();
 
-    if (false) {
+    if (true) {
       const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
       const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
       await session.writeTransaction((tx) => tx.run(flushQ1));
@@ -384,7 +318,7 @@ export default async function handler(
       if (ensureInt > latestBlock)
         throw new Error("invalid_ensure_block_given");
       if (cursor >= ensureInt) {
-        if (path) await makeInvalidations(res, path);
+        if (path) await res.revalidate(path);
         return res.status(200).json({ status: "already_processed", cursor });
       }
     }
@@ -409,7 +343,7 @@ export default async function handler(
       })
     );
 
-    if (path) await makeInvalidations(res, path);
+    if (path) await res.revalidate(path);
     res.status(200).json({ status: "synced", cursor: endAt });
   } catch (e) {
     console.log(e);
