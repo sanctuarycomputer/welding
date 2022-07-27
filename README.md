@@ -54,6 +54,8 @@ Must Have
 - [ ] Textarea color should be the same
 - [ ] https://twitter.com/tszzl/status/1551702792850460673
 - [ ] CSS for Code Blocks
+- [ ] Move to BaseNodeFragment for Related Nodes and local cache
+- [ ] Keep styling table
 
 ---
 
