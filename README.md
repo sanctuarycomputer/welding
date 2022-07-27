@@ -52,7 +52,6 @@ Check out the following places for more Welding-related content:
 Must Have
 
 - [ ] Textarea color should be the same
-- [ ] Royalties should only be editable by original creators while they own it (sigh, redeploy needed)
 - [ ] https://twitter.com/tszzl/status/1551702792850460673
 - [ ] CSS for Code Blocks
 
