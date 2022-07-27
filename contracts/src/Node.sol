@@ -61,11 +61,11 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Reen
         _deleteDefaultRoyalty();
     }
 
-    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external onlyOwner(tokenId) {
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) external onlyOwner(tokenId) onlyCreator(tokenId) {
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
 
-    function resetTokenRoyalty(uint256 tokenId) external onlyOwner(tokenId) {
+    function resetTokenRoyalty(uint256 tokenId) external onlyOwner(tokenId) onlyCreator(tokenId) {
         _resetTokenRoyalty(tokenId);
     }
 
@@ -188,6 +188,7 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Reen
 
     mapping(uint256 => EnumerableSet.UintSet) private _connections;
     mapping(uint256 => Edge[]) private _currentOutgoingEdges;
+    mapping(uint256 => address) private _creators;
 
     function mint(
       string memory label,
@@ -217,6 +218,9 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Reen
 
         /* Default connection fee */
         _connectionFees[tokenId] = 0;
+
+        /* Store original creator for Royalty Setting */
+        _creators[tokenId] = _msgSender();
 
         /* Minter automatically gets ADMIN_ROLE */
         _roles[tokenId][ADMIN_ROLE][_msgSender()] = true;
@@ -432,6 +436,17 @@ contract Node is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Royalty, Reen
 
     modifier onlyOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), ERR_INSUFFICIENT_PERMISSIONS);
+        _;
+    }
+
+    function creatorOf(uint256 tokenId) public view returns (address) {
+        address creator = _creators[tokenId];
+        require(creator != address(0), "ERC721: invalid token ID");
+        return creator;
+    }
+
+    modifier onlyCreator(uint256 tokenId) {
+        require(creatorOf(tokenId) == _msgSender(), ERR_INSUFFICIENT_PERMISSIONS);
         _;
     }
 
