@@ -273,7 +273,7 @@ export default async function handler(
     path = (Array.isArray(path) ? path[0] : path) || "";
     const session = driver.session();
 
-    if (true) {
+    if (false) {
       const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
       const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
       await session.writeTransaction((tx) => tx.run(flushQ1));
