@@ -42,7 +42,10 @@ export default async function handler(
         const writeNameQ = `MERGE (rev:Revision {hash: $hash})
           SET rev.nativeEmoji = $nativeEmoji`;
         await session.writeTransaction((tx) =>
-          tx.run(writeNameQ, { hash, nativeEmoji: contentAsJSON.properties.emoji.native })
+          tx.run(writeNameQ, {
+            hash,
+            nativeEmoji: contentAsJSON.properties.emoji.native,
+          })
         );
       }
 
@@ -72,7 +75,7 @@ export default async function handler(
         content: JSON.stringify(content),
         contentType,
         name: content.name,
-        nativeEmoji: content.properties.emoji.native
+        nativeEmoji: content.properties.emoji.native,
       })
     );
 
