@@ -15,7 +15,7 @@ const driver = neo4j.driver(
 );
 
 const resolveENSNameForPath = async (path) => {
-  const splat = path.split("/")
+  const splat = path.split("/");
   const address = splat[splat.length - 1].split("-")[0];
   if (!address.match(/0x[a-fA-F0-9]{40}/)) return path;
   const ensName = await fetchEnsName({ address, chainId: 1 });
@@ -26,8 +26,8 @@ const resolveENSNameForPath = async (path) => {
 const accountPathsForNode = (n) => {
   const addresses = new Set<string>();
   addresses.add(`/accounts/${n.owner.address}`);
-  n.admins.forEach(a => addresses.add(`/accounts/${a.address}`));
-  n.editors.forEach(a => addresses.add(`/accounts/${a.address}`));
+  n.admins.forEach((a) => addresses.add(`/accounts/${a.address}`));
+  n.editors.forEach((a) => addresses.add(`/accounts/${a.address}`));
   return [...addresses.values()];
 };
 
@@ -49,7 +49,7 @@ const invalidationPathsForNode = (node) => {
         ...subgraphDocuments.map(
           (sd) => `/${slugifyNode(node)}/${slugifyNode(sd)}`
         ),
-        ...accountPaths
+        ...accountPaths,
       ];
     case "Document":
       const documentSubgraphs = getRelatedNodes(
@@ -62,7 +62,7 @@ const invalidationPathsForNode = (node) => {
         return [
           `/${slugifyNode(node)}`,
           `/${slugifyNode(documentSubgraphs[0])}/${slugifyNode(node)}`,
-          ...accountPaths
+          ...accountPaths,
         ];
       } else {
         return [`/${slugifyNode(node)}`, ...accountPaths];
@@ -90,26 +90,26 @@ export default async function handler(
     } else {
       const readQ = `MATCH (n:BaseNode { needsInvalidation: true }) RETURN n.tokenId`;
       const readResult = await session.readTransaction((tx) => tx.run(readQ));
-      tokenIds = readResult.records.map(r => r.get("n.tokenId"))
+      tokenIds = readResult.records.map((r) => r.get("n.tokenId"));
     }
 
-    const nodes =
-      await Client.fetchSimpleBaseNodesByTokenIds(tokenIds);
+    const nodes = await Client.fetchSimpleBaseNodesByTokenIds(tokenIds);
     if (!nodes) return res.status(200).json({ paths: [] });
 
     const paths = new Set<string>();
     for (const node of nodes) {
-      invalidationPathsForNode(node).forEach(p => paths.add(p));
+      invalidationPathsForNode(node).forEach((p) => paths.add(p));
       for (const relatedNode of node.related) {
         invalidationPathsForNode(relatedNode).forEach((p) => paths.add(p));
       }
     }
 
-    const pathsWithENSNames =
-      (await Promise.all([...paths.values()].map(resolveENSNameForPath))).flat();
-    await Promise.all(pathsWithENSNames.map(p => res.revalidate(p)));
+    const pathsWithENSNames = (
+      await Promise.all([...paths.values()].map(resolveENSNameForPath))
+    ).flat();
+    await Promise.all(pathsWithENSNames.map((p) => res.revalidate(p)));
     const writeQ = `MATCH (n:BaseNode { needsInvalidation: true }) SET n.needsInvalidation = false`;
-    await session.writeTransaction(tx => tx.run(writeQ));
+    await session.writeTransaction((tx) => tx.run(writeQ));
     return res.status(200).json({ paths: pathsWithENSNames });
   } catch (e) {
     console.log(e);

@@ -7,7 +7,7 @@ const slugifyNode = (node: BaseNode) => {
       return slugify(`${node.tokenId} ${node.currentRevision.name}`);
     }
     return slugify(node.tokenId);
-  } catch(e) {
+  } catch (e) {
     console.log(node);
     throw e;
   }

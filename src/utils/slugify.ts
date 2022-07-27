@@ -1,9 +1,9 @@
 import s from "slugify";
 
 const slugify = (str: string) => {
-  s.extend({'.': '-'});
+  s.extend({ ".": "-" });
   return s(str, {
-    replacement: '-',
+    replacement: "-",
     lower: true,
     strict: true,
   });

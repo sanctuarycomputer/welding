@@ -61,7 +61,7 @@ export default async function handler(
         hash,
         content: JSON.stringify(content),
         contentType,
-        name: content.name
+        name: content.name,
       })
     );
 
