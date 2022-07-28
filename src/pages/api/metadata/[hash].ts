@@ -27,7 +27,8 @@ export default async function handler(
     );
     if (readResult.records.length) {
       const rev = readResult.records[0].get("rev");
-      const { content, contentType, name, description, nativeEmoji } = rev.properties;
+      const { content, contentType, name, description, nativeEmoji } =
+        rev.properties;
       const contentAsJSON = JSON.parse(content);
 
       if (!name) {
