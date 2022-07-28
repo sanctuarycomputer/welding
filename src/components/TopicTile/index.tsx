@@ -8,8 +8,8 @@ type Props = {
 };
 
 const TopicTile: FC<Props> = ({ topic, textSize }) => {
-  const emoji = topic.currentRevision.metadata.properties.emoji.native;
-  const name = topic.currentRevision.metadata.name;
+  const emoji = topic.currentRevision.nativeEmoji;
+  const name = topic.currentRevision.name;
   return (
     <p
       className={`${bgPassive} whitespace-nowrap mr-1 flex rounded-full text-${

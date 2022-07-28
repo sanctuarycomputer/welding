@@ -16,17 +16,17 @@ const WrappedHead = ({ node }) => {
   let emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
 
   if (!node.tokenId.startsWith("-")) {
-    name = `${node.currentRevision.metadata.name}`;
-    description = `${node.currentRevision.metadata.description}`;
+    name = `${node.currentRevision.name}`;
+    description = `${node.currentRevision.description}`;
     if (belongsToNode) {
-      name = `${name} • ${belongsToNode.currentRevision.metadata.name}`;
+      name = `${name} • ${belongsToNode.currentRevision.name}`;
     }
-    nameWithEmoji = `${node.currentRevision.metadata.properties.emoji.native} ${name}`;
+    nameWithEmoji = `${node.currentRevision.nativeEmoji} ${name}`;
     emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${node.currentRevision.metadata.properties.emoji.unified}.png`;
-    if (node.currentRevision.metadata.image) {
+    if (node.currentRevision.image) {
       imageSrc = `${
         Welding.ipfsGateways[0]
-      }${node.currentRevision.metadata.image.replace("ipfs://", "/ipfs/")}`;
+      }${node.currentRevision.image.replace("ipfs://", "/ipfs/")}`;
     }
   }
 

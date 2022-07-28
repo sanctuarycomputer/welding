@@ -58,6 +58,7 @@ const IndividualTopicMinter: FC<{
 
     try {
       if (!signer) throw new Error("no_signer_present");
+      if (!topic.currentRevision.metadata) throw new Error("no_metadata_given");
 
       toastId = toast.loading(`Publishing metadata...`, {
         className: "toast",
@@ -161,14 +162,14 @@ const IndividualTopicMinter: FC<{
           <div
             className={`${bgPassive} aspect-square p-1 mr-2 rounded-full w-8 text-center`}
           >
-            {topic.currentRevision.metadata.properties.emoji.native}
+            {topic.currentRevision.nativeEmoji}
           </div>
         </div>
         <p className="pr-2 font-semibold w-32 truncate">
-          #{topic.currentRevision.metadata.name}
+          #{topic.currentRevision.name}
         </p>
         <input
-          value={topic.currentRevision.metadata.description}
+          value={topic.currentRevision.description}
           onChange={(e) => setTopicDescription(topic, e.target.value)}
           className={`text-xs py-2 mr-4 ${isMinting ? "cursor-wait" : ""}`}
           placeholder="Add a description"
@@ -210,11 +211,12 @@ const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
         },
         didPickEmoji: (emoji: BaseEmoji) => {
           const index = topics.indexOf(t);
-          if (index !== -1)
+          if (index !== -1 && t.currentRevision.metadata)
             topics[index] = {
               ...t,
               currentRevision: {
                 ...t.currentRevision,
+                nativeEmoji: emoji.native,
                 metadata: {
                   ...t.currentRevision.metadata,
                   properties: {
@@ -264,11 +266,12 @@ const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
 
   const setTopicDescription = (t: BaseNode, description: string) => {
     const index = topics.indexOf(t);
-    if (index !== -1)
+    if (index !== -1 && t.currentRevision.metadata)
       topics[index] = {
         ...t,
         currentRevision: {
           ...t.currentRevision,
+          description,
           metadata: {
             ...t.currentRevision.metadata,
             description,
