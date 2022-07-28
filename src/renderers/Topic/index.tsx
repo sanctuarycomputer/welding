@@ -195,10 +195,9 @@ const Topic: FC<Props> = ({ node }) => {
                       <div className="flex flex-row items-center py-1 flex-grow">
                         <p className="pr-2 font-semibold w-32 truncate">
                           {
-                            node.currentRevision.metadata.properties.emoji
-                              .native
+                            node.currentRevision.nativeEmoji
                           }{" "}
-                          {node.currentRevision.metadata.name}
+                          {node.currentRevision.name}
                         </p>
                       </div>
                     </a>

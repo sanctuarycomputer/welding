@@ -17,8 +17,8 @@ import { bg, bgHover } from "src/utils/theme";
 
 const List = ({ collection, didPick }) => {
   return collection.map((item) => {
-    const name = item.node.currentRevision.metadata.name;
-    const emoji = item.node.currentRevision.metadata.properties.emoji.native;
+    const name = item.node.currentRevision.name;
+    const emoji = item.node.currentRevision.nativeEmoji;
     return (
       <button
         key={item.node.tokenId}

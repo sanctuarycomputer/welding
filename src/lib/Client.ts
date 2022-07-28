@@ -34,10 +34,18 @@ const ERROR_METADATA: Metadata = {
 
 const revisionShape = `
 name,
+nativeEmoji,
+description,
 hash,
 block,
 content,
 contentType
+`;
+
+const miniRevisionShape = `
+name,
+nativeEmoji,
+description,
 `;
 
 const edgeShape = `
@@ -45,6 +53,17 @@ name
 tokenId
 active
 pivotTokenId
+`;
+
+const relatedNodeShape = `
+tokenId
+labels
+burnt
+fee
+currentRevision { ${miniRevisionShape} }
+admins { address }
+editors { address }
+owner { address }
 `;
 
 const baseNodeShape = `
@@ -56,18 +75,7 @@ currentRevision {
   ${revisionShape}
 }
 related {
-  tokenId
-  labels
-  fee
-  currentRevision {
-    ${revisionShape}
-  }
-  admins {
-    address
-  }
-  editors {
-    address
-  }
+  ${relatedNodeShape}
 }
 incoming {
   ${edgeShape}
@@ -109,11 +117,12 @@ const Client = {
     return;
   },
 
-  processRevision: async function (revision: Revision): Promise<void> {
-    if (!revision.content) {
+  processRevision: async function (revision): Promise<void> {
+    if (!revision.content && revision.hash) {
       revision.metadata = await Client.fetchMetadataForHash(revision.hash);
+      return;
     }
-    if (revision.contentType === "application/json") {
+    if (revision.content && revision.contentType === "application/json") {
       revision.metadata = JSON.parse(revision.content || "");
     }
   },
@@ -153,7 +162,7 @@ const Client = {
       query: gql`
         query BaseNodes {
           baseNodes {
-            ${baseNodeShape}
+            ${relatedNodeShape}
           }
         }
       `,
@@ -185,7 +194,7 @@ const Client = {
               tokenId
             }
             related {
-              ${baseNodeShape}
+              ${relatedNodeShape}
             }
           }}`,
     });

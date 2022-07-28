@@ -9,10 +9,11 @@ const makeDummyNode = (label: string): BaseNode => {
     fee: "0",
     currentRevision: {
       name: "",
+      nativeEmoji: DEFAULT_EMOJI.native,
+      description: "",
+      image: "",
       hash: "",
       block: 0,
-      content: "",
-      contentType: "",
       metadata: {
         name: "",
         description: "",

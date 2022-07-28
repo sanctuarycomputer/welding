@@ -44,11 +44,14 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
 
   const handleAddition = (tag: {
     tokenId: string;
-    "currentRevision.metadata.name": string;
+    "currentRevision.name": string;
   }) => {
-    if (tag.tokenId !== tag["currentRevision.metadata.name"])
+    if (tag.tokenId !== tag["currentRevision.name"])
       return setTopics([...topics, tag]);
 
+    const emoji = emojis[
+      Math.floor(Math.random() * emojis.length)
+    ] as BaseEmoji;
     const newTopic: BaseNode = {
       tokenId: `-${newTopics.length + 1}`,
       labels: ["BaseNode", "Topic"],
@@ -61,19 +64,18 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
       admins: [{ address: accountData?.address || "0x0" }],
       editors: [],
       currentRevision: {
-        name: tag["currentRevision.metadata.name"],
+        name: tag["currentRevision.name"],
+        nativeEmoji: emoji.native,
+        description: "",
+        image: "",
         hash: "",
         block: 0,
-        content: "",
-        contentType: "",
         metadata: {
-          name: tag["currentRevision.metadata.name"],
+          name: tag["currentRevision.name"],
           description: "",
           image: "",
           properties: {
-            emoji: emojis[
-              Math.floor(Math.random() * emojis.length)
-            ] as BaseEmoji,
+            emoji
           },
         },
       },
@@ -128,7 +130,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
         <div className="border-b border-color">
           <ReactTags
             idField="tokenId"
-            labelField="currentRevision.metadata.name"
+            labelField="currentRevision.name"
             tags={topics}
             suggestions={suggestions}
             handleDelete={handleDelete}

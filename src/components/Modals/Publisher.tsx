@@ -87,8 +87,8 @@ const NodeTile = ({ node }) => {
   let name, emoji;
 
   if ("__typename" in node) {
-    name = node.currentRevision.metadata.name;
-    emoji = node.currentRevision.metadata.properties.emoji.native;
+    name = node.currentRevision.name;
+    emoji = node.currentRevision.nativeEmoji;
   } else if ("dirty" in node) {
     name = node.values.name;
     emoji = node.values.emoji.native;

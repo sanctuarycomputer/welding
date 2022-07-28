@@ -42,11 +42,12 @@ export type Metadata = {
 
 export type Revision = {
   name: string;
-  hash: string;
-  block: number;
-  metadata: Metadata;
-  content: string | null;
-  contentType: string | null;
+  nativeEmoji: string;
+  description: string;
+  image: string;
+  hash?: string;
+  block?: number;
+  metadata?: Metadata;
 };
 
 export type Edge = {

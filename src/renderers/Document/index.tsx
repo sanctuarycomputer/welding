@@ -29,8 +29,8 @@ interface Props {
 
 const DocumentStashInfo = ({ subgraph }) => {
   if (subgraph) {
-    const name = subgraph.currentRevision.metadata.name;
-    const emoji = subgraph.currentRevision.metadata.properties.emoji.native;
+    const name = subgraph.currentRevision.name;
+    const emoji = subgraph.currentRevision.nativeEmoji;
     return (
       <p className="pl-2 md:pl-0">
         <span className="opacity-50">Stashed from </span>
@@ -178,9 +178,9 @@ const Document: FC<Props> = ({ node }) => {
               </div>
               <ol className="list-decimal text-xs list-inside">
                 {references.map((n) => {
-                  const name = n.currentRevision.metadata.name;
+                  const name = n.currentRevision.name;
                   const emoji =
-                    n.currentRevision.metadata.properties.emoji.native;
+                    n.currentRevision.nativeEmoji;
                   return (
                     <li key={n.tokenId}>
                       <Link href={`/${slugifyNode(n)}`}>

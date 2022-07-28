@@ -73,7 +73,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   // Next, if it's a Subgraph, redirect to the first document
   if (nodeType === "Subgraph") {
     const sortOrder =
-      node.currentRevision.metadata.properties.ui
+      node.currentRevision.metadata?.properties.ui
         ?.subgraphSidebarDocumentSortOrder || [];
     const homepage = node.related.find((n) => n.tokenId === sortOrder[0]);
     if (homepage) {

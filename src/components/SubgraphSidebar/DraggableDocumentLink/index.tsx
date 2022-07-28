@@ -118,15 +118,15 @@ const DraggableDocumentLink: FC<Props> = ({
       {isCurrent ? (
         <p className="text-xs font-semibold pb-1">
           {isStashed ? "↗ " : ""}
-          {node.currentRevision.metadata.properties.emoji.native}{" "}
-          {node.currentRevision.metadata.name}
+          {node.currentRevision.nativeEmoji}{" "}
+          {node.currentRevision.name}
         </p>
       ) : (
         <Link href={`/${slugifyNode(subgraph)}/${slugifyNode(node)}`}>
           <a className="text-xs pb-1">
             {isStashed ? "↗ " : ""}
-            {node.currentRevision.metadata.properties.emoji.native}{" "}
-            {node.currentRevision.metadata.name}
+            {node.currentRevision.nativeEmoji}{" "}
+            {node.currentRevision.name}
           </a>
         </Link>
       )}

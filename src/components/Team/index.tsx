@@ -306,7 +306,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                 {permissionDelegates.map((n) => (
                   <Tile
                     key={n.tokenId}
-                    label={`${n.currentRevision.metadata.properties.emoji.native} ${n.currentRevision.metadata.name}`}
+                    label={`${n.currentRevision.nativeEmoji} ${n.currentRevision.name}`}
                     onClick={() => onClickHandlerForDelegate(n)}
                   />
                 ))}

@@ -82,7 +82,7 @@ const SubgraphSidebar: FC<Props> = ({
     !!formik.values.description && formik.values.description.length > 0;
 
   const sortOrder =
-    subgraph.currentRevision.metadata.properties.ui
+    subgraph.currentRevision.metadata?.properties.ui
       ?.subgraphSidebarDocumentSortOrder || [];
   const [documentNodes, setDocumentNodes] = useState(
     allDocumentNodes.sort(function (a, b) {
@@ -265,9 +265,9 @@ const SubgraphSidebar: FC<Props> = ({
                       <p key={d.tokenId} className="text-xs font-semibold pb-1">
                         {isStashed ? "↗ " : ""}
                         {
-                          d.currentRevision.metadata.properties.emoji.native
+                          d.currentRevision.nativeEmoji
                         }{" "}
-                        {d.currentRevision.metadata.name}
+                        {d.currentRevision.name}
                       </p>
                     );
                   }
@@ -279,9 +279,9 @@ const SubgraphSidebar: FC<Props> = ({
                       <a className="block text-xs pb-1">
                         {isStashed ? "↗ " : ""}
                         {
-                          d.currentRevision.metadata.properties.emoji.native
+                          d.currentRevision.nativeEmoji
                         }{" "}
-                        {d.currentRevision.metadata.name}
+                        {d.currentRevision.name}
                       </a>
                     </Link>
                   );
@@ -312,8 +312,8 @@ const SubgraphSidebar: FC<Props> = ({
               return (
                 <Link key={s.tokenId} href={`/${slugifyNode(s)}`}>
                   <a className="block text-xs pb-1">
-                    ↗ {s.currentRevision.metadata.properties.emoji.native}{" "}
-                    {s.currentRevision.metadata.name}
+                    ↗ {s.currentRevision.nativeEmoji}{" "}
+                    {s.currentRevision.name}
                   </a>
                 </Link>
               );
