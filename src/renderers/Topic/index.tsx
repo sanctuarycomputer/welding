@@ -194,9 +194,7 @@ const Topic: FC<Props> = ({ node }) => {
                     <a className="flex relative py-4 px-4 sm:px-0 justify-between items-center flex-row border-b border-color">
                       <div className="flex flex-row items-center py-1 flex-grow">
                         <p className="pr-2 font-semibold w-32 truncate">
-                          {
-                            node.currentRevision.nativeEmoji
-                          }{" "}
+                          {node.currentRevision.nativeEmoji}{" "}
                           {node.currentRevision.name}
                         </p>
                       </div>

@@ -179,8 +179,7 @@ const Document: FC<Props> = ({ node }) => {
               <ol className="list-decimal text-xs list-inside">
                 {references.map((n) => {
                   const name = n.currentRevision.name;
-                  const emoji =
-                    n.currentRevision.nativeEmoji;
+                  const emoji = n.currentRevision.nativeEmoji;
                   return (
                     <li key={n.tokenId}>
                       <Link href={`/${slugifyNode(n)}`}>

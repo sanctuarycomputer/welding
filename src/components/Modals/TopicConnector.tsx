@@ -75,7 +75,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
           description: "",
           image: "",
           properties: {
-            emoji
+            emoji,
           },
         },
       },

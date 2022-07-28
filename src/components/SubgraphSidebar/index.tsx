@@ -264,10 +264,7 @@ const SubgraphSidebar: FC<Props> = ({
                     return (
                       <p key={d.tokenId} className="text-xs font-semibold pb-1">
                         {isStashed ? "↗ " : ""}
-                        {
-                          d.currentRevision.nativeEmoji
-                        }{" "}
-                        {d.currentRevision.name}
+                        {d.currentRevision.nativeEmoji} {d.currentRevision.name}
                       </p>
                     );
                   }
@@ -278,10 +275,7 @@ const SubgraphSidebar: FC<Props> = ({
                     >
                       <a className="block text-xs pb-1">
                         {isStashed ? "↗ " : ""}
-                        {
-                          d.currentRevision.nativeEmoji
-                        }{" "}
-                        {d.currentRevision.name}
+                        {d.currentRevision.nativeEmoji} {d.currentRevision.name}
                       </a>
                     </Link>
                   );
@@ -312,8 +306,7 @@ const SubgraphSidebar: FC<Props> = ({
               return (
                 <Link key={s.tokenId} href={`/${slugifyNode(s)}`}>
                   <a className="block text-xs pb-1">
-                    ↗ {s.currentRevision.nativeEmoji}{" "}
-                    {s.currentRevision.name}
+                    ↗ {s.currentRevision.nativeEmoji} {s.currentRevision.name}
                   </a>
                 </Link>
               );

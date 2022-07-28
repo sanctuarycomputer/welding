@@ -51,10 +51,10 @@ Check out the following places for more Welding-related content:
 
 Must Have
 
+- [ ] Finish counter-cached Revisions
 - [ ] Textarea color should be the same
 - [ ] https://twitter.com/tszzl/status/1551702792850460673
 - [ ] CSS for Code Blocks
-- [ ] Move to BaseNodeFragment for Related Nodes and local cache
 - [ ] Keep styling table
 
 ---

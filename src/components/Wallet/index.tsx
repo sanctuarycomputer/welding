@@ -89,8 +89,7 @@ const Wallet = () => {
 
               {subgraphs.map((item) => {
                 const name = item.node.currentRevision.name;
-                const emoji =
-                  item.node.currentRevision.nativeEmoji;
+                const emoji = item.node.currentRevision.nativeEmoji;
                 return (
                   <Link
                     key={item.node.tokenId}
