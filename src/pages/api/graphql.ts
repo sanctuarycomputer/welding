@@ -79,6 +79,7 @@ const typeDefs = gql`
     block: Int!
     name: String
     nativeEmoji: String
+    description: String
     content: String
     contentType: String
     baseNodes: [BaseNode!]! @relationship(type: "_REVISES", direction: OUT)

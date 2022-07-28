@@ -27,7 +27,7 @@ export default async function handler(
     );
     if (readResult.records.length) {
       const rev = readResult.records[0].get("rev");
-      const { content, contentType, name, nativeEmoji } = rev.properties;
+      const { content, contentType, name, description, nativeEmoji } = rev.properties;
       const contentAsJSON = JSON.parse(content);
 
       if (!name) {
@@ -35,6 +35,14 @@ export default async function handler(
           SET rev.name = $name`;
         await session.writeTransaction((tx) =>
           tx.run(writeNameQ, { hash, name: contentAsJSON.name })
+        );
+      }
+
+      if (!description) {
+        const writeNameQ = `MERGE (rev:Revision {hash: $hash})
+          SET rev.description = $description`;
+        await session.writeTransaction((tx) =>
+          tx.run(writeNameQ, { hash, description: contentAsJSON.description })
         );
       }
 
@@ -66,6 +74,7 @@ export default async function handler(
 
     const writeQ = `MERGE (rev:Revision {hash: $hash})
        SET rev.name = $name
+       SET rev.description = $description
        SET rev.nativeEmoji = $nativeEmoji
        SET rev.content = $content
        SET rev.contentType = $contentType`;
@@ -75,6 +84,7 @@ export default async function handler(
         content: JSON.stringify(content),
         contentType,
         name: content.name,
+        description: content.description,
         nativeEmoji: content.properties.emoji.native,
       })
     );
