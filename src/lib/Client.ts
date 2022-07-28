@@ -32,20 +32,19 @@ const ERROR_METADATA: Metadata = {
   },
 };
 
-const revisionShape = `
-name,
-nativeEmoji,
-description,
-hash,
-block,
-content,
-contentType
-`;
-
 const miniRevisionShape = `
 name,
 nativeEmoji,
 description,
+image,
+`;
+
+const revisionShape = `
+${miniRevisionShape}
+hash,
+block,
+content,
+contentType
 `;
 
 const edgeShape = `
@@ -213,15 +212,6 @@ const Client = {
     });
     span.finish();
 
-    span = tx.startChild({ op: "Client.processRevision()" });
-    for (const node of account.related) {
-      await Client.processRevision(node.currentRevision);
-      for (const related of node.related) {
-        await Client.processRevision(related.currentRevision);
-      }
-    }
-
-    span.finish();
     tx.finish();
     return account;
   },
