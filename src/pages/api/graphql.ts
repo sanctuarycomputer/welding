@@ -79,6 +79,7 @@ const typeDefs = gql`
     block: Int!
     name: String
     nativeEmoji: String
+    image: String
     description: String
     content: String
     contentType: String
