@@ -99,8 +99,10 @@ export default async function handler(
     const paths = new Set<string>();
     for (const node of nodes) {
       invalidationPathsForNode(node).forEach((p) => paths.add(p));
+      if (["4", "5"].includes(node.tokenId)) paths.add("/");
       for (const relatedNode of node.related) {
         invalidationPathsForNode(relatedNode).forEach((p) => paths.add(p));
+        if (["4", "5"].includes(relatedNode.tokenId)) paths.add("/");
       }
     }
 

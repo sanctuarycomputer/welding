@@ -26,7 +26,7 @@
 }
 
 code {
-  background: var(--text-color-passive);
+  background: var(--text-color-passive) !important;
   color: var(--background-color) !important;
   padding: 2px 4px;
   border-radius: 5px;
