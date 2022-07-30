@@ -35,7 +35,10 @@ const WrappedHead = ({ node }) => {
       <title>{name}</title>
       <link rel="shortcut icon" href={emojiCDN} />
       <meta name="description" content={description} />
-      <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1" />
+      <meta
+        name="viewport"
+        content="initial-scale=1, width=device-width, maximum-scale=1"
+      />
       <meta name="application-name" content="welding.app" />
       <meta name="apple-mobile-web-app-title" content="welding.app" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
