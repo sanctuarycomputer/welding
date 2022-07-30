@@ -155,7 +155,8 @@ textarea {
   color: var(--text-color);
 }
 
-input:disabled, textarea:disabled {
+input:disabled,
+textarea:disabled {
   opacity: 1;
 }
 
