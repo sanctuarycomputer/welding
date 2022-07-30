@@ -61,7 +61,7 @@ const Burn = ({ node, setLocked }) => {
             {doesOwnNode(node) ? (
               <>
                 <td className="py-4 px-2">
-                  <p className="text-red-500">
+                  <p className="text-red-500 truncate">
                     <span className="font-semibold">⚠️ Danger!</span> Burning a
                     node is irreversible.
                   </p>

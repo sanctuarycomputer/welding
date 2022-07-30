@@ -19,7 +19,7 @@ const Tile: FC<Props> = ({ label, onClick, tracked }) => {
 
   return (
     <div className={`${bgPassive} inline-flex rounded-full p-1 items-center`}>
-      <span className={`px-1 text-xs ${tracked ? "uppercase font-bold" : ""}`}>
+      <span className={`px-1 text-xs ${tracked ? "uppercase font-bold" : ""} truncate`}>
         {label}
       </span>
 

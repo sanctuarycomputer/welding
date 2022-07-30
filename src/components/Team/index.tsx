@@ -298,7 +298,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
           {permissionDelegates.length > 0 && (
             <tr className="border-b border-color border-dashed">
               <td className="px-2 py-3">
-                <p className="font-semibold py-1">
+                <p className="font-semibold py-1 truncat truncate">
                   Inherits permissions from →
                 </p>
               </td>
@@ -343,7 +343,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
                   placeholder="Paste an Address"
                 />
               </td>
-              <td className="text-right pr-2">
+              <td className="text-right pr-2 whitespace-nowrap">
                 <select
                   name="role"
                   className={`${bg} text-xs mr-2`}

@@ -155,6 +155,10 @@ textarea {
   color: var(--text-color);
 }
 
+input:disabled, textarea:disabled {
+  opacity: 1;
+}
+
 /* Button */
 .Button {
   box-shadow: inset 0 0 6px 0px var(--text-color);
