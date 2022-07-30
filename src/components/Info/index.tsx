@@ -18,7 +18,7 @@ const Info = () => {
     : `${50 - subgraphs.length}`;
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 mb-4 mr-4 flex">
+    <div className="fixed bottom-0 right-0 z-20 md:z-40 mb-4 mr-4 flex">
       {IS_BETA && !account?.address ? (
         <div
           className={cx(

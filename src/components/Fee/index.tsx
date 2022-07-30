@@ -111,7 +111,7 @@ const Fee = ({ node, setLocked }) => {
                 </form>
               </td>
               <td className="py-4 px-2 text-right">
-                <p>MATIC / {USDEstimate || "?"} USD</p>
+                <p className="truncate">MATIC / {USDEstimate || "?"} USD</p>
               </td>
               {doesOwnNode(node) && (
                 <td className="text-right pr-2">

@@ -57,7 +57,7 @@ const Wallet = () => {
         {content || (
           <div className="pr-2 mr-2 border-r border-color flex items-center">
             <Link href="/mint">
-              <a className="Button text-xs font-semibold">+ Mint Subgraph</a>
+              <a className="Button text-xs font-semibold">+ New Subgraph</a>
             </Link>
           </div>
         )}
@@ -111,7 +111,7 @@ const Wallet = () => {
                   <p
                     className={`${bgHover} font-semibold w-32 truncate py-1 border-t`}
                   >
-                    + Mint Subgraph
+                    + New Subgraph
                   </p>
                 </a>
               </Link>

@@ -49,13 +49,14 @@ const Frontmatter: FC<Props> = ({ formik, readOnly }) => {
             />
           </div>
         </div>
-        <input
+        <TextareaAutosize
           disabled={readOnly}
           name="description"
           placeholder="Description..."
           value={formik.values.description}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
+          style={{ resize: "none" }}
         />
       </form>
       <hr className="pb-2 mb-0" />

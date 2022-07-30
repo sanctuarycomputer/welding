@@ -333,7 +333,7 @@ const Team: FC<Props> = ({ node, currentAddress, setLocked, reloadData }) => {
 
           {isAdmin && (
             <tr className="border-b border-color border-dashed">
-              <td className="px-2 py-2">
+              <td className="px-2 py-2 whitespace-nowrap">
                 <input
                   name="address"
                   value={formik.values.address}

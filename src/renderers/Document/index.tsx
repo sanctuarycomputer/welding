@@ -122,7 +122,7 @@ const Document: FC<Props> = ({ node }) => {
   return (
     <>
       <div className="pt-2 md:pt-8">
-        <div className="content pb-4 mx-auto">
+        <div className="content pb-20 mx-auto">
           <div
             className={`flex ${
               node.burnt ? "justify-between" : "justify-end"

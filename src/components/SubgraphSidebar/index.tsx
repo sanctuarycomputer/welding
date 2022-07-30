@@ -149,15 +149,15 @@ const SubgraphSidebar: FC<Props> = ({
 
       <div
         onClick={() => setMobileOpen(!mobileOpen)}
-        className={`${bg} w-full top-0 bottom-0 fixed z-20 curtain ${
+        className={`${bg} w-full top-0 bottom-0 fixed z-30 md:z-10 curtain ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } md:-translate-x-full `}
+        } md:-translate-x-full`}
       ></div>
 
       <nav
         className={`${bg} ${border} ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 fixed top-0 bottom-0 inline-block w-64 md:w-52 lg:w-64 border-r z-50 transition-transform ease-in-out duration-500`}
+        } md:translate-x-0 fixed top-0 bottom-0 inline-block w-64 md:w-52 lg:w-64 border-r z-40 md:z-20 transition-transform ease-in-out duration-500`}
       >
         <div className="pl-2 pr-1 pt-4 text-xs flex items-center">
           <p

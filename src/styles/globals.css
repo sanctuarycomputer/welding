@@ -26,8 +26,8 @@
 }
 
 code {
-  background: rgba(250, 239, 240, 0.78);
-  color: #b44437;
+  background: var(--text-color-passive);
+  color: var(--background-color) !important;
   padding: 2px 4px;
   border-radius: 5px;
   margin: 0 1px;
@@ -38,6 +38,7 @@ code {
 
 svg {
   fill: var(--text-color);
+  color: var(--text-color);
 }
 
 .nav-blur {
@@ -105,17 +106,17 @@ a {
 }
 
 h1 {
-  font-size: 32px;
+  font-size: 1.5rem;
   font-weight: 500;
 }
 
 h2 {
-  font-size: 24px;
+  font-size: 1.25rem;
   font-weight: 500;
 }
 
 h3 {
-  font-size: 20px;
+  font-size: 1.125rem;
   font-weight: 500;
 }
 
@@ -124,11 +125,34 @@ p {
   line-height: 1rem;
 }
 
+@media (min-width: 768px) {
+  h1 {
+    font-size: 32px;
+    font-weight: 500;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  p {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+}
+
 /* Editor.js */
 input,
 textarea {
   background-color: transparent;
   width: 100%;
+  color: var(--text-color);
 }
 
 /* Button */
@@ -143,6 +167,7 @@ textarea {
   padding-bottom: 0.25rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+  white-space: nowrap;
 }
 .Button[disabled] {
   opacity: 0.6;

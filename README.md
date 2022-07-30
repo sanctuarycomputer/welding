@@ -49,37 +49,35 @@ Check out the following places for more Welding-related content:
 
 # Roadmap
 
-Must Have
-
-- [ ] Finish counter-cached Revisions
-- [ ] Textarea color should be the same
+- [ ] `Revision | RevisionFragment`
 - [ ] https://twitter.com/tszzl/status/1551702792850460673
-- [ ] CSS for Code Blocks
-- [ ] Keep styling table
-
----
-
 - [ ] Rethink ENS Names?
-- [ ] Drafts
 - [ ] Manual Reload Data button
 - [ ] Switch to "doesOwnNode"
 - [ ] Retryable minting
 - [ ] Verify contract ABI?
 - [ ] Next.js Image Loader?
-- [ ] Bug: I should be able to search Emojis
+- [ ] Ability to set Royalty Info
 - [ ] Ability to withdraw Welding Balance
 - [ ] Bug: Discarding Topics from the TopicMint screen does not unstage them
 - [ ] Reorderable Topics
 - [ ] Sitemap.xml
-- [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] i18n & translations
 - [ ] Editor: Support callouts
 - [ ] Editor: Support Text Color
 - [ ] Editor: Support Deeplinks into Blocks
 - [ ] Editor: Sync'd blocks
-- [ ] Support browsing revisions
-- [ ] When viewing a revision, I should see a message so that I realize
+- [ ] Github Gist embeds
+- [ ] Support browsing revisions (When viewing a revision, I should see a message so that I realize)
 - [ ] Referenced documents should show backlinks
+
+Future:
+- [ ] Drafts
+- [ ] Iron Session? (Persisted Drafts, Comments, Favorites?)
 - [ ] Ability to color your Node's background
 - [ ] Custom subdomains & domains
 - [ ] Mixpanel public dashboards
+- [ ] p2p realtime viewers & multiplayer editing
+- [ ] Encryption
+- [ ] Explore & search
+- [ ] Ability to set permissions bypass

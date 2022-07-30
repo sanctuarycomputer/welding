@@ -59,6 +59,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
         <div className="flex">
           <nav>
             <div
+              style={{ height: '55px'}}
               className={`flex border-b border-color p-4 ${
                 level === SettingsLevel.METADATA ? bgPassive : ""
               } ${locked ? "cursor-progress" : "cursor-pointer"}`}
@@ -70,6 +71,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               </p>
             </div>
             <div
+              style={{ height: '55px'}}
               className={`flex border-b border-color p-4 ${
                 level === SettingsLevel.TEAM ? bgPassive : ""
               } ${locked ? "cursor-progress" : "cursor-pointer"}`}
@@ -81,6 +83,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               </p>
             </div>
             <div
+              style={{ height: '55px'}}
               className={`flex border-b border-color p-4 ${
                 level === SettingsLevel.HISTORY ? bgPassive : ""
               } ${locked ? "cursor-progress" : "cursor-pointer"}`}
@@ -92,6 +95,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               </p>
             </div>
             <div
+              style={{ height: '55px'}}
               className={`flex border-b border-color p-4 ${
                 level === SettingsLevel.FEE ? bgPassive : ""
               } ${locked ? "cursor-progress" : "cursor-pointer"}`}
@@ -103,6 +107,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               </p>
             </div>
             <div
+              style={{ height: '55px'}}
               className={`flex border-b border-color p-4 ${
                 level === SettingsLevel.BURN ? bgPassive : ""
               } ${locked ? "cursor-progress" : "cursor-pointer"}`}
