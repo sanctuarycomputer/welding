@@ -318,7 +318,12 @@ export default async function handler(
       if (ensureInt > latestBlock)
         throw new Error("invalid_ensure_block_given");
       if (cursor >= ensureInt) {
-        if (path) await res.revalidate(path);
+        try {
+          if (path) await res.revalidate(path);
+        } catch(e) {
+          console.log(e);
+          Sentry.captureException(e);
+        }
         return res.status(200).json({ status: "already_processed", cursor });
       }
     }
@@ -343,7 +348,12 @@ export default async function handler(
       })
     );
 
-    if (path) await res.revalidate(path);
+    try {
+      if (path) await res.revalidate(path);
+    } catch(e) {
+      console.log(e);
+      Sentry.captureException(e);
+    }
     res.status(200).json({ status: "synced", cursor: endAt });
   } catch (e) {
     console.log(e);
