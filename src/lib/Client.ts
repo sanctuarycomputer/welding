@@ -54,43 +54,36 @@ active
 pivotTokenId
 `;
 
-const relatedNodeShape = `
+const coreNodeShape = `
 tokenId
 labels
 burnt
 fee
-currentRevision { ${miniRevisionShape} }
 admins { address }
 editors { address }
 owner { address }
 `;
 
+
+const relatedNodeShape = `
+${coreNodeShape}
+currentRevision { ${miniRevisionShape} }
+`;
+
+const accountNodeShape = `
+${coreNodeShape}
+currentRevision { ${miniRevisionShape} }
+related { ${relatedNodeShape} }
+incoming { ${edgeShape} }
+outgoing { ${edgeShape} }
+`;
+
 const baseNodeShape = `
-tokenId
-labels
-burnt
-fee
-currentRevision {
-  ${revisionShape}
-}
-related {
-  ${relatedNodeShape}
-}
-incoming {
-  ${edgeShape}
-}
-outgoing {
-  ${edgeShape}
-}
-admins {
-  address
-}
-editors {
-  address
-}
-owner {
-  address
-}
+${coreNodeShape}
+currentRevision { ${revisionShape} }
+related { ${relatedNodeShape} }
+incoming { ${edgeShape} }
+outgoing { ${edgeShape} }
 `;
 
 const Client = {
@@ -193,7 +186,7 @@ const Client = {
               tokenId
             }
             related {
-              ${relatedNodeShape}
+              ${accountNodeShape}
             }
           }}`,
     });
