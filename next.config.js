@@ -5,8 +5,8 @@ const { withSentryConfig } = require("@sentry/nextjs");
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['welding.infura-ipfs.io']
-  }
+    domains: ["welding.infura-ipfs.io"],
+  },
 };
 
 const sentryWebpackPluginOptions = {
