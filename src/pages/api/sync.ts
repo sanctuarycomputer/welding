@@ -320,7 +320,7 @@ export default async function handler(
       if (cursor >= ensureInt) {
         try {
           if (path) await res.revalidate(path);
-        } catch(e) {
+        } catch (e) {
           console.log(e);
           Sentry.captureException(e);
         }
@@ -350,7 +350,7 @@ export default async function handler(
 
     try {
       if (path) await res.revalidate(path);
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       Sentry.captureException(e);
     }
