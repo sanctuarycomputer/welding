@@ -27,6 +27,7 @@ const WrappedHead = ({ node }) => {
       imageSrc = `${
         Welding.ipfsGateways[0]
       }${node.currentRevision.image.replace("ipfs://", "/ipfs/")}`;
+      imageSrc = `https://www.welding.app/_next/image?url=${imageSrc}&w=1200&q=100`;
     }
   }
 
