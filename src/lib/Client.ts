@@ -64,7 +64,6 @@ editors { address }
 owner { address }
 `;
 
-
 const relatedNodeShape = `
 ${coreNodeShape}
 currentRevision { ${miniRevisionShape} }
