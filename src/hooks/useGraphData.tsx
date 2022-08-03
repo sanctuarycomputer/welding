@@ -50,7 +50,7 @@ const GraphContext = createContext<IGraphData>({
 const { Provider } = GraphContext;
 
 function GraphProvider({ children }) {
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const shallowNodesSubscription = useRef<ObservableQuery<{
     baseNodes: BaseNode[];
   }> | null>(null);
@@ -122,8 +122,8 @@ function GraphProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    loadAccountData(account?.address);
-  }, [account]);
+    loadAccountData(address);
+  }, [address]);
 
   let accountNodesByCollectionType = {};
   if (accountData) {

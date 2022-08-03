@@ -8,7 +8,7 @@ import cx from "classnames";
 import { useAccount } from "wagmi";
 
 const Info = () => {
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
@@ -19,7 +19,7 @@ const Info = () => {
 
   return (
     <div className="fixed bottom-0 right-0 z-20 md:z-40 mb-4 mr-4 flex">
-      {IS_BETA && !account?.address ? (
+      {IS_BETA && !address ? (
         <div
           className={cx(
             `shadow-md	bg-yellow-400 flex rounded-full pl-2 pr-1 py-1 mr-2 transition-transform ease-in-out duration-500`,

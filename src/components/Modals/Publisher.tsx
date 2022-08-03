@@ -113,8 +113,8 @@ const EdgeTile = ({ edge }) => {
 };
 
 const ConnectionTile = ({ to, from, edge, prevConnected, owned }) => {
-  const { activeChain } = useNetwork();
-  const symbol = activeChain?.nativeCurrency?.symbol || "";
+  const { chain } = useNetwork();
+  const symbol = chain?.nativeCurrency?.symbol || "";
 
   const { exchangeRate } = useContext(ExchangeRateContext);
   const [USDEstimate, setUSDEstimate] = useState<string | null>(null);

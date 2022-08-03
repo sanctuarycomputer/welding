@@ -4,7 +4,8 @@ import ModalHeader from "src/components/Modals/ModalHeader";
 import Network from "src/components/Icons/Network";
 import Button from "src/components/Button";
 
-import { useNetwork, chain } from "wagmi";
+import { useNetwork, useSwitchNetwork } from "wagmi";
+import { targetChain } from "src/pages/_app";
 
 type Props = {
   isOpen: boolean;
@@ -12,24 +13,23 @@ type Props = {
 };
 
 const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
-  const { activeChain, switchNetwork } = useNetwork();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({
+    chainId: targetChain.id
+  });
 
   useEffect(() => {
-    if (activeChain) {
-      if (activeChain.network === process.env.NEXT_PUBLIC_NETWORK) {
+    if (chain) {
+      if (chain.network === process.env.NEXT_PUBLIC_NETWORK) {
         onRequestClose();
       }
     } else {
       onRequestClose();
     }
-  }, [activeChain]);
+  }, [chain]);
 
-  const expectedChain = Object.values(chain).find(
-    (c) => c.network === process.env.NEXT_PUBLIC_NETWORK
-  );
-
-  const hint = expectedChain
-    ? `Please select "${expectedChain.name}" in your wallet provider.`
+  const hint = targetChain
+    ? `Please select "${targetChain.name}" in your wallet provider.`
     : `Please select the correct chain in your wallet provider.`;
 
   return (
@@ -44,7 +44,7 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
         <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Network />
           <p className="pt-2 font-semibold">
-            Connect to &quot;{expectedChain?.name || "correct network"}&quot; to
+            Connect to &quot;{targetChain.name || "correct network"}&quot; to
             get started.
           </p>
         </div>
@@ -52,7 +52,7 @@ const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
         <div className="p-4 flex flex-row-reverse justify-between">
           <Button
             label="Switch Network"
-            onClick={() => switchNetwork?.(expectedChain?.id)}
+            onClick={() => switchNetwork?.(targetChain.id)}
             disabled={false}
           />
         </div>

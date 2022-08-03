@@ -24,7 +24,7 @@ interface Props {
 }
 
 const Topic: FC<Props> = ({ node }) => {
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
   const router = useRouter();
@@ -34,7 +34,7 @@ const Topic: FC<Props> = ({ node }) => {
   const { openModal, closeModal } = useContext(ModalContext);
   const { setContent } = useContext(NavContext);
 
-  const canEdit = canEditNode(node, account?.address);
+  const canEdit = canEditNode(node, address);
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",

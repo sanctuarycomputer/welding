@@ -21,7 +21,12 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import ErrorBoundary from "src/components/ErrorBoundary";
 import event from "src/utils/event";
 
-import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
+import {
+  WagmiConfig,
+  chain,
+  createClient,
+  configureChains
+} from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
@@ -50,11 +55,16 @@ Router.events.on("routeChangeError", () => NProgress.done());
 
 Modal.setAppElement("#__next");
 
-const targetChain =
+export const targetChain =
   Object.values(chain).find(
     (c) => c.network === process.env.NEXT_PUBLIC_NETWORK
   ) || chain.polygon;
-const { chains, provider, webSocketProvider } = configureChains(
+
+const {
+  chains,
+  provider,
+  webSocketProvider
+} = configureChains(
   [targetChain, chain.mainnet],
   [
     alchemyProvider({
