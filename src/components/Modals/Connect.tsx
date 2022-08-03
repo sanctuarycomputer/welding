@@ -15,11 +15,11 @@ type Props = {
 const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
   const { closeModal } = useContext(ModalContext);
   const { connect, connectors, error } = useConnect();
-  const { data: account } = useAccount();
+  const { address } = useAccount();
 
   useEffect(() => {
-    if (account) closeModal();
-  }, [account, closeModal]);
+    if (address) closeModal();
+  }, [address, closeModal]);
 
   return (
     <Modal isOpen={isOpen} onRequestClose={() => onRequestClose()}>
@@ -35,7 +35,7 @@ const Connect: FC<Props> = ({ isOpen, onRequestClose }) => {
             .filter((c) => c.ready)
             .map((connector) => (
               <div
-                onClick={() => connect(connector)}
+                onClick={() => connect({ connector })}
                 key={connector.id}
                 className="cursor-pointer flex relative p-4 justify-between items-center flex-row border-b border-color"
               >

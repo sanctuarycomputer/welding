@@ -6,8 +6,8 @@ import { useNetwork } from "wagmi";
 import { CONTRACT_ADDRESS } from "src/utils/constants";
 
 const Metadata = ({ node }) => {
-  const { activeChain } = useNetwork();
-  const explorer = activeChain?.blockExplorers?.default.url;
+  const { chain } = useNetwork();
+  const explorer = chain?.blockExplorers?.default.url;
   const ipfsLink = `https://ipfs.io/ipfs/${node.currentRevision.hash}/metadata.json`;
   const scanLink = `${explorer}/token/${CONTRACT_ADDRESS}?a=${node.tokenId}`;
   return (

@@ -49,7 +49,7 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
 
@@ -68,8 +68,8 @@ const Document: FC<Props> = ({ node }) => {
   )[0];
 
   const canEdit = node.tokenId.startsWith("-")
-    ? canEditNode(subgraphParent, account?.address)
-    : canEditNode(node, account?.address);
+    ? canEditNode(subgraphParent, address)
+    : canEditNode(node, address);
 
   useEffect(() => {
     if (!canEdit || !formik.dirty) return setContent(null);

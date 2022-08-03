@@ -38,7 +38,7 @@ enum SettingsLevel {
 }
 
 const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const [level, setLevel] = useState(SettingsLevel.METADATA);
   const [locked, setLocked] = useState(false);
 
@@ -125,7 +125,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             {level === SettingsLevel.TEAM && (
               <Team
                 node={meta.node}
-                currentAddress={account?.address || ""}
+                currentAddress={address || ""}
                 setLocked={setLocked}
                 reloadData={meta.reloadData}
               />

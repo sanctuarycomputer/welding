@@ -48,7 +48,7 @@ const Actions = ({
   reloadData,
 }) => {
   const { data: signer } = useSigner();
-  const { data: account } = useAccount();
+  const { address } = useAccount();
   const { openModal, closeModal } = useContext(ModalContext);
   const { accountData, accountDataLoading, accountNodesByCollectionType } =
     useContext(GraphContext);
@@ -145,7 +145,7 @@ const Actions = ({
         </label>
       )}
 
-      {allowConnect && account?.address && (
+      {allowConnect && address && (
         <div
           className="cursor-pointer opacity-50 hover:opacity-100 scale-75"
           onClick={() => setSubgraphPickerOpen(true)}

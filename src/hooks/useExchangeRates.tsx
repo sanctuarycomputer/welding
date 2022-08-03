@@ -15,15 +15,15 @@ const ExchangeRateContext = createContext<IExchangeRateContext>({
 const { Provider } = ExchangeRateContext;
 
 function ExchangeRateProvider({ children }) {
-  const { activeChain } = useNetwork();
+  const { chain } = useNetwork();
 
   const [exchangeRateLoading, setExchangeRateLoading] =
     useState<boolean>(false);
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   const loadExchangeRate = async () => {
-    if (!activeChain?.nativeCurrency?.symbol) return;
-    const { symbol } = activeChain.nativeCurrency;
+    if (!chain?.nativeCurrency?.symbol) return;
+    const { symbol } = chain.nativeCurrency;
     setExchangeRateLoading(true);
     try {
       const response = await fetch(
@@ -38,7 +38,7 @@ function ExchangeRateProvider({ children }) {
 
   useEffect(() => {
     loadExchangeRate();
-  }, [activeChain]);
+  }, [chain]);
 
   return (
     <Provider

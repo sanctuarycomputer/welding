@@ -20,19 +20,16 @@ const Wallet = () => {
   const { content } = useContext(NavContext);
   const { accountData, accountDataLoading, accountNodesByCollectionType } =
     useContext(GraphContext);
-  const { data: account } = useAccount();
-  const { activeChain } = useNetwork();
+  const { address } = useAccount();
+  const { chain } = useNetwork();
   const { disconnect } = useDisconnect();
   const [dropDownOpen, setDropDownOpen] = useState(false);
 
   useEffect(() => {
-    if (
-      activeChain &&
-      activeChain.network !== process.env.NEXT_PUBLIC_NETWORK
-    ) {
+    if (chain && chain.network !== process.env.NEXT_PUBLIC_NETWORK) {
       openModal({ type: ModalType.WRONG_NETWORK });
     }
-  }, [activeChain, openModal]);
+  }, [chain, openModal]);
 
   const dropDownRef = useRef(null);
   useOutsideAlerter(dropDownRef, () => {
@@ -44,14 +41,14 @@ const Wallet = () => {
   );
 
   useEffect(() => {
-    if (!account?.address) return;
-    didConnect(account.address);
+    if (!address) return;
+    didConnect(address);
     if (accountData?.ensName) {
-      setEnsName(account.address, accountData.ensName);
+      setEnsName(address, accountData.ensName);
     }
-  }, [account?.address, accountData?.ensName]);
+  }, [address, accountData?.ensName]);
 
-  if (account?.address) {
+  if (address) {
     return (
       <>
         {content || (
@@ -65,15 +62,13 @@ const Wallet = () => {
           className="relative z-10"
           onClick={() => setDropDownOpen(!dropDownOpen)}
         >
-          <Address address={account.address} showAvatar />
+          <Address address={address} showAvatar />
           {dropDownOpen && (
             <div
               ref={dropDownRef}
               className={`${bg} w-fit border absolute top-8 right-0 shadow-lg rounded z-10`}
             >
-              <Link
-                href={`/accounts/${accountData?.ensName || account.address}`}
-              >
+              <Link href={`/accounts/${accountData?.ensName || address}`}>
                 <a>
                   <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
                     Account
