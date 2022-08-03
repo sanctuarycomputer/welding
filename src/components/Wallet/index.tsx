@@ -136,10 +136,11 @@ const Wallet = () => {
         {({ isConnected, isConnecting, show, hide, address, ensName }) => {
           return (
             <button onClick={show} className={`Button ${bg}`}>
-              {isConnecting ?
-                "Connecting..." :
-                (isConnected ? address : "Connect")
-              }
+              {isConnecting
+                ? "Connecting..."
+                : isConnected
+                ? address
+                : "Connect"}
             </button>
           );
         }}
