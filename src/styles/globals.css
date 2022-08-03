@@ -36,7 +36,7 @@ code {
   font-weight: 500;
 }
 
-#__next svg {
+#__next svg, .ReactModalPortal svg  {
   fill: var(--text-color);
   color: var(--text-color);
 }
