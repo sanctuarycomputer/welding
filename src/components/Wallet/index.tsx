@@ -2,7 +2,8 @@ import { useContext, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAccount, useDisconnect, useNetwork } from "wagmi";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
-import Button from "src/components/Button";
+//import Button from "src/components/Button";
+import { ConnectKitButton } from "connectkit";
 import { NavContext } from "src/hooks/useNav";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -131,11 +132,18 @@ const Wallet = () => {
 
   return (
     <div className="z-10">
-      <Button
-        disabled={false}
-        label="Connect"
-        onClick={() => openModal({ type: ModalType.CONNECT })}
-      />
+      <ConnectKitButton.Custom>
+        {({ isConnected, isConnecting, show, hide, address, ensName }) => {
+          return (
+            <button onClick={show} className={`Button ${bg}`}>
+              {isConnecting ?
+                "Connecting..." :
+                (isConnected ? address : "Connect")
+              }
+            </button>
+          );
+        }}
+      </ConnectKitButton.Custom>
     </div>
   );
 };
