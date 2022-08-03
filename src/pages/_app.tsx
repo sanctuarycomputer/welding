@@ -27,6 +27,7 @@ import { publicProvider } from "wagmi/providers/public";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
+import { ConnectKitProvider } from "connectkit";
 
 const Wallet = dynamic(() => import("src/components/Wallet"), {
   ssr: false,
@@ -88,24 +89,30 @@ const client = createClient({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={client}>
-      <ExchangeRateProvider>
-        <GraphProvider>
-          <DndProvider backend={HTML5Backend}>
-            <ModalProvider>
-              <NavProvider>
-                <ErrorBoundary>
-                  <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
-                    <Wallet />
-                  </div>
-                  <Component {...pageProps} />
-                  <Toaster />
-                  <Info />
-                </ErrorBoundary>
-              </NavProvider>
-            </ModalProvider>
-          </DndProvider>
-        </GraphProvider>
-      </ExchangeRateProvider>
+      <ConnectKitProvider
+        customTheme={{
+          "--ck-font-family": '"Comic Sans MS", "Comic Sans", cursive',
+        }}
+      >
+        <ExchangeRateProvider>
+          <GraphProvider>
+            <DndProvider backend={HTML5Backend}>
+              <ModalProvider>
+                <NavProvider>
+                  <ErrorBoundary>
+                    <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
+                      <Wallet />
+                    </div>
+                    <Component {...pageProps} />
+                    <Toaster />
+                    <Info />
+                  </ErrorBoundary>
+                </NavProvider>
+              </ModalProvider>
+            </DndProvider>
+          </GraphProvider>
+        </ExchangeRateProvider>
+      </ConnectKitProvider>
     </WagmiConfig>
   );
 }

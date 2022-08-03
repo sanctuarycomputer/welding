@@ -2,13 +2,14 @@ import { useContext, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAccount, useDisconnect, useNetwork } from "wagmi";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
-import Button from "src/components/Button";
+//import Button from "src/components/Button";
 import { NavContext } from "src/hooks/useNav";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import slugifyNode from "src/utils/slugifyNode";
 import { bg, bgHover } from "src/utils/theme";
 import { didConnect, setEnsName, didDisconnect } from "src/utils/event";
+import { ConnectKitButton } from "connectkit";
 
 import dynamic from "next/dynamic";
 const Address = dynamic(() => import("src/components/Address"), {
@@ -136,11 +137,7 @@ const Wallet = () => {
 
   return (
     <div className="z-10">
-      <Button
-        disabled={false}
-        label="Connect"
-        onClick={() => openModal({ type: ModalType.CONNECT })}
-      />
+      <ConnectKitButton />
     </div>
   );
 };
