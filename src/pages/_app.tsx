@@ -20,6 +20,8 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ErrorBoundary from "src/components/ErrorBoundary";
 import event from "src/utils/event";
+import { ConnectKitProvider } from "connectkit";
+import { Buffer } from "buffer";
 
 import { WagmiConfig, chain, createClient, configureChains } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -36,6 +38,7 @@ const Info = dynamic(() => import("src/components/Info"), {
 });
 
 if (typeof window !== "undefined") {
+  if (!window.Buffer) window.Buffer = Buffer;
   event("Page View", { pathname: window.location.pathname });
 }
 NProgress.configure({ showSpinner: false });
@@ -78,7 +81,7 @@ const client = createClient({
     new WalletConnectConnector({
       chains,
       options: {
-        qrcode: true,
+        qrcode: false,
       },
     }),
   ],
@@ -89,24 +92,30 @@ const client = createClient({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={client}>
-      <ExchangeRateProvider>
-        <GraphProvider>
-          <DndProvider backend={HTML5Backend}>
-            <ModalProvider>
-              <NavProvider>
-                <ErrorBoundary>
-                  <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
-                    <Wallet />
-                  </div>
-                  <Component {...pageProps} />
-                  <Toaster />
-                  <Info />
-                </ErrorBoundary>
-              </NavProvider>
-            </ModalProvider>
-          </DndProvider>
-        </GraphProvider>
-      </ExchangeRateProvider>
+      <ConnectKitProvider
+        customTheme={{
+          "--ck-border-radius": "4px",
+        }}
+      >
+        <ExchangeRateProvider>
+          <GraphProvider>
+            <DndProvider backend={HTML5Backend}>
+              <ModalProvider>
+                <NavProvider>
+                  <ErrorBoundary>
+                    <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
+                      <Wallet />
+                    </div>
+                    <Component {...pageProps} />
+                    <Toaster />
+                    <Info />
+                  </ErrorBoundary>
+                </NavProvider>
+              </ModalProvider>
+            </DndProvider>
+          </GraphProvider>
+        </ExchangeRateProvider>
+      </ConnectKitProvider>
     </WagmiConfig>
   );
 }
