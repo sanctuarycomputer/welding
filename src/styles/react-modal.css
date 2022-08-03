@@ -5,6 +5,12 @@
   backdrop-filter: blur(16px);
 }
 
+
+#__CONNECTKIT__ div[role="dialog"]:first-child {
+  background-color: rgba(23, 23, 23, 0.5) !important;
+  backdrop-filter: blur(16px);
+}
+
 .curtain {
   background-color: rgba(23, 23, 23, 0.5) !important;
   backdrop-filter: blur(16px);
