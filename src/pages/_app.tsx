@@ -92,9 +92,11 @@ const client = createClient({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={client}>
-      <ConnectKitProvider customTheme={{
-        "--ck-border-radius": "4px",
-      }}>
+      <ConnectKitProvider
+        customTheme={{
+          "--ck-border-radius": "4px",
+        }}
+      >
         <ExchangeRateProvider>
           <GraphProvider>
             <DndProvider backend={HTML5Backend}>
