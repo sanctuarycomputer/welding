@@ -2,7 +2,6 @@ import { useContext, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAccount, useDisconnect, useNetwork } from "wagmi";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
-//import Button from "src/components/Button";
 import { ConnectKitButton } from "connectkit";
 import { NavContext } from "src/hooks/useNav";
 import { ModalContext, ModalType } from "src/hooks/useModal";
@@ -133,7 +132,7 @@ const Wallet = () => {
   return (
     <div className="z-10">
       <ConnectKitButton.Custom>
-        {({ isConnected, isConnecting, show, hide, address, ensName }) => {
+        {({ isConnected, isConnecting, show, address }) => {
           return (
             <button onClick={show} className={`Button ${bg}`}>
               {isConnecting
