@@ -15,7 +15,7 @@ type Props = {
 const WrongNetwork: FC<Props> = ({ isOpen, onRequestClose }) => {
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: targetChain.id
+    chainId: targetChain.id,
   });
 
   useEffect(() => {

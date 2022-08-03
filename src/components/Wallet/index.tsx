@@ -26,9 +26,7 @@ const Wallet = () => {
   const [dropDownOpen, setDropDownOpen] = useState(false);
 
   useEffect(() => {
-    if (
-      chain && chain.network !== process.env.NEXT_PUBLIC_NETWORK
-    ) {
+    if (chain && chain.network !== process.env.NEXT_PUBLIC_NETWORK) {
       openModal({ type: ModalType.WRONG_NETWORK });
     }
   }, [chain, openModal]);
@@ -70,9 +68,7 @@ const Wallet = () => {
               ref={dropDownRef}
               className={`${bg} w-fit border absolute top-8 right-0 shadow-lg rounded z-10`}
             >
-              <Link
-                href={`/accounts/${accountData?.ensName || address}`}
-              >
+              <Link href={`/accounts/${accountData?.ensName || address}`}>
                 <a>
                   <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
                     Account
