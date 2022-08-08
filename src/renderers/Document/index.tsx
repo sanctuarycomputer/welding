@@ -50,7 +50,6 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
-
   const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);

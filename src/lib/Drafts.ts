@@ -1,4 +1,4 @@
-import type { Draft } from 'src/types';
+import type { Draft } from "src/types";
 import { diff, detailedDiff } from "deep-object-diff";
 
 // - [ ] Only persist a draft when it is actually different from the
@@ -12,11 +12,9 @@ import { diff, detailedDiff } from "deep-object-diff";
 // - [ ] When I pass a -1 tokenId, it should be assigned a temporary id
 // - [ ] I should see my drafts in the sidebar
 
-const applyDraftIfDifferent = (draft, formik) => {
-};
+const applyDraftIfDifferent = (draft, formik) => {};
 
 const Drafts = {
-
   persist: async function (address, formik): Promise<void> {
     if (typeof window === "undefined") return;
     const drafts = await Drafts.forBaseNode(address, formik);
@@ -45,11 +43,13 @@ const Drafts = {
         console.log("will make initial draft");
         const node = formik.values.__node__;
         const type = node.labels.filter((l) => l !== "BaseNode")[0];
-        const key = `-welding::drafts::${type}::${node.tokenId}::${address}::${new Date().toISOString()}`;
+        const key = `-welding::drafts::${type}::${
+          node.tokenId
+        }::${address}::${new Date().toISOString()}`;
         const values = JSON.stringify({
           name: formik.values.name,
           description: formik.values.description,
-          content: formik.values.content
+          content: formik.values.content,
         });
         window.localStorage.setItem(key, values);
         formik.values.__draft__ = { key, values };
@@ -58,7 +58,7 @@ const Drafts = {
   },
 
   stage: async function (address, formik): Promise<boolean> {
-    console.log("Drafts: will Stage")
+    console.log("Drafts: will Stage");
     const drafts = await Drafts.forBaseNode(address, formik);
     if (!drafts[0]) return false;
     console.log("Will stage");
@@ -73,7 +73,7 @@ const Drafts = {
   },
 
   unstage: async function (formik): Promise<void> {
-    console.log("Drafts: will Unstage")
+    console.log("Drafts: will Unstage");
     if (formik.values.__draft__ === null) return;
     // Only unstage if the current revision on this formik
     // is identical to the latest persisted draft?
@@ -86,18 +86,26 @@ const Drafts = {
     const type = node.labels.filter((l) => l !== "BaseNode")[0];
     const prefix = `-welding::drafts::${type}::${node.tokenId}::${address}`;
 
-    return Object.keys(localStorage).reduce(function (acc, k) {
-      if (k.startsWith(prefix))
-        acc = [...acc, {
-          key: k,
-          values: JSON.parse(window.localStorage.getItem(k))
-        }];
-      return acc;
-    }, []).sort(function (a, b) {
-      const aSplat = a.key.split("::");
-      const bSplat = b.key.split("::");
-      return new Date(bSplat[bSplat.length - 1]) - new Date(aSplat[aSplat.length - 1]);
-    });
+    return Object.keys(localStorage)
+      .reduce(function (acc, k) {
+        if (k.startsWith(prefix))
+          acc = [
+            ...acc,
+            {
+              key: k,
+              values: JSON.parse(window.localStorage.getItem(k)),
+            },
+          ];
+        return acc;
+      }, [])
+      .sort(function (a, b) {
+        const aSplat = a.key.split("::");
+        const bSplat = b.key.split("::");
+        return (
+          new Date(bSplat[bSplat.length - 1]) -
+          new Date(aSplat[aSplat.length - 1])
+        );
+      });
   },
 };
 

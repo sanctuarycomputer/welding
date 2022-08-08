@@ -10,7 +10,7 @@ export type Draft = {
     name: string;
     description: string;
     content: any;
-  }
+  };
 };
 
 export type BaseNodeFormValues = {
