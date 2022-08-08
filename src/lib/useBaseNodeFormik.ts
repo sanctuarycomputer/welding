@@ -67,6 +67,7 @@ const useBaseNodeFormik = (
       outgoing: node.outgoing,
       incoming: node.incoming,
       __node__: node,
+      __draft__: null
     },
     onSubmit: async (values) => {
       let status;

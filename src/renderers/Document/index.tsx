@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect } from "react";
+import { FC, useContext, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -16,6 +16,7 @@ import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { useAccount } from "wagmi";
+import Drafts from "src/lib/Drafts";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -49,6 +50,7 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
+
   const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
@@ -71,7 +73,7 @@ const Document: FC<Props> = ({ node }) => {
     ? canEditNode(subgraphParent, address)
     : canEditNode(node, address);
 
-  useEffect(() => {
+  useMemo(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
     setContent(
       <EditNav
@@ -79,7 +81,7 @@ const Document: FC<Props> = ({ node }) => {
         buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
     );
-  }, [canEdit, formik]);
+  }, [canEdit, formik.dirty, formik.isSubmitting]);
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -90,24 +92,39 @@ const Document: FC<Props> = ({ node }) => {
     }
   );
 
-  useEffect(() => {
+  //useMemo(() => {
+  //  if (!canEdit) return;
+  //  if (shallowNodesLoading) return;
+  //  if (shallowNodes.length === 0) return;
+  //  const tokenIds = extractTokenIdsFromContentBlocks(
+  //    formik.values.content?.blocks || []
+  //  );
+  //  const referencedNodes = (shallowNodes || []).filter((n) =>
+  //    tokenIds.includes(n.tokenId)
+  //  );
+  //  stageNodeRelations(
+  //    formik,
+  //    "incoming",
+  //    referencedNodes,
+  //    "REFERENCED_BY",
+  //    true
+  //  );
+  //}, [formik.values.content, shallowNodes, shallowNodesLoading]);
+
+  console.log("Document will render", canEdit);
+
+  useMemo(() => {
+    if (!address) return;
     if (!canEdit) return;
-    if (shallowNodesLoading) return;
-    if (shallowNodes.length === 0) return;
-    const tokenIds = extractTokenIdsFromContentBlocks(
-      formik.values.content?.blocks || []
-    );
-    const referencedNodes = (shallowNodes || []).filter((n) =>
-      tokenIds.includes(n.tokenId)
-    );
-    stageNodeRelations(
-      formik,
-      "incoming",
-      referencedNodes,
-      "REFERENCED_BY",
-      true
-    );
-  }, [formik.values.content, shallowNodes, shallowNodesLoading]);
+    Drafts.persist(address, formik);
+  }, [canEdit, formik.values.content, address]);
+
+  //useMemo(() => {
+  //  console.log("will callback stage");
+  //  if (canEdit) {
+  //    //Drafts.stage(address, formik);
+  //  }
+  //}, [canEdit]);
 
   const references = getRelatedNodes(
     formik,

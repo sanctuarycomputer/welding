@@ -4,6 +4,15 @@ export type Session = {
   address: string;
 };
 
+export type Draft = {
+  key: string;
+  values: {
+    name: string;
+    description: string;
+    content: any;
+  }
+};
+
 export type BaseNodeFormValues = {
   name: string;
   description: string;
