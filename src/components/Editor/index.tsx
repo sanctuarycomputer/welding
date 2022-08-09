@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { FC, useEffect, useRef } from "react";
 import EditorJS from "@editorjs/editorjs";
-//import Undo from "editorjs-undo";
 
 import Header from "@editorjs/header";
 import Paragraph from "@editorjs/paragraph";
@@ -11,14 +10,16 @@ import List from "@editorjs/list";
 import Code from "@editorjs/code";
 import LinkTool from "@editorjs/link";
 import Quote from "@editorjs/quote";
-import Marker from "@editorjs/marker";
 import Delimiter from "@editorjs/delimiter";
 import InlineCode from "@editorjs/inline-code";
+import Color from "../../../vendor/editorjs-text-color-plugin";
+import Image from "@editorjs/image";
 
+// import Marker from "@editorjs/marker";
+// import Undo from "editorjs-undo";
 // import Raw from "@editorjs/raw";
 // import Warning from "@editorjs/warning";
 // import CheckList from "@editorjs/checklist";
-import Image from "@editorjs/image";
 
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
@@ -30,7 +31,23 @@ const DEFAULT_CONTENT = {
   ],
 };
 
+const EDITOR_COLORS = [
+  "var(--text-color)",
+  "var(--color-brown)",
+  "var(--color-orange)",
+  "var(--color-yellow)",
+  "var(--color-green)",
+  "var(--color-blue)",
+  "var(--color-purple)",
+  "var(--color-pink)",
+  "var(--color-red)",
+];
+
 const EDITOR_JS_TOOLS = {
+  // checklist: CheckList,
+  // warning: Warning,
+  // raw: Raw,
+
   image: {
     class: Image,
     config: {
@@ -40,9 +57,15 @@ const EDITOR_JS_TOOLS = {
       },
     },
   },
-  // checklist: CheckList,
-  // warning: Warning,
-  // raw: Raw,
+
+  color: {
+    class: Color,
+    config: {
+      colorCollections: EDITOR_COLORS,
+      type: "text",
+      defaultColor: "var(--color-blue)",
+    },
+  },
 
   paragraph: {
     class: Paragraph,
@@ -90,7 +113,6 @@ const EDITOR_JS_TOOLS = {
     },
   },
   quote: Quote,
-  marker: Marker,
   delimiter: Delimiter,
   inlineCode: InlineCode,
 };

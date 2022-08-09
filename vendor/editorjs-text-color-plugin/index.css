@@ -1,0 +1,21 @@
+.picker_wrapper.popup {
+  z-index: 99;
+  width: 170px;
+  margin: 0;
+  box-shadow: 0 0 10px 1px #eaeaea;
+  background: #ffffff;
+}
+
+.picker_arrow {
+  display: none;
+}
+
+.layout_default .picker_slider,
+.layout_default .picker_selector {
+  padding: 5px;
+}
+
+.colorPlugin.ce-inline-tool {
+  width: 30px;
+  border-radius: 3px;
+}
