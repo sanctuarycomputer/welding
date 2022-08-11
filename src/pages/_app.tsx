@@ -76,7 +76,7 @@ const client = createClient({
       chains,
       options: {
         appName: "welding.app",
-        headlessMode: true
+        headlessMode: true,
       },
     }),
     new WalletConnectConnector({
