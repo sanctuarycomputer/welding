@@ -21,6 +21,77 @@ import Image from "@editorjs/image";
 // import Warning from "@editorjs/warning";
 // import CheckList from "@editorjs/checklist";
 
+class LinkableHeader extends Header {
+  constructor({ block }) {
+		const result = super(...arguments);
+    this.blockId = block.id;
+    this._element = this.getTag();
+    return result;
+  };
+
+  getTag() {
+    const tag = super.getTag();
+    if (this.blockId) tag.id = this.blockId;
+    return tag;
+  }
+}
+
+class TableOfContents {
+  constructor({ api }){
+    this.api = api;
+    this._CSS = { wrapper: 'ce-toc' };
+    this._element = document.createElement('div');
+    this._element.classList.add(this._CSS.wrapper);
+  }
+
+  static get toolbox() {
+    return {
+      title: 'Table of Contents',
+      icon: '<svg fill="#000000" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 16 16" width="16px" height="16px"><path d="M 1.5 3 A 0.50005 0.50005 0 0 0 1 3.5 L 1 5.5 A 0.50005 0.50005 0 0 0 1.5 6 L 3.5 6 A 0.50005 0.50005 0 0 0 4 5.5 L 4 3.5 A 0.50005 0.50005 0 0 0 3.5 3 L 1.5 3 z M 5 3 L 5 4 L 15 4 L 15 3 L 5 3 z M 2 4 L 3 4 L 3 5 L 2 5 L 2 4 z M 5 5 L 5 6 L 12 6 L 12 5 L 5 5 z M 1.5 9 A 0.50005 0.50005 0 0 0 1 9.5 L 1 11.5 A 0.50005 0.50005 0 0 0 1.5 12 L 3.5 12 A 0.50005 0.50005 0 0 0 4 11.5 L 4 9.5 A 0.50005 0.50005 0 0 0 3.5 9 L 1.5 9 z M 5 9 L 5 10 L 15 10 L 15 9 L 5 9 z M 2 10 L 3 10 L 3 11 L 2 11 L 2 10 z M 5 11 L 5 12 L 12 12 L 12 11 L 5 11 z"/></svg>'
+    };
+  }
+
+  render() {
+    this.sync();
+    return this._element;
+  }
+
+  sync() {
+    const headers = [];
+    for (let i = 0; i < this.api.blocks.getBlocksCount(); i++) {
+      const block = this.api.blocks.getBlockByIndex(i);
+      if (block.name === "header") {
+        const el = block.holder.querySelector('.ce-header');
+        headers.push({
+          id: block.id,
+          level: parseInt(el?.tagName.replace('H', '')),
+          title: el ? el.innerText : "",
+        });
+      }
+    }
+
+    let innerHTML = ''
+    headers.forEach((header, index) => {
+      let prev = index ? headers[index - 1] : { level: 1 };
+      if (prev.level === header.level) {
+        innerHTML += `<li><a href="#${header.id}">${header.title}</a></li>`;
+      } else if (prev.level > header.level) {
+        for (let i = 0; i < prev.level - header.level; i++) innerHTML += `</ul>`;
+        innerHTML += `<li><a href="#${header.id}">${header.title}</a></li>`;
+      } else if (prev.level < header.level) {
+        for (let i = 0; i < header.level - prev.level; i++) innerHTML += `<ul>`;
+        innerHTML += `<li><a href="#${header.id}">${header.title}</a></li>`;
+      }
+    });
+    this._element.innerHTML = `<ul>${innerHTML}</ul>`;
+  }
+
+  save(blockContent) {
+    this.sync();
+    return {};
+  }
+}
+
 // https://github.com/codex-team/editor.js/pull/1741
 const DEFAULT_CONTENT = {
   blocks: [
@@ -47,6 +118,10 @@ const EDITOR_JS_TOOLS = {
   // checklist: CheckList,
   // warning: Warning,
   // raw: Raw,
+
+  tableOfContents: {
+    class: TableOfContents
+  },
 
   image: {
     class: Image,
@@ -106,7 +181,7 @@ const EDITOR_JS_TOOLS = {
     config: { endpoint: "/api/og" },
   },
   header: {
-    class: Header,
+    class: LinkableHeader,
     config: {
       levels: [1, 2, 3],
       defaultLevel: 1,
