@@ -24,7 +24,6 @@ import Image from "@editorjs/image";
 class LinkableHeader extends Header {
   constructor(...args) {
     const result = super(...args);
-    console.log(args);
     this.blockId = args[0]?.block?.id;
     this._element = this.getTag();
     return result;
