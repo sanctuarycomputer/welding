@@ -7,6 +7,29 @@
   }
 }
 
+.ce-toc {
+  padding: 1rem 0px;
+}
+.ce-toc a {
+  opacity: 0.75;
+  line-height: 1.6em;
+}
+.ce-toc ul {
+  padding-left: 0.5rem;
+}
+.ce-toc ul li {
+  padding-left: 0.5rem;
+}
+.ce-toc li ul {
+  padding-left: 0.5rem;
+}
+.ce-toc > ul {
+  padding-left: 0rem;
+}
+.ce-toc > ul > li {
+  padding-left: 0rem;
+}
+
 .cdx-marker {
   background: rgb(250 204 21 / 60%);
 }
