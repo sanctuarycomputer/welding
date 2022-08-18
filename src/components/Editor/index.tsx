@@ -44,6 +44,10 @@ class TableOfContents {
     this._element.classList.add(this._CSS.wrapper);
   }
 
+  static get isReadOnlySupported() {
+    return true;
+  }
+
   static get toolbox() {
     return {
       title: "Table of Contents",
