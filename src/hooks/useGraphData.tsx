@@ -17,7 +17,7 @@ type RevisionLoadingData = {
 interface IGraphData {
   sessionData: Session | null;
   sessionDataLoading: boolean;
-  loadCurrentSession: () => void;
+  loadCurrentSession: () => Promise<Session | undefined>;
   flushSessionAndDisconnect: () => void;
   accountData: Account | null;
   accountDataLoading: boolean;
@@ -42,7 +42,7 @@ interface IGraphData {
 const GraphContext = createContext<IGraphData>({
   sessionData: null,
   sessionDataLoading: false,
-  loadCurrentSession: () => undefined,
+  loadCurrentSession: async () => undefined,
   flushSessionAndDisconnect: () => undefined,
   accountData: null,
   accountNodesByCollectionType: {},
@@ -102,17 +102,16 @@ function GraphProvider({ children }) {
   const loadCurrentSession = async () => {
     try {
       setSessionDataLoading(true);
-      const res = await fetch('/api/me');
+      const res = await fetch("/api/me");
       const json = await res.json();
       if (json.address) {
-        const sessionData = { address: json.address };
+        const sessionData = { address: json.address } as Session;
         setSessionData(sessionData);
         return sessionData;
       } else {
         setSessionData(null);
-        return null;
       }
-    } catch(e) {
+    } catch (e) {
       Sentry.captureException(e);
       setSessionData(null);
     } finally {
@@ -123,8 +122,8 @@ function GraphProvider({ children }) {
   const flushSessionAndDisconnect = async () => {
     try {
       setSessionDataLoading(true);
-      await fetch('/api/logout');
-    } catch(e) {
+      await fetch("/api/logout");
+    } catch (e) {
       Sentry.captureException(e);
     } finally {
       // Do this anyway, for security

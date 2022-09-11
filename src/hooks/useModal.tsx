@@ -83,7 +83,7 @@ const ModalProvider = ({ children }) => {
   // TODO: Maybe move?
   const { events } = useRouter();
   useEffect(() => {
-    const onRouteChange = () => closeModal(ModalType.PUBLISHER)
+    const onRouteChange = () => closeModal(ModalType.PUBLISHER);
     events.on("routeChangeComplete", onRouteChange);
     return () => events.off("routeChangeComplete", onRouteChange);
   }, [closeModal, events]);
@@ -91,10 +91,16 @@ const ModalProvider = ({ children }) => {
   return (
     <Provider value={{ openModal, closeModal }}>
       {currentModal?.type === ModalType.WRONG_NETWORK && (
-        <WrongNetworkModal isOpen onRequestClose={() => closeModal(ModalType.WRONG_NETWORK)} />
+        <WrongNetworkModal
+          isOpen
+          onRequestClose={() => closeModal(ModalType.WRONG_NETWORK)}
+        />
       )}
       {currentModal?.type === ModalType.NEEDS_SESSION && (
-        <NeedsSessionModal isOpen onRequestClose={() => closeModal(ModalType.NEEDS_SESSION)} />
+        <NeedsSessionModal
+          isOpen
+          onRequestClose={() => closeModal(ModalType.NEEDS_SESSION)}
+        />
       )}
       {currentModal?.type === ModalType.TOPIC_CONNECTOR && (
         <TopicConnectorModal

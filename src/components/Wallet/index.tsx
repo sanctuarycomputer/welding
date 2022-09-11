@@ -24,7 +24,7 @@ const Wallet = () => {
     flushSessionAndDisconnect,
     accountData,
     accountDataLoading,
-    accountNodesByCollectionType
+    accountNodesByCollectionType,
   } = useContext(GraphContext);
   const { address } = useAccount();
   const { chain } = useNetwork();
@@ -43,7 +43,7 @@ const Wallet = () => {
       !sessionDataLoading &&
       chain &&
       chain.network === process.env.NEXT_PUBLIC_NETWORK
-      ) {
+    ) {
       openModal({ type: ModalType.NEEDS_SESSION });
     }
   }, [address, sessionData, sessionDataLoading, chain, chain?.network]);
@@ -151,7 +151,7 @@ const Wallet = () => {
         {({ isConnected, isConnecting, show, address }) => {
           return (
             <button onClick={show} className={`Button ${bg}`}>
-              {(isConnecting || accountDataLoading || sessionDataLoading)
+              {isConnecting || accountDataLoading || sessionDataLoading
                 ? "Connecting..."
                 : isConnected
                 ? address
