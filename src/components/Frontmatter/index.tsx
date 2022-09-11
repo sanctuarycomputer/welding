@@ -28,7 +28,7 @@ const Frontmatter: FC<Props> = ({ formik, readOnly }) => {
                 meta: {
                   didPickEmoji: (emoji: BaseEmoji) => {
                     formik.setFieldValue("emoji", emoji);
-                    closeModal();
+                    closeModal(ModalType.EMOJI_PICKER);
                   },
                 },
               });

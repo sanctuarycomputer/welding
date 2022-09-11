@@ -35,7 +35,7 @@ export default function usePublisher(node: BaseNode): PublisherUtils {
 
   useEffect(() => {
     if (!formik?.status) {
-      closeModal();
+      closeModal(ModalType.PUBLISHER);
       return;
     }
     const { status, tx } = formik.status;

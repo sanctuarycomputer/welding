@@ -1,7 +1,7 @@
 import { useState, createContext, useEffect } from "react";
 import { useRouter } from "next/router";
-import ConnectModal from "src/components/Modals/Connect";
 import WrongNetworkModal from "src/components/Modals/WrongNetwork";
+import NeedsSessionModal from "src/components/Modals/NeedsSession";
 import TopicConnectorModal, {
   TopicConnectorMeta,
 } from "src/components/Modals/TopicConnector";
@@ -18,12 +18,12 @@ import PublisherModal, { PublisherMeta } from "src/components/Modals/Publisher";
 
 interface IModalContext {
   openModal: (currentModal: CurrentModal) => void;
-  closeModal: () => void;
+  closeModal: (modalType: ModalType) => void;
 }
 
 export enum ModalType {
-  CONNECT = "CONNECT",
   WRONG_NETWORK = "WRONG_NETWORK",
+  NEEDS_SESSION = "NEEDS_SESSION",
   TOPIC_CONNECTOR = "TOPIC_CONNECTOR",
   TOPIC_MINTER = "TOPIC_MINTER",
   EMOJI_PICKER = "EMOJI_PICKER",
@@ -33,10 +33,10 @@ export enum ModalType {
 
 type CurrentModal =
   | {
-      type: ModalType.CONNECT;
+      type: ModalType.WRONG_NETWORK;
     }
   | {
-      type: ModalType.WRONG_NETWORK;
+      type: ModalType.NEEDS_SESSION;
     }
   | {
       type: ModalType.TOPIC_CONNECTOR;
@@ -73,57 +73,61 @@ const ModalProvider = ({ children }) => {
     setCurrentModal(currentModal);
     setIsOpen(true);
   }
-  function closeModal() {
-    setCurrentModal(null);
-    setIsOpen(false);
+  function closeModal(modalType: ModalType) {
+    if (modalType === currentModal?.type) {
+      setCurrentModal(null);
+      setIsOpen(false);
+    }
   }
 
+  // TODO: Maybe move?
   const { events } = useRouter();
   useEffect(() => {
-    events.on("routeChangeComplete", closeModal);
-    return () => events.off("routeChangeComplete", closeModal);
+    const onRouteChange = () => closeModal(ModalType.PUBLISHER)
+    events.on("routeChangeComplete", onRouteChange);
+    return () => events.off("routeChangeComplete", onRouteChange);
   }, [closeModal, events]);
 
   return (
     <Provider value={{ openModal, closeModal }}>
-      {currentModal?.type === ModalType.CONNECT && (
-        <ConnectModal isOpen onRequestClose={closeModal} />
-      )}
       {currentModal?.type === ModalType.WRONG_NETWORK && (
-        <WrongNetworkModal isOpen onRequestClose={closeModal} />
+        <WrongNetworkModal isOpen onRequestClose={() => closeModal(ModalType.WRONG_NETWORK)} />
+      )}
+      {currentModal?.type === ModalType.NEEDS_SESSION && (
+        <NeedsSessionModal isOpen onRequestClose={() => closeModal(ModalType.NEEDS_SESSION)} />
       )}
       {currentModal?.type === ModalType.TOPIC_CONNECTOR && (
         <TopicConnectorModal
           isOpen
-          onRequestClose={closeModal}
+          onRequestClose={() => closeModal(ModalType.TOPIC_CONNECTOR)}
           meta={currentModal.meta}
         />
       )}
       {currentModal?.type === ModalType.TOPIC_MINTER && (
         <TopicMinterModal
           isOpen
-          onRequestClose={closeModal}
+          onRequestClose={() => closeModal(ModalType.TOPIC_MINTER)}
           meta={currentModal.meta}
         />
       )}
       {currentModal?.type === ModalType.EMOJI_PICKER && (
         <EmojiPickerModal
           isOpen
-          onRequestClose={closeModal}
+          onRequestClose={() => closeModal(ModalType.EMOJI_PICKER)}
           meta={currentModal.meta}
         />
       )}
       {currentModal?.type === ModalType.NODE_SETTINGS && (
         <NodeSettingsModal
           isOpen
-          onRequestClose={closeModal}
+          onRequestClose={() => closeModal(ModalType.NODE_SETTINGS)}
           meta={currentModal.meta}
         />
       )}
       {currentModal?.type === ModalType.PUBLISHER && (
         <PublisherModal
           isOpen
-          onRequestClose={closeModal}
+          onRequestClose={() => closeModal(ModalType.PUBLISHER)}
           meta={currentModal.meta}
         />
       )}

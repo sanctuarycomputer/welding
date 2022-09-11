@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useAccount, useDisconnect, useNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import useOutsideAlerter from "src/hooks/useOutsideAlerter";
 import { ConnectKitButton } from "connectkit";
 import { NavContext } from "src/hooks/useNav";
@@ -8,7 +8,7 @@ import { ModalContext, ModalType } from "src/hooks/useModal";
 import { GraphContext } from "src/hooks/useGraphData";
 import slugifyNode from "src/utils/slugifyNode";
 import { bg, bgHover } from "src/utils/theme";
-import { didConnect, setEnsName, didDisconnect } from "src/utils/event";
+import { didConnect, setEnsName } from "src/utils/event";
 
 import dynamic from "next/dynamic";
 const Address = dynamic(() => import("src/components/Address"), {
@@ -18,11 +18,16 @@ const Address = dynamic(() => import("src/components/Address"), {
 const Wallet = () => {
   const { openModal } = useContext(ModalContext);
   const { content } = useContext(NavContext);
-  const { accountData, accountDataLoading, accountNodesByCollectionType } =
-    useContext(GraphContext);
+  const {
+    sessionData,
+    sessionDataLoading,
+    flushSessionAndDisconnect,
+    accountData,
+    accountDataLoading,
+    accountNodesByCollectionType
+  } = useContext(GraphContext);
   const { address } = useAccount();
   const { chain } = useNetwork();
-  const { disconnect } = useDisconnect();
   const [dropDownOpen, setDropDownOpen] = useState(false);
 
   useEffect(() => {
@@ -30,6 +35,18 @@ const Wallet = () => {
       openModal({ type: ModalType.WRONG_NETWORK });
     }
   }, [chain, openModal]);
+
+  useEffect(() => {
+    if (
+      address &&
+      !sessionData &&
+      !sessionDataLoading &&
+      chain &&
+      chain.network === process.env.NEXT_PUBLIC_NETWORK
+      ) {
+      openModal({ type: ModalType.NEEDS_SESSION });
+    }
+  }, [address, sessionData, sessionDataLoading, chain, chain?.network]);
 
   const dropDownRef = useRef(null);
   useOutsideAlerter(dropDownRef, () => {
@@ -114,8 +131,7 @@ const Wallet = () => {
               <a
                 className="text-center flex flex-row items-center flex-grow"
                 onClick={() => {
-                  disconnect();
-                  didDisconnect();
+                  flushSessionAndDisconnect();
                 }}
               >
                 <p className={`${bgHover} font-semibold w-32 truncate py-1`}>
@@ -135,7 +151,7 @@ const Wallet = () => {
         {({ isConnected, isConnecting, show, address }) => {
           return (
             <button onClick={show} className={`Button ${bg}`}>
-              {isConnecting
+              {(isConnecting || accountDataLoading || sessionDataLoading)
                 ? "Connecting..."
                 : isConnected
                 ? address

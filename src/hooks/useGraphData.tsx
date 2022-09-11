@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, createContext } from "react";
-import type { Account, BaseNode, Revision, Role } from "src/types";
+import type { Session, Account, BaseNode, Revision, Role } from "src/types";
 import Client from "src/lib/Client";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
+import { didDisconnect } from "src/utils/event";
 import { ObservableQuery } from "@apollo/client";
 import { notEmpty } from "src/utils/predicates";
+import * as Sentry from "@sentry/nextjs";
 
 type RevisionLoadingData = {
   [tokenId: string]: {
@@ -13,6 +15,10 @@ type RevisionLoadingData = {
 };
 
 interface IGraphData {
+  sessionData: Session | null;
+  sessionDataLoading: boolean;
+  loadCurrentSession: () => void;
+  flushSessionAndDisconnect: () => void;
   accountData: Account | null;
   accountDataLoading: boolean;
   accountNodesByCollectionType: {
@@ -34,6 +40,10 @@ interface IGraphData {
 }
 
 const GraphContext = createContext<IGraphData>({
+  sessionData: null,
+  sessionDataLoading: false,
+  loadCurrentSession: () => undefined,
+  flushSessionAndDisconnect: () => undefined,
   accountData: null,
   accountNodesByCollectionType: {},
   accountDataLoading: true,
@@ -51,9 +61,13 @@ const { Provider } = GraphContext;
 
 function GraphProvider({ children }) {
   const { address } = useAccount();
+  const { disconnect } = useDisconnect();
   const shallowNodesSubscription = useRef<ObservableQuery<{
     baseNodes: BaseNode[];
   }> | null>(null);
+
+  const [sessionData, setSessionData] = useState<Session | null>(null);
+  const [sessionDataLoading, setSessionDataLoading] = useState<boolean>(true);
 
   const [accountDataLoading, setAccountDataLoading] = useState<boolean>(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
@@ -85,8 +99,45 @@ function GraphProvider({ children }) {
     await Client.resetStore();
   };
 
+  const loadCurrentSession = async () => {
+    try {
+      setSessionDataLoading(true);
+      const res = await fetch('/api/me');
+      const json = await res.json();
+      if (json.address) {
+        const sessionData = { address: json.address };
+        setSessionData(sessionData);
+        return sessionData;
+      } else {
+        setSessionData(null);
+        return null;
+      }
+    } catch(e) {
+      Sentry.captureException(e);
+      setSessionData(null);
+    } finally {
+      setSessionDataLoading(false);
+    }
+  };
+
+  const flushSessionAndDisconnect = async () => {
+    try {
+      setSessionDataLoading(true);
+      await fetch('/api/logout');
+    } catch(e) {
+      Sentry.captureException(e);
+    } finally {
+      // Do this anyway, for security
+      setSessionData(null);
+      setSessionDataLoading(false);
+      disconnect();
+      didDisconnect();
+    }
+  };
+
   const loadAccountData = async (address) => {
     if (!address) {
+      await flushSessionAndDisconnect();
       setAccountDataLoading(false);
       setAccountData(null);
       return;
@@ -118,6 +169,7 @@ function GraphProvider({ children }) {
   };
 
   useEffect(() => {
+    loadCurrentSession();
     loadShallowNodes();
   }, []);
 
@@ -170,6 +222,11 @@ function GraphProvider({ children }) {
   return (
     <Provider
       value={{
+        sessionData,
+        sessionDataLoading,
+        loadCurrentSession,
+        flushSessionAndDisconnect,
+
         accountData,
         accountNodesByCollectionType,
         accountDataLoading,

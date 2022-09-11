@@ -171,7 +171,7 @@ const SubgraphSidebar: FC<Props> = ({
                 meta: {
                   didPickEmoji: (emoji: BaseEmoji) => {
                     formik.setFieldValue("emoji", emoji);
-                    closeModal();
+                    closeModal(ModalType.EMOJI_PICKER);
                   },
                 },
               })
