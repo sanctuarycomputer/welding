@@ -71,7 +71,7 @@ const Actions = ({
 
   useEffect(() => {
     if (!formik?.status) {
-      closeModal();
+      closeModal(ModalType.PUBLISHER);
       return;
     }
     const { status } = formik.status;

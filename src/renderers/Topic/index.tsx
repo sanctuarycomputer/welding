@@ -118,7 +118,7 @@ const Topic: FC<Props> = ({ node }) => {
                       meta: {
                         didPickEmoji: (emoji: BaseEmoji) => {
                           formik.setFieldValue("emoji", emoji);
-                          closeModal();
+                          closeModal(ModalType.EMOJI_PICKER);
                         },
                       },
                     })

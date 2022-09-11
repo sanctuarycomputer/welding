@@ -51,6 +51,7 @@
     "graphql": "^16.3.0",
     "hardhat": "^2.9.9",
     "immutability-helper": "^3.1.1",
+    "iron-session": "^6.2.1",
     "lodash": "^4.17.21",
     "micro": "^9.3.4",
     "mime": "^3.0.0",
@@ -67,6 +68,7 @@
     "react-hot-toast": "^2.2.0",
     "react-modal": "^3.14.4",
     "react-textarea-autosize": "^8.3.4",
+    "siwe": "^1.1.6",
     "slugify": "^1.6.5",
     "wagmi": "^0.6.0",
     "yup": "^0.32.11"

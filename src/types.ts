@@ -1,5 +1,9 @@
 import { BaseEmoji } from "emoji-mart";
 
+export type Session = {
+  address: string;
+};
+
 export type BaseNodeFormValues = {
   name: string;
   description: string;
