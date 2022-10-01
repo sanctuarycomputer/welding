@@ -87,7 +87,7 @@ const Document: FC<Props> = ({ node }) => {
     draftsPersisting,
     persistDraft,
     stageDraft,
-    unstageDraft
+    unstageDraft,
   } = useDrafts(address, canEdit, formik);
 
   useMemo(() => {
@@ -161,14 +161,12 @@ const Document: FC<Props> = ({ node }) => {
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
-  if (initializingDrafts)
-    return <p>Drafts Loading...</p>
+  if (initializingDrafts) return <p>Drafts Loading...</p>;
 
   return (
     <>
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
-
           <p className="text-red-500">
             {draftsAsArray.length} Drafts
             <span>{draftsPersisting && " (Persisting...)"}</span>

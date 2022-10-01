@@ -18,7 +18,7 @@ const EditNav: FC<Props> = ({
   draftsPersisting,
   unstageDraft,
   buttonLabel,
-  onClick
+  onClick,
 }) => {
   return (
     <div className="flex pr-2 items-center border-r border-color mr-2">

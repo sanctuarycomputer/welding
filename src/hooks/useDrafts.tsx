@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import Drafts from "src/lib/Drafts";
 import { diff } from "deep-object-diff";
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const objectIsEmpty = (obj) => obj && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const objectIsEmpty = (obj) =>
+  obj &&
+  Object.keys(obj).length === 0 &&
+  Object.getPrototypeOf(obj) === Object.prototype;
 
 const makePrefix = (address, tokenId) => {
   return `-welding::drafts::${tokenId}::${address}`;
@@ -27,32 +30,34 @@ const useDrafts = (address, canEdit, formik) => {
   const [initializingDrafts, setInitializingDrafts] = useState(true);
   const [drafts, setDrafts] = useState({});
 
-  const draftsAsArray = Object.keys(drafts).sort(function (a, b) {
-    const aSplat = a.split("::");
-    const bSplat = b.split("::");
-    return (
-      new Date(bSplat[bSplat.length - 1]) -
-      new Date(aSplat[aSplat.length - 1])
-    );
-  }).map(k => {
-    return { ...drafts[k], key: k };
-  });
+  const draftsAsArray = Object.keys(drafts)
+    .sort(function (a, b) {
+      const aSplat = a.split("::");
+      const bSplat = b.split("::");
+      return (
+        new Date(bSplat[bSplat.length - 1]) -
+        new Date(aSplat[aSplat.length - 1])
+      );
+    })
+    .map((k) => {
+      return { ...drafts[k], key: k };
+    });
 
   const fetchDrafts = async () => {
     try {
       setInitializingDrafts(true);
       await sleep(1200);
       const prefix = makePrefix(address, node.tokenId);
-      const drafts = Object.keys(localStorage)
-        .reduce(function (acc, k) {
-          if (k.startsWith(prefix)) acc[k] = {
+      const drafts = Object.keys(localStorage).reduce(function (acc, k) {
+        if (k.startsWith(prefix))
+          acc[k] = {
             key: k,
             values: JSON.parse(window.localStorage.getItem(k)),
             isPersisting: false,
-            persistError: null
+            persistError: null,
           };
-          return acc;
-        }, {});
+        return acc;
+      }, {});
       setDrafts(drafts);
     } finally {
       setInitializingDrafts(false);
@@ -68,15 +73,17 @@ const useDrafts = (address, canEdit, formik) => {
       !objectIsEmpty(diff(draftsAsArray[0].values, values));
     if (!shouldPersist) return null;
 
-    const key =
-      `${makePrefix(address, node.tokenId)}::${new Date().toISOString()}`;
-    setDrafts(prevDrafts => {
+    const key = `${makePrefix(
+      address,
+      node.tokenId
+    )}::${new Date().toISOString()}`;
+    setDrafts((prevDrafts) => {
       const newDrafts = { ...prevDrafts };
       newDrafts[key] = {
         key,
         values,
         isPersisting: true,
-        persistError: null
+        persistError: null,
       };
       return newDrafts;
     });
@@ -86,24 +93,24 @@ const useDrafts = (address, canEdit, formik) => {
       window.localStorage.setItem(key, JSON.stringify(values));
       console.log("Drafts.persist: Did Persist Draft", key, values);
 
-      setDrafts(prevDrafts => {
+      setDrafts((prevDrafts) => {
         const newDrafts = { ...prevDrafts };
         newDrafts[key] = {
           key,
           values,
           isPersisting: false,
-          persistError: null
+          persistError: null,
         };
         return newDrafts;
       });
-    } catch(e) {
-      setDrafts(prevDrafts => {
+    } catch (e) {
+      setDrafts((prevDrafts) => {
         const newDrafts = { ...prevDrafts };
         newDrafts[key] = {
           key,
           values,
           isPersisting: false,
-          persistError: e
+          persistError: e,
         };
         return newDrafts;
       });
@@ -112,7 +119,7 @@ const useDrafts = (address, canEdit, formik) => {
 
   const stageDraft = (draft) => {
     const changes = diff({ name: formik.values.name }, draft.values);
-    Object.keys(changes).forEach(k => {
+    Object.keys(changes).forEach((k) => {
       formik.setFieldValue(k, changes[k]);
     });
   };
@@ -129,10 +136,10 @@ const useDrafts = (address, canEdit, formik) => {
     initializingDrafts,
     drafts,
     draftsAsArray,
-    draftsPersisting: draftsAsArray.some(d => d.isPersisting),
+    draftsPersisting: draftsAsArray.some((d) => d.isPersisting),
     persistDraft,
     stageDraft,
-    unstageDraft
+    unstageDraft,
   };
 };
 
