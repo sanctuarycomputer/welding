@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect, useMemo } from "react";
+import { FC, useState, useContext, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -12,6 +12,7 @@ import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
 import usePublisher from "src/hooks/usePublisher";
+import useDrafts from "src/hooks/useDrafts";
 import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
@@ -23,6 +24,12 @@ import { BaseNode } from "src/types";
 const Editor = dynamic(() => import("src/components/Editor"), {
   ssr: false,
 });
+
+function removeItem<T>(arr: Array<T>, value: T): Array<T> {
+  const index = arr.indexOf(value);
+  if (index > -1) return arr.slice(index, 1);
+  return arr;
+}
 
 interface Props {
   node: BaseNode;
@@ -50,6 +57,7 @@ const DocumentStashInfo = ({ subgraph }) => {
 };
 
 const Document: FC<Props> = ({ node }) => {
+  const draftsReady = useRef(false);
   const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
@@ -72,15 +80,27 @@ const Document: FC<Props> = ({ node }) => {
     ? canEditNode(subgraphParent, address)
     : canEditNode(node, address);
 
+  const {
+    initializingDrafts,
+    drafts,
+    draftsAsArray,
+    draftsPersisting,
+    persistDraft,
+    stageDraft,
+    unstageDraft
+  } = useDrafts(address, canEdit, formik);
+
   useMemo(() => {
     if (!canEdit || !formik.dirty) return setContent(null);
     setContent(
       <EditNav
         formik={formik}
+        draftsPersisting={draftsPersisting}
+        unstageDraft={unstageDraft}
         buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
     );
-  }, [canEdit, formik.dirty, formik.isSubmitting]);
+  }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
   useConfirmRouteChange(
     formik.dirty && formik.status?.status !== "COMPLETE",
@@ -113,17 +133,23 @@ const Document: FC<Props> = ({ node }) => {
   console.log("Document will render", canEdit);
 
   useMemo(() => {
-    if (!address) return;
-    if (!canEdit) return;
-    Drafts.persist(address, formik);
-  }, [canEdit, formik.values.content, address]);
+    if (initializingDrafts) {
+      draftsReady.current = false;
+      unstageDraft();
+    } else {
+      if (draftsAsArray.length === 0) return;
+      stageDraft(draftsAsArray[0]);
+    }
+  }, [initializingDrafts]);
 
-  //useMemo(() => {
-  //  console.log("will callback stage");
-  //  if (canEdit) {
-  //    //Drafts.stage(address, formik);
-  //  }
-  //}, [canEdit]);
+  useMemo(() => {
+    if (initializingDrafts) return;
+    if (draftsReady.current) {
+      persistDraft();
+    } else {
+      draftsReady.current = true;
+    }
+  }, [initializingDrafts, formik.values.name]);
 
   const references = getRelatedNodes(
     formik,
@@ -135,10 +161,19 @@ const Document: FC<Props> = ({ node }) => {
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
+  if (initializingDrafts)
+    return <p>Drafts Loading...</p>
+
   return (
     <>
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
+
+          <p className="text-red-500">
+            {draftsAsArray.length} Drafts
+            <span>{draftsPersisting && " (Persisting...)"}</span>
+          </p>
+
           <div
             className={`flex ${
               node.burnt ? "justify-between" : "justify-end"
