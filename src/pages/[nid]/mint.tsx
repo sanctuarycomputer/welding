@@ -71,7 +71,7 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
           tokenId: node.tokenId,
           active: true,
           pivotTokenId: newDoc.tokenId,
-        }
+        },
       ];
       newDoc.related = [node];
       const { tokenId } = await Client.Drafts.makeDummyNode(
@@ -86,16 +86,16 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
       };
     }
 
-    const draftNode =
-      await Client.Drafts.fetchDummyNode(draftTokenId, context.req.headers);
+    const draftNode = await Client.Drafts.fetchDummyNode(
+      draftTokenId,
+      context.req.headers
+    );
     if (!draftNode) return { notFound: true };
 
-    const draftNodeType =
-      draftNode.labels.filter((l) => l !== "BaseNode")[0];
-    const subgraphBelongsToEdge =
-      draftNode.outgoing.find(e => {
-        return e.active && e.name === "BELONGS_TO" && e.tokenId === node.tokenId
-      });
+    const draftNodeType = draftNode.labels.filter((l) => l !== "BaseNode")[0];
+    const subgraphBelongsToEdge = draftNode.outgoing.find((e) => {
+      return e.active && e.name === "BELONGS_TO" && e.tokenId === node.tokenId;
+    });
 
     // Ensure it's a Document & it belongs to the given Subgraph
     if (draftNodeType !== "Document" || !subgraphBelongsToEdge) {
@@ -104,17 +104,15 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
           permanent: false,
           destination: `/${slugifyNode(node)}/mint`,
         },
-      }
+      };
     }
 
     // Ensure the Subgraph Node is in the related array
-    (
-      draftNode.related.find(n => n.tokenId === node.tokenId) ||
-      (draftNode.related = [...draftNode.related, node])
-    )
+    draftNode.related.find((n) => n.tokenId === node.tokenId) ||
+      (draftNode.related = [...draftNode.related, node]);
 
     return {
-      props: { node, document: draftNode }
+      props: { node, document: draftNode },
     };
   },
   IRON_OPTIONS

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import Drafts from "src/lib/Drafts";
 import { diff } from "deep-object-diff";
-import makeHash from 'object-hash';
-import debounce from 'lodash/debounce';
-import baseNodeFormikToDraft from 'src/utils/baseNodeFormikToDraft';
+import makeHash from "object-hash";
+import debounce from "lodash/debounce";
+import baseNodeFormikToDraft from "src/utils/baseNodeFormikToDraft";
 import Client from "src/lib/Client";
 
 const objectIsEmpty = (obj) =>
@@ -26,7 +26,7 @@ const objectIsEmpty = (obj) =>
 // - [ ] I should see all of my drafts in /account
 // - [ ] I should be able to share a link to my draft? Or give someone else edit access?
 
-const callDebounced = debounce(f => f(), 2000);
+const callDebounced = debounce((f) => f(), 2000);
 
 const useDrafts = (address, canEdit, formik) => {
   const node = formik.values.__node__;
@@ -48,22 +48,21 @@ const useDrafts = (address, canEdit, formik) => {
     if (!address || !canEdit) return;
     const draft = baseNodeFormikToDraft(formik);
     const shouldPersist =
-      drafts.length === 0 ||
-      !objectIsEmpty(diff(drafts[0].values, draft));
+      drafts.length === 0 || !objectIsEmpty(diff(drafts[0].values, draft));
     if (!shouldPersist) return null;
 
     callDebounced(async () => {
-      setDraftsPersisting(prevDraftsPersisting => {
+      setDraftsPersisting((prevDraftsPersisting) => {
         return [draft, ...prevDraftsPersisting];
       });
       try {
         setLastPersistErrored(!(await Client.Drafts.persist(draft)));
-      } catch(e) {
+      } catch (e) {
         // TODO: Sentry
         setLastPersistErrored(true);
       } finally {
-        setDraftsPersisting(prevDraftsPersisting => {
-          return prevDraftsPersisting.filter(d => {
+        setDraftsPersisting((prevDraftsPersisting) => {
+          return prevDraftsPersisting.filter((d) => {
             return d !== draft;
           });
         });

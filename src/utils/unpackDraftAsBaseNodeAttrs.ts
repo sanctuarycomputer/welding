@@ -12,8 +12,8 @@ const unpackDraftToBaseNodeAttrs = (draft: Draft): BaseNode => {
           emoji: draft.emoji,
           ui: draft.ui || {},
           content: draft.content || {},
-        }
-      }
+        },
+      },
     },
     outgoing: draft.outgoing,
     incoming: draft.incoming,

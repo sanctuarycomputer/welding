@@ -167,7 +167,10 @@ const Document: FC<Props> = ({ node }) => {
           <p className="text-red-500">
             {drafts.length} Drafts
             <span>{draftsPersisting.length > 0 && " (Persisting...)"}</span>
-            <span>{lastPersistErrored && " Hmmm... somethings up. We couldn't save your last draft."}</span>
+            <span>
+              {lastPersistErrored &&
+                " Hmmm... somethings up. We couldn't save your last draft."}
+            </span>
           </p>
 
           <div

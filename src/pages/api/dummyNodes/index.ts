@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
 import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
-import makeHash from 'object-hash';
+import makeHash from "object-hash";
 import unpackDraftAsBaseNodeAttrs from "src/utils/unpackDraftAsBaseNodeAttrs";
 
 const driver = neo4j.driver(
@@ -17,8 +17,7 @@ const driver = neo4j.driver(
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    if (!req.session.siwe?.address)
-      throw new Error("no_session");
+    if (!req.session.siwe?.address) throw new Error("no_session");
 
     const session = driver.session();
     await session.writeTransaction((tx) =>
@@ -49,23 +48,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         }, d { .content }
         `;
 
-        const baseNodes = (await session.readTransaction((tx) =>
-          tx.run(readQ, { sender: req.session.siwe?.address })
-        )).records.map(r => {
+        const baseNodes = (
+          await session.readTransaction((tx) =>
+            tx.run(readQ, { sender: req.session.siwe?.address })
+          )
+        ).records.map((r) => {
           return {
-            ...r.get('n'),
-            ...unpackDraftAsBaseNodeAttrs(
-              JSON.parse(r.get('d').content)
-            )
-          }
+            ...r.get("n"),
+            ...unpackDraftAsBaseNodeAttrs(JSON.parse(r.get("d").content)),
+          };
         });
-        res.send({ baseNodes })
+        res.send({ baseNodes });
         break;
 
       case "POST":
         const node = req.body.draft.__node__;
         const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
-        const content = { ... req.body.draft };
+        const content = { ...req.body.draft };
         delete content.__node__;
         delete content.related;
 
@@ -86,17 +85,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             hash: makeHash(content),
             content: JSON.stringify(content),
             sender: req.session.siwe?.address,
-            submittedAt: req.body.submittedAt
+            submittedAt: req.body.submittedAt,
           })
         );
-        res.send({ tokenId: result.records[0]?.get('n.tokenId') })
+        res.send({ tokenId: result.records[0]?.get("n.tokenId") });
         break;
 
       default:
         res.setHeader("Allow", ["GET", "POST"]);
         res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     Sentry.captureException(e);
     if (e instanceof Error) {

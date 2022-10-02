@@ -16,8 +16,7 @@ const driver = neo4j.driver(
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    if (!req.session.siwe?.address)
-      throw new Error("no_session");
+    if (!req.session.siwe?.address) throw new Error("no_session");
 
     const session = driver.session();
     await session.writeTransaction((tx) =>
@@ -58,10 +57,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         if (readResult.records.length > 1)
           throw new Error("unexpected_multi_record");
         res.send({
-          ...readResult.records[0].get('BaseNode'),
+          ...readResult.records[0].get("BaseNode"),
           ...unpackDraftAsBaseNodeAttrs(
-            JSON.parse(readResult.records[0].get('d').properties.content)
-          )
+            JSON.parse(readResult.records[0].get("d").properties.content)
+          ),
         });
         break;
 
@@ -72,7 +71,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         res.setHeader("Allow", ["GET", "DELETE"]);
         res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     Sentry.captureException(e);
     if (e instanceof Error) {

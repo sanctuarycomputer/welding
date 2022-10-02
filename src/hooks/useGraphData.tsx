@@ -110,7 +110,7 @@ function GraphProvider({ children }) {
     try {
       setDummyNodesLoading(true);
       setDummyNodes(await Client.Drafts.fetchDummyNodes());
-    } catch(e) {
+    } catch (e) {
       // TODO Sentry
       setDummyNodes([]);
     } finally {

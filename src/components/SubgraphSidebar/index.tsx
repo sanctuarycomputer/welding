@@ -58,14 +58,15 @@ const SubgraphSidebar: FC<Props> = ({
   const emoji = formik.values.emoji.native;
   const subgraph = formik.values.__node__;
 
-  const subgraphDummyNodes =
-    dummyNodes.filter(node => {
-      const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
-      if (nodeType !== "Document") return false;
-      return !!node.outgoing.find(e => {
-        return e.active && e.name === "BELONGS_TO" && e.tokenId === subgraph.tokenId;
-      });
+  const subgraphDummyNodes = dummyNodes.filter((node) => {
+    const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
+    if (nodeType !== "Document") return false;
+    return !!node.outgoing.find((e) => {
+      return (
+        e.active && e.name === "BELONGS_TO" && e.tokenId === subgraph.tokenId
+      );
     });
+  });
 
   const topics = getRelatedNodes(subgraph, "incoming", "Topic", "DESCRIBES");
   const documents = getRelatedNodes(
@@ -322,7 +323,10 @@ const SubgraphSidebar: FC<Props> = ({
             )}
             {subgraphDummyNodes.map((s) => {
               return (
-                <Link key={s.tokenId} href={`/${slugifyNode(subgraph)}/mint?tokenId=${s.tokenId}`}>
+                <Link
+                  key={s.tokenId}
+                  href={`/${slugifyNode(subgraph)}/mint?tokenId=${s.tokenId}`}
+                >
                   <a className="block text-xs pb-1">
                     {s.currentRevision.nativeEmoji} {s.currentRevision.name}
                   </a>

@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
-import makeHash from 'object-hash';
+import makeHash from "object-hash";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -30,8 +30,7 @@ const canEditNode = (node: BaseNode, address: string | undefined) => {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    if (!req.session.siwe?.address)
-      throw new Error("no_session");
+    if (!req.session.siwe?.address) throw new Error("no_session");
 
     const session = driver.session();
     await session.writeTransaction((tx) =>
@@ -53,18 +52,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const readResult = await session.readTransaction((tx) =>
           tx.run(readQ, { tokenId: req.query?.tokenId })
         );
-        const drafts = readResult.records.map(r => {
+        const drafts = readResult.records.map((r) => {
           return {
-            submittedAt: r.get('e.submittedAt'),
-            draft: JSON.parse(r.get('d.content')),
-          }
+            submittedAt: r.get("e.submittedAt"),
+            draft: JSON.parse(r.get("d.content")),
+          };
         });
         res.send({ drafts });
         break;
 
       case "POST":
         const node = req.body.draft.__node__;
-        const content = { ... req.body.draft };
+        const content = { ...req.body.draft };
         delete content.__node__;
         delete content.related;
 
@@ -83,7 +82,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             hash: makeHash(content),
             content: JSON.stringify(content),
             sender: req.session.siwe?.address,
-            submittedAt: req.body.submittedAt
+            submittedAt: req.body.submittedAt,
           })
         );
         if (result.records.length === 0) return res.status(404).end();
@@ -105,8 +104,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         res.setHeader("Allow", ["GET", "POST"]);
         res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } catch(e) {
-  }
+  } catch (e) {}
 };
 
 export default withIronSessionApiRoute(handler, IRON_OPTIONS);
