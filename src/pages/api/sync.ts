@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import Welding from "src/lib/Welding";
+import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -10,10 +11,6 @@ const driver = neo4j.driver(
     process.env.NEO4J_PASSWORD || ""
   )
 );
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 const merge = async (e, session) => {
   const { event, args } = e;
@@ -273,28 +270,28 @@ export default async function handler(
     path = (Array.isArray(path) ? path[0] : path) || "";
     const session = driver.session();
 
-    if (false) {
-      const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
-      const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
-      await session.writeTransaction((tx) => tx.run(flushQ1));
-      await session.writeTransaction((tx) => tx.run(flushQ2));
+    //if (false) {
+    //  const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
+    //  const flushQ2 = `OPTIONAL MATCH (a) DELETE a`;
+    //  await session.writeTransaction((tx) => tx.run(flushQ1));
+    //  await session.writeTransaction((tx) => tx.run(flushQ2));
 
-      await session.writeTransaction((tx) =>
-        tx.run(
-          `CREATE FULLTEXT INDEX revisionContent IF NOT EXISTS FOR (n:Revision) ON EACH [n.content]`
-        )
-      );
-      await session.writeTransaction((tx) =>
-        tx.run(
-          `CREATE CONSTRAINT tokenId IF NOT EXISTS FOR (n:BaseNode) REQUIRE n.tokenId IS UNIQUE`
-        )
-      );
-      await session.writeTransaction((tx) =>
-        tx.run(
-          `CREATE CONSTRAINT hash IF NOT EXISTS FOR (r:Revision) REQUIRE r.hash IS UNIQUE`
-        )
-      );
-    }
+    //  await session.writeTransaction((tx) =>
+    //    tx.run(
+    //      `CREATE FULLTEXT INDEX revisionContent IF NOT EXISTS FOR (n:Revision) ON EACH [n.content]`
+    //    )
+    //  );
+    //  await session.writeTransaction((tx) =>
+    //    tx.run(
+    //      `CREATE CONSTRAINT tokenId IF NOT EXISTS FOR (n:BaseNode) REQUIRE n.tokenId IS UNIQUE`
+    //    )
+    //  );
+    //  await session.writeTransaction((tx) =>
+    //    tx.run(
+    //      `CREATE CONSTRAINT hash IF NOT EXISTS FOR (r:Revision) REQUIRE r.hash IS UNIQUE`
+    //    )
+    //  );
+    //}
 
     // Load our cursor
     const latestQ = `MATCH (b:Block {id: '__singleton__'})

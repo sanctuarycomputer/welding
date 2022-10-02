@@ -4,27 +4,23 @@ export type Session = {
   address: string;
 };
 
-export type Draft = {
-  key: string;
-  values: {
-    name: string;
-    description: string;
-    content: any;
-  };
-};
-
-export type BaseNodeFormValues = {
+export type PersistedDraft = {
   name: string;
   description: string;
   emoji: BaseEmoji;
   ui: any;
   content?: any;
   image: any;
-  related: BaseNode[];
   outgoing: Edge[];
   incoming: Edge[];
+};
+
+export type Draft = PersistedDraft & {
+  related: BaseNode[];
   __node__: BaseNode;
 };
+
+export type BaseNodeFormValues = Draft;
 
 export type Role = {
   role: null | "0" | "1";

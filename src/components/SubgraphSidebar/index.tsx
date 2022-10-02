@@ -8,6 +8,7 @@ import {
   useCallback,
   ChangeEvent,
 } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
 import type { BaseNodeFormValues, BaseNode } from "src/types";
@@ -50,11 +51,21 @@ const SubgraphSidebar: FC<Props> = ({
   betaIsClosed,
   autoOpenSidebarOnMobile,
 }) => {
+  const { dummyNodes, dummyNodesLoading } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
   const [mobileOpen, setMobileOpen] = useState(autoOpenSidebarOnMobile);
 
   const emoji = formik.values.emoji.native;
   const subgraph = formik.values.__node__;
+
+  const subgraphDummyNodes =
+    dummyNodes.filter(node => {
+      const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
+      if (nodeType !== "Document") return false;
+      return !!node.outgoing.find(e => {
+        return e.active && e.name === "BELONGS_TO" && e.tokenId === subgraph.tokenId;
+      });
+    });
 
   const topics = getRelatedNodes(subgraph, "incoming", "Topic", "DESCRIBES");
   const documents = getRelatedNodes(
@@ -69,6 +80,14 @@ const SubgraphSidebar: FC<Props> = ({
     "Document",
     "STASHED_BY"
   );
+
+  //getAllRelatedDrafts(
+  //  "Document",
+  //  "outgoing",
+  //  "BELONGS_TO",
+  //  subgraph.tokenId
+  //);
+
   const allDocumentNodes = [...documents, ...stashedDocuments];
 
   const stashedSubgraphs = getRelatedNodes(
@@ -291,6 +310,25 @@ const SubgraphSidebar: FC<Props> = ({
                 </p>
               </div>
             )}
+
+            {subgraphDummyNodes.length > 0 && (
+              <div className="flex justify-between">
+                <p
+                  className={`${textPassive} py-2 font-semibold tracking-wide uppercase`}
+                >
+                  Drafts
+                </p>
+              </div>
+            )}
+            {subgraphDummyNodes.map((s) => {
+              return (
+                <Link key={s.tokenId} href={`/${slugifyNode(subgraph)}/mint?tokenId=${s.tokenId}`}>
+                  <a className="block text-xs pb-1">
+                    {s.currentRevision.nativeEmoji} {s.currentRevision.name}
+                  </a>
+                </Link>
+              );
+            })}
 
             {stashedSubgraphs.length > 0 && (
               <div className="flex justify-between">

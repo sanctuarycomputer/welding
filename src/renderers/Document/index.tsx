@@ -17,19 +17,12 @@ import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { useAccount } from "wagmi";
-import Drafts from "src/lib/Drafts";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
 const Editor = dynamic(() => import("src/components/Editor"), {
   ssr: false,
 });
-
-function removeItem<T>(arr: Array<T>, value: T): Array<T> {
-  const index = arr.indexOf(value);
-  if (index > -1) return arr.slice(index, 1);
-  return arr;
-}
 
 interface Props {
   node: BaseNode;
@@ -82,8 +75,8 @@ const Document: FC<Props> = ({ node }) => {
 
   const {
     initializingDrafts,
+    lastPersistErrored,
     drafts,
-    draftsAsArray,
     draftsPersisting,
     persistDraft,
     stageDraft,
@@ -91,25 +84,29 @@ const Document: FC<Props> = ({ node }) => {
   } = useDrafts(address, canEdit, formik);
 
   useMemo(() => {
-    if (!canEdit || !formik.dirty) return setContent(null);
+    if (!canEdit || !formik.dirty) {
+      setContent(null);
+      return;
+    }
     setContent(
       <EditNav
         formik={formik}
-        draftsPersisting={draftsPersisting}
+        draftsPersisting={draftsPersisting.length > 0}
         unstageDraft={unstageDraft}
         buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
     );
   }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
-  useConfirmRouteChange(
-    formik.dirty && formik.status?.status !== "COMPLETE",
-    () => {
-      const didConfirm = confirm("You have unsaved changes. Discard them?");
-      if (didConfirm) formik.resetForm();
-      return didConfirm;
-    }
-  );
+  // TODO: Remove this now that we have drafts?
+  //useConfirmRouteChange(
+  //  formik.dirty && formik.status?.status !== "COMPLETE",
+  //  () => {
+  //    const didConfirm = confirm("You have unsaved changes. Discard them?");
+  //    if (didConfirm) formik.resetForm();
+  //    return didConfirm;
+  //  }
+  //);
 
   //useMemo(() => {
   //  if (!canEdit) return;
@@ -130,15 +127,15 @@ const Document: FC<Props> = ({ node }) => {
   //  );
   //}, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
-  console.log("Document will render", canEdit);
+  console.log("Document will render", canEdit, lastPersistErrored);
 
   useMemo(() => {
     if (initializingDrafts) {
       draftsReady.current = false;
       unstageDraft();
     } else {
-      if (draftsAsArray.length === 0) return;
-      stageDraft(draftsAsArray[0]);
+      if (drafts.length === 0) return;
+      stageDraft(drafts[0]);
     }
   }, [initializingDrafts]);
 
@@ -168,8 +165,9 @@ const Document: FC<Props> = ({ node }) => {
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
           <p className="text-red-500">
-            {draftsAsArray.length} Drafts
-            <span>{draftsPersisting && " (Persisting...)"}</span>
+            {drafts.length} Drafts
+            <span>{draftsPersisting.length > 0 && " (Persisting...)"}</span>
+            <span>{lastPersistErrored && " Hmmm... somethings up. We couldn't save your last draft."}</span>
           </p>
 
           <div

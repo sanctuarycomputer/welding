@@ -378,6 +378,67 @@ const Client = {
     for (const revision of revisions) await Client.processRevision(revision);
     return revisions;
   },
+
+  Drafts: {
+    fetchDummyNodes: async function (): Promise<BaseNode[]> {
+      const response =
+        await fetch(`${baseHostWithProtocol}/api/dummyNodes`, {
+          headers: { "Content-Type": "application/json" },
+        });
+      if (response.ok) return (await response.json()).baseNodes;
+      return [];
+    },
+
+    forTokenId: async function (
+      tokenId: string
+    ): Promise<{ draft: Draft, submittedAt: string }[]> {
+      return (await(
+        await fetch(`${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}`)
+      ).json()).drafts;
+    },
+
+    persist: async function (draft: Draft): Promise<boolean> {
+      const response =
+        await fetch(`${baseHostWithProtocol}/api/drafts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            draft,
+            submittedAt: (new Date().toISOString()),
+          }),
+        });
+      return response.ok;
+    },
+
+    fetchDummyNode: async function (
+      tokenId: string,
+      headers: any
+    ): Promise<BaseNode | null> {
+      const response =
+        await fetch(`${baseHostWithProtocol}/api/dummyNodes/${tokenId}`, {
+          headers: { ...headers, "Content-Type": "application/json" },
+        });
+      if (response.ok) return await response.json();
+      return null;
+    },
+
+    makeDummyNode: async function (
+      draft: Draft,
+      headers: any
+    ): Promise<BaseNode> {
+      return await(
+        await fetch(`${baseHostWithProtocol}/api/dummyNodes`, {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            draft,
+            submittedAt: (new Date().toISOString()),
+          }),
+        })
+      ).json();
+    }
+
+  }
 };
 
 export default Client;

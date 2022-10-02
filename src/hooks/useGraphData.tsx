@@ -15,6 +15,8 @@ type RevisionLoadingData = {
 };
 
 interface IGraphData {
+  dummyNodes: BaseNode[];
+  dummyNodesLoading: boolean;
   sessionData: Session | null;
   sessionDataLoading: boolean;
   loadCurrentSession: () => Promise<Session | undefined>;
@@ -40,6 +42,8 @@ interface IGraphData {
 }
 
 const GraphContext = createContext<IGraphData>({
+  dummyNodes: [],
+  dummyNodesLoading: false,
   sessionData: null,
   sessionDataLoading: false,
   loadCurrentSession: async () => undefined,
@@ -65,6 +69,9 @@ function GraphProvider({ children }) {
   const shallowNodesSubscription = useRef<ObservableQuery<{
     baseNodes: BaseNode[];
   }> | null>(null);
+
+  const [dummyNodes, setDummyNodes] = useState<BaseNode[]>([]);
+  const [dummyNodesLoading, setDummyNodesLoading] = useState<boolean>(true);
 
   const [sessionData, setSessionData] = useState<Session | null>(null);
   const [sessionDataLoading, setSessionDataLoading] = useState<boolean>(true);
@@ -99,12 +106,25 @@ function GraphProvider({ children }) {
     await Client.resetStore();
   };
 
+  const loadDummyNodes = async () => {
+    try {
+      setDummyNodesLoading(true);
+      setDummyNodes(await Client.Drafts.fetchDummyNodes());
+    } catch(e) {
+      // TODO Sentry
+      setDummyNodes([]);
+    } finally {
+      setDummyNodesLoading(false);
+    }
+  };
+
   const loadCurrentSession = async () => {
     try {
       setSessionDataLoading(true);
       const res = await fetch("/api/me");
       const json = await res.json();
       if (json.address) {
+        loadDummyNodes();
         const sessionData = { address: json.address } as Session;
         setSessionData(sessionData);
         return sessionData;
@@ -121,6 +141,7 @@ function GraphProvider({ children }) {
 
   const flushSessionAndDisconnect = async () => {
     try {
+      // TODO: If local draft isPersisting: true, open confirm modal
       setSessionDataLoading(true);
       await fetch("/api/logout");
     } catch (e) {
@@ -129,6 +150,7 @@ function GraphProvider({ children }) {
       // Do this anyway, for security
       setSessionData(null);
       setSessionDataLoading(false);
+      setDummyNodes([]);
       disconnect();
       didDisconnect();
     }
@@ -221,11 +243,12 @@ function GraphProvider({ children }) {
   return (
     <Provider
       value={{
+        dummyNodes,
+        dummyNodesLoading,
         sessionData,
         sessionDataLoading,
         loadCurrentSession,
         flushSessionAndDisconnect,
-
         accountData,
         accountNodesByCollectionType,
         accountDataLoading,

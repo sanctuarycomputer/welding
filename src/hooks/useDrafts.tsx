@@ -1,64 +1,44 @@
 import { useState, useEffect } from "react";
 import Drafts from "src/lib/Drafts";
 import { diff } from "deep-object-diff";
+import makeHash from 'object-hash';
+import debounce from 'lodash/debounce';
+import baseNodeFormikToDraft from 'src/utils/baseNodeFormikToDraft';
+import Client from "src/lib/Client";
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const objectIsEmpty = (obj) =>
   obj &&
   Object.keys(obj).length === 0 &&
   Object.getPrototypeOf(obj) === Object.prototype;
 
-const makePrefix = (address, tokenId) => {
-  return `-welding::drafts::${tokenId}::${address}`;
-};
+// Next
+// - [ ] Nice draft loading state
+// - [ ] I should only send down the latestDraft on Page Load
+// - [ ] Serverside draft permissions
+// - [ ] SubgraphSidebar should bold when editing a Draft
+// - [ ] SubgraphSidebar should update when editing a Draft Title/Emoji?
+// - [ ] NodeSettings should work with DummyNode
 
-// TODO Pass in Formik?
-// - [x] When I log in the Draft should be restored
-// - [x] When I load the page, the Draft should be restored
-// - [x] When I log out, the draft should be unstaged
-// - [x] When a draft is successfully submitted to the server, wipe it locally?
-// - [x] I should see a "(Spinner) Saving Draft", "Draft" Tile
-// - [x] I should be able to discard a draft (reset)
-// - [x] When I save, the drafts should be flushed
-// - [ ] When I logout local drafts should be destroyed (Unsaved changes modal if any persisting?)
-// - [ ] When I pass a -1 tokenId, it should be assigned a temporary id
-// - [ ] I should see my drafts in the sidebar
-// - [ ] Debounce persist
-// - [ ] Save drafts remotely
+// Eventually
+// - [ ] Discard Drafts
+// - [ ] Restore old Drafts
+// - [ ] I should be able to see Drafts that others have made in my Subgraph (ReadOnly)?
+// - [ ] I should see all of my drafts in /account
+// - [ ] I should be able to share a link to my draft? Or give someone else edit access?
+
+const callDebounced = debounce(f => f(), 2000);
+
 const useDrafts = (address, canEdit, formik) => {
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
-  const [drafts, setDrafts] = useState({});
-
-  const draftsAsArray = Object.keys(drafts)
-    .sort(function (a, b) {
-      const aSplat = a.split("::");
-      const bSplat = b.split("::");
-      return (
-        new Date(bSplat[bSplat.length - 1]) -
-        new Date(aSplat[aSplat.length - 1])
-      );
-    })
-    .map((k) => {
-      return { ...drafts[k], key: k };
-    });
+  const [lastPersistErrored, setLastPersistErrored] = useState(false);
+  const [drafts, setDrafts] = useState([]);
+  const [draftsPersisting, setDraftsPersisting] = useState([]);
 
   const fetchDrafts = async () => {
     try {
       setInitializingDrafts(true);
-      await sleep(1200);
-      const prefix = makePrefix(address, node.tokenId);
-      const drafts = Object.keys(localStorage).reduce(function (acc, k) {
-        if (k.startsWith(prefix))
-          acc[k] = {
-            key: k,
-            values: JSON.parse(window.localStorage.getItem(k)),
-            isPersisting: false,
-            persistError: null,
-          };
-        return acc;
-      }, {});
-      setDrafts(drafts);
+      setDrafts(await Client.Drafts.forTokenId(node.tokenId));
     } finally {
       setInitializingDrafts(false);
     }
@@ -66,59 +46,33 @@ const useDrafts = (address, canEdit, formik) => {
 
   const persistDraft = async () => {
     if (!address || !canEdit) return;
-
-    const values = { name: formik.values.name };
+    const draft = baseNodeFormikToDraft(formik);
     const shouldPersist =
-      draftsAsArray.length === 0 ||
-      !objectIsEmpty(diff(draftsAsArray[0].values, values));
+      drafts.length === 0 ||
+      !objectIsEmpty(diff(drafts[0].values, draft));
     if (!shouldPersist) return null;
 
-    const key = `${makePrefix(
-      address,
-      node.tokenId
-    )}::${new Date().toISOString()}`;
-    setDrafts((prevDrafts) => {
-      const newDrafts = { ...prevDrafts };
-      newDrafts[key] = {
-        key,
-        values,
-        isPersisting: true,
-        persistError: null,
-      };
-      return newDrafts;
+    callDebounced(async () => {
+      setDraftsPersisting(prevDraftsPersisting => {
+        return [draft, ...prevDraftsPersisting];
+      });
+      try {
+        setLastPersistErrored(!(await Client.Drafts.persist(draft)));
+      } catch(e) {
+        // TODO: Sentry
+        setLastPersistErrored(true);
+      } finally {
+        setDraftsPersisting(prevDraftsPersisting => {
+          return prevDraftsPersisting.filter(d => {
+            return d !== draft;
+          });
+        });
+      }
     });
-
-    try {
-      await sleep(450);
-      window.localStorage.setItem(key, JSON.stringify(values));
-      console.log("Drafts.persist: Did Persist Draft", key, values);
-
-      setDrafts((prevDrafts) => {
-        const newDrafts = { ...prevDrafts };
-        newDrafts[key] = {
-          key,
-          values,
-          isPersisting: false,
-          persistError: null,
-        };
-        return newDrafts;
-      });
-    } catch (e) {
-      setDrafts((prevDrafts) => {
-        const newDrafts = { ...prevDrafts };
-        newDrafts[key] = {
-          key,
-          values,
-          isPersisting: false,
-          persistError: e,
-        };
-        return newDrafts;
-      });
-    }
   };
 
-  const stageDraft = (draft) => {
-    const changes = diff({ name: formik.values.name }, draft.values);
+  const stageDraft = ({ draft }) => {
+    const changes = diff({ name: formik.values.name }, draft);
     Object.keys(changes).forEach((k) => {
       formik.setFieldValue(k, changes[k]);
     });
@@ -134,9 +88,9 @@ const useDrafts = (address, canEdit, formik) => {
 
   return {
     initializingDrafts,
+    lastPersistErrored,
     drafts,
-    draftsAsArray,
-    draftsPersisting: draftsAsArray.some((d) => d.isPersisting),
+    draftsPersisting,
     persistDraft,
     stageDraft,
     unstageDraft,
