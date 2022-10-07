@@ -392,7 +392,9 @@ const Client = {
       tokenId: string,
       limit: number
     ): Promise<{ draft: Draft; submittedAt: string }[]> {
-      const response = await fetch(`${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}&limit=${limit}`);
+      const response = await fetch(
+        `${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}&limit=${limit}`
+      );
       if (response.ok) return (await response.json()).drafts;
       return [];
     },

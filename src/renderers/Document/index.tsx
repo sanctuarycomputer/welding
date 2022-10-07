@@ -110,14 +110,11 @@ const Document: FC<Props> = ({ node }) => {
     );
   }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
-  useConfirmRouteChange(
-    draftsPersisting.length || formik.isSubmitting,
-    () => {
-      const didConfirm = confirm("You have unsaved changes. Discard them?");
-      if (didConfirm) formik.resetForm();
-      return didConfirm;
-    }
-  );
+  useConfirmRouteChange(draftsPersisting.length || formik.isSubmitting, () => {
+    const didConfirm = confirm("You have unsaved changes. Discard them?");
+    if (didConfirm) formik.resetForm();
+    return didConfirm;
+  });
 
   //useMemo(() => {
   //  if (!canEdit) return;
@@ -169,7 +166,8 @@ const Document: FC<Props> = ({ node }) => {
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
-  if (initializingDrafts) return (
+  if (initializingDrafts)
+    return (
       <div className="absolute top-0 bottom-0 right-0 left-0 h-100 flex items-center justify-center grow flex-row">
         <div className="flex items-center flex-col">
           <span className="loader">

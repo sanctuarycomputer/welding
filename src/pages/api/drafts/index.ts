@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
 import makeHash from "object-hash";
-import queryCanEditNode from 'src/utils/queryCanEditNode';
+import queryCanEditNode from "src/utils/queryCanEditNode";
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -28,7 +28,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     switch (method) {
       case "GET":
-        if (!await queryCanEditNode(req.query?.tokenId, req.session.siwe?.address)) {
+        if (
+          !(await queryCanEditNode(
+            req.query?.tokenId,
+            req.session.siwe?.address
+          ))
+        ) {
           throw new Error("insufficient_permissions");
         }
 
@@ -39,7 +44,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const readResult = await session.readTransaction((tx) =>
           tx.run(readQ, {
             tokenId: req.query?.tokenId,
-            limit: neo4j.int(req.query?.limit || '1')
+            limit: neo4j.int(req.query?.limit || "1"),
           })
         );
         const drafts = readResult.records.map((r) => {
@@ -53,7 +58,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       case "POST":
         const node = req.body.draft.__node__;
-        if (!await queryCanEditNode(node.tokenId, req.session.siwe?.address)) {
+        if (
+          !(await queryCanEditNode(node.tokenId, req.session.siwe?.address))
+        ) {
           throw new Error("insufficient_permissions");
         }
 
@@ -86,7 +93,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         break;
 
       case "DELETE":
-        if (!await queryCanEditNode(req.query?.tokenId, req.session.siwe?.address)) {
+        if (
+          !(await queryCanEditNode(
+            req.query?.tokenId,
+            req.session.siwe?.address
+          ))
+        ) {
           throw new Error("insufficient_permissions");
         }
 

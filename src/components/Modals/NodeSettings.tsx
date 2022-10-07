@@ -50,7 +50,7 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
     onRequestClose();
   };
 
-  if (meta.node.labels.includes('DummyNode')) {
+  if (meta.node.labels.includes("DummyNode")) {
     return (
       <Modal isOpen={true} onRequestClose={attemptClose}>
         <div className="h-screen sm:h-auto flex flex-col">
@@ -64,16 +64,13 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
         <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
           <Uwu />
           <p className="pt-2 font-semibold">
-            This node has not been minted. Publish your first revision to edit Node Settings.
+            This node has not been minted. Publish your first revision to edit
+            Node Settings.
           </p>
         </div>
 
         <div className="p-4 flex flex-row-reverse justify-between">
-          <Button
-            label="Got It"
-            onClick={attemptClose}
-            disabled={false}
-          />
+          <Button label="Got It" onClick={attemptClose} disabled={false} />
         </div>
       </Modal>
     );
