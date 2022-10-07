@@ -17,6 +17,7 @@ import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { useAccount } from "wagmi";
+import Spinner from "src/components/Icons/Spinner";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -59,8 +60,19 @@ const Document: FC<Props> = ({ node }) => {
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
+  const {
+    sessionData,
+    sessionDataLoading,
+    shallowNodes,
+    shallowNodesLoading,
+    dummyNodesLoading,
+    loadDummyNodes,
+  } = useContext(GraphContext);
   const { setContent } = useContext(NavContext);
+
+  useMemo(() => {
+    if (!dummyNodesLoading) loadDummyNodes();
+  }, [node.tokenId]);
 
   const subgraphParent = getRelatedNodes(
     formik,
@@ -81,7 +93,7 @@ const Document: FC<Props> = ({ node }) => {
     persistDraft,
     stageDraft,
     unstageDraft,
-  } = useDrafts(address, canEdit, formik);
+  } = useDrafts(sessionData?.address, canEdit, formik);
 
   useMemo(() => {
     if (!canEdit || !formik.dirty) {
@@ -98,15 +110,14 @@ const Document: FC<Props> = ({ node }) => {
     );
   }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
-  // TODO: Remove this now that we have drafts?
-  //useConfirmRouteChange(
-  //  formik.dirty && formik.status?.status !== "COMPLETE",
-  //  () => {
-  //    const didConfirm = confirm("You have unsaved changes. Discard them?");
-  //    if (didConfirm) formik.resetForm();
-  //    return didConfirm;
-  //  }
-  //);
+  useConfirmRouteChange(
+    draftsPersisting.length || formik.isSubmitting,
+    () => {
+      const didConfirm = confirm("You have unsaved changes. Discard them?");
+      if (didConfirm) formik.resetForm();
+      return didConfirm;
+    }
+  );
 
   //useMemo(() => {
   //  if (!canEdit) return;
@@ -158,7 +169,16 @@ const Document: FC<Props> = ({ node }) => {
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
-  if (initializingDrafts) return <p>Drafts Loading...</p>;
+  if (initializingDrafts) return (
+      <div className="absolute top-0 bottom-0 right-0 left-0 h-100 flex items-center justify-center grow flex-row">
+        <div className="flex items-center flex-col">
+          <span className="loader">
+            <Spinner />
+          </span>
+          <p className="pt-2 font-semibold">Loading Editor...</p>
+        </div>
+      </div>
+    );
 
   return (
     <>

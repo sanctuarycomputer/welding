@@ -245,6 +245,7 @@ function GraphProvider({ children }) {
       value={{
         dummyNodes,
         dummyNodesLoading,
+        loadDummyNodes,
         sessionData,
         sessionDataLoading,
         loadCurrentSession,

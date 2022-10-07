@@ -82,13 +82,6 @@ const SubgraphSidebar: FC<Props> = ({
     "STASHED_BY"
   );
 
-  //getAllRelatedDrafts(
-  //  "Document",
-  //  "outgoing",
-  //  "BELONGS_TO",
-  //  subgraph.tokenId
-  //);
-
   const allDocumentNodes = [...documents, ...stashedDocuments];
 
   const stashedSubgraphs = getRelatedNodes(
@@ -322,6 +315,11 @@ const SubgraphSidebar: FC<Props> = ({
               </div>
             )}
             {subgraphDummyNodes.map((s) => {
+              if (s.tokenId === currentDocument.tokenId) return (
+                <p key={s.tokenId} className="text-xs font-semibold pb-1">
+                  {s.currentRevision.nativeEmoji} {s.currentRevision.name}
+                </p>
+              );
               return (
                 <Link
                   key={s.tokenId}

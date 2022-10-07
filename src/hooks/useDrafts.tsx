@@ -12,15 +12,15 @@ const objectIsEmpty = (obj) =>
   Object.getPrototypeOf(obj) === Object.prototype;
 
 // Next
-// - [ ] Nice draft loading state
-// - [ ] I should only send down the latestDraft on Page Load
-// - [ ] Serverside draft permissions
-// - [ ] SubgraphSidebar should bold when editing a Draft
+// - [ ] Serverside draft permissions (support _DELEGATES_PERMISSION_TO)
 // - [ ] SubgraphSidebar should update when editing a Draft Title/Emoji?
-// - [ ] NodeSettings should work with DummyNode
+// - [ ] Types & Sentry & Cleanup
+// - [ ] TopicMinter should work too
+// - [ ] Deletable DummyNode
 
 // Eventually
-// - [ ] Discard Drafts
+// - [ ] CRDTs for multi-user editing
+// - [ ] Discard Current Drafts Button
 // - [ ] Restore old Drafts
 // - [ ] I should be able to see Drafts that others have made in my Subgraph (ReadOnly)?
 // - [ ] I should see all of my drafts in /account
@@ -28,18 +28,22 @@ const objectIsEmpty = (obj) =>
 
 const callDebounced = debounce((f) => f(), 2000);
 
-const useDrafts = (address, canEdit, formik) => {
+const useDrafts = (address, canEdit, formik, didPersistDraft) => {
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
   const [lastPersistErrored, setLastPersistErrored] = useState(false);
   const [drafts, setDrafts] = useState([]);
   const [draftsPersisting, setDraftsPersisting] = useState([]);
 
-  const fetchDrafts = async () => {
-    try {
-      setInitializingDrafts(true);
-      setDrafts(await Client.Drafts.forTokenId(node.tokenId));
-    } finally {
+  const initDrafts = async () => {
+    if (address && canEdit) {
+      try {
+        setInitializingDrafts(true);
+        setDrafts(await Client.Drafts.forTokenId(node.tokenId, 1));
+      } finally {
+        setInitializingDrafts(false);
+      }
+    } else {
       setInitializingDrafts(false);
     }
   };
@@ -82,7 +86,7 @@ const useDrafts = (address, canEdit, formik) => {
   };
 
   useEffect(() => {
-    fetchDrafts();
+    initDrafts();
   }, [address, node.tokenId]);
 
   return {

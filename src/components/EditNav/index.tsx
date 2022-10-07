@@ -20,9 +20,12 @@ const EditNav: FC<Props> = ({
   buttonLabel,
   onClick,
 }) => {
+  const node = formik.values.__node__;
+  const isDummyNode = node.labels.includes('DummyNode');
+
   return (
     <div className="flex pr-2 items-center border-r border-color mr-2">
-      {formik.dirty ? (
+      {(isDummyNode || formik.dirty) ? (
         <div
           onClick={unstageDraft || NO_OP}
           className="bg-yellow-400 text-stone-800 font-medium text-xs px-2 py-1 rounded-full mr-2"

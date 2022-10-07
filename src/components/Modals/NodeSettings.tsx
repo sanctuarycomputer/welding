@@ -8,6 +8,8 @@ import TeamIcon from "src/components/Icons/Team";
 import History from "src/components/Icons/History";
 import FeeIcon from "src/components/Icons/Fee";
 import BurnIcon from "src/components/Icons/Burn";
+import Network from "src/components/Icons/Network";
+import Uwu from "src/components/Icons/Uwu";
 
 import Metadata from "src/components/Metadata";
 import Revisions from "src/components/Revisions";
@@ -16,6 +18,7 @@ import Team from "src/components/Team";
 import Burn from "src/components/Burn";
 import { bgPassive } from "src/utils/theme";
 import { BaseNode } from "src/types";
+import Button from "src/components/Button";
 
 export type NodeSettingsMeta = {
   node: BaseNode;
@@ -46,6 +49,35 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
     if (locked) return alert("Working, please wait.");
     onRequestClose();
   };
+
+  if (meta.node.labels.includes('DummyNode')) {
+    return (
+      <Modal isOpen={true} onRequestClose={attemptClose}>
+        <div className="h-screen sm:h-auto flex flex-col">
+          <ModalHeader
+            title="Settings"
+            hint="Update the settings for this Node"
+            onClickClose={attemptClose}
+          />
+        </div>
+
+        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
+          <Uwu />
+          <p className="pt-2 font-semibold">
+            This node has not been minted. Publish your first revision to edit Node Settings.
+          </p>
+        </div>
+
+        <div className="p-4 flex flex-row-reverse justify-between">
+          <Button
+            label="Got It"
+            onClick={attemptClose}
+            disabled={false}
+          />
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={true} onRequestClose={attemptClose}>

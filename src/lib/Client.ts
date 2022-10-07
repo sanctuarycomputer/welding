@@ -389,13 +389,12 @@ const Client = {
     },
 
     forTokenId: async function (
-      tokenId: string
+      tokenId: string,
+      limit: number
     ): Promise<{ draft: Draft; submittedAt: string }[]> {
-      return (
-        await (
-          await fetch(`${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}`)
-        ).json()
-      ).drafts;
+      const response = await fetch(`${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}&limit=${limit}`);
+      if (response.ok) return (await response.json()).drafts;
+      return [];
     },
 
     persist: async function (draft: Draft): Promise<boolean> {

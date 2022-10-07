@@ -67,7 +67,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
       )}
 
       {document ? (
-        <div className="md:pl-2 md:ml-52 lg:ml-64 pt-14 md:pr-2">
+        <div className="md:pl-2 md:ml-52 lg:ml-64 pt-14 md:pr-2 min-h-screen relative">
           <Document node={document} />
         </div>
       ) : (

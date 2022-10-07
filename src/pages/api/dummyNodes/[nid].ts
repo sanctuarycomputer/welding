@@ -5,6 +5,7 @@ import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
 import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
 import unpackDraftAsBaseNodeAttrs from "src/utils/unpackDraftAsBaseNodeAttrs";
+import queryCanEditNode from 'src/utils/queryCanEditNode';
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -28,7 +29,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     switch (method) {
       case "GET":
-        // TODO: A user can't view this DummyNode unless canEdit?
+        if (!await queryCanEditNode(req.query?.nid, req.session.siwe?.address)) {
+          throw new Error("insufficient_permissions");
+        }
 
         const readQ = `MATCH (n:DummyNode {tokenId: $tokenId})
           MATCH (n)<-[:_OWNS]-(owner:Account)
@@ -65,6 +68,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         break;
 
       case "DELETE":
+        if (!await queryCanEditNode(req.query?.nid, req.session.siwe?.address)) {
+          throw new Error("insufficient_permissions");
+        }
         break;
 
       default:

@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
 import makeHash from "object-hash";
+import queryCanEditNode from 'src/utils/queryCanEditNode';
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -12,21 +13,6 @@ const driver = neo4j.driver(
     process.env.NEO4J_PASSWORD || ""
   )
 );
-
-const canEditNode = (node: BaseNode, address: string | undefined) => {
-  if (!address) return false;
-  if (node.admins.some((a) => a.address === address)) return true;
-  if (node.editors.some((a) => a.address === address)) return true;
-
-  return node.outgoing.some((e) => {
-    if (e.name !== "_DELEGATES_PERMISSIONS_TO") return false;
-    const related = node.related.find((n) => n.tokenId === e.tokenId);
-    if (!related) return false;
-    if (related.admins.some((a) => a.address === address)) return true;
-    if (related.editors.some((a) => a.address === address)) return true;
-    return false;
-  });
-};
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -42,15 +28,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     switch (method) {
       case "GET":
-        // TODO: Can only view these drafts if canEdit n
-        // TODO: Do we need drafts on the FE today?
-        // TODO: Should we be sending them all? Doubt it
+        if (!await queryCanEditNode(req.query?.tokenId, req.session.siwe?.address)) {
+          throw new Error("insufficient_permissions");
+        }
 
         const readQ = `MATCH (n { tokenId: $tokenId })<-[e:_REVISES]-(d:Draft)
           WHERE n:BaseNode OR n:DummyNode
-          RETURN d.content, e.submittedAt`;
+          RETURN d.content, e.submittedAt
+          LIMIT $limit`;
         const readResult = await session.readTransaction((tx) =>
-          tx.run(readQ, { tokenId: req.query?.tokenId })
+          tx.run(readQ, {
+            tokenId: req.query?.tokenId,
+            limit: neo4j.int(req.query?.limit || '1')
+          })
         );
         const drafts = readResult.records.map((r) => {
           return {
@@ -63,6 +53,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       case "POST":
         const node = req.body.draft.__node__;
+        if (!await queryCanEditNode(node.tokenId, req.session.siwe?.address)) {
+          throw new Error("insufficient_permissions");
+        }
+
         const content = { ...req.body.draft };
         delete content.__node__;
         delete content.related;
@@ -92,6 +86,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         break;
 
       case "DELETE":
+        if (!await queryCanEditNode(req.query?.tokenId, req.session.siwe?.address)) {
+          throw new Error("insufficient_permissions");
+        }
+
         const deleteQ = `MATCH (d:Draft)-[]-(n:BaseNode {tokenId: $tokenId}) DETACH DELETE d`;
         await session.writeTransaction((tx) =>
           tx.run(q, {
@@ -104,7 +102,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         res.setHeader("Allow", ["GET", "POST"]);
         res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e);
+    Sentry.captureException(e);
+    if (e instanceof Error) {
+      return res.status(500).json({ error: e.message || "unexpected" });
+    }
+    res.status(500).json({ error: "unexpected" });
+  }
 };
 
 export default withIronSessionApiRoute(handler, IRON_OPTIONS);
