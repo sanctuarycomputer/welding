@@ -1,13 +1,15 @@
 import neo4j from "neo4j-driver";
 
 export default async (tokenId, address) => {
-  const session = neo4j.driver(
-    process.env.NEO4J_URI || "",
-    neo4j.auth.basic(
-      process.env.NEO4J_USERNAME || "",
-      process.env.NEO4J_PASSWORD || ""
+  const session = neo4j
+    .driver(
+      process.env.NEO4J_URI || "",
+      neo4j.auth.basic(
+        process.env.NEO4J_USERNAME || "",
+        process.env.NEO4J_PASSWORD || ""
+      )
     )
-  ).session();
+    .session();
 
   const directQ = `MATCH (n { tokenId: $tokenId })<-[e:_CAN]-(Account { address: $address })
     WHERE n:BaseNode OR n:DummyNode
@@ -19,8 +21,7 @@ export default async (tokenId, address) => {
   );
   if (directPermissionsResult.records.length > 0) return true;
 
-  const delegatedQ =
-    `MATCH (Account { address: $address })-[e:_CAN]->()<-[:_DELEGATES_PERMISSIONS_TO]-(n { tokenId: $tokenId })
+  const delegatedQ = `MATCH (Account { address: $address })-[e:_CAN]->()<-[:_DELEGATES_PERMISSIONS_TO]-(n { tokenId: $tokenId })
      WHERE n:BaseNode OR n:DummyNode
      WITH e
      WHERE e.role IN ["0", "1"]
@@ -29,5 +30,5 @@ export default async (tokenId, address) => {
     tx.run(delegatedQ, { tokenId, address })
   );
 
-  return delegatedPermissionResult.length > 0
+  return delegatedPermissionResult.length > 0;
 };

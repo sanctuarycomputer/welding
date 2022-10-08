@@ -21,7 +21,13 @@ const TopicManager: FC<Props> = ({ formik, readOnly }) => {
     stageNodeRelations(formik, "incoming", topics, "DESCRIBES", true);
   };
 
-  const topics = getRelatedNodes(formik, "incoming", "Topic", "DESCRIBES", shallowNodes);
+  const topics = getRelatedNodes(
+    formik,
+    "incoming",
+    "Topic",
+    "DESCRIBES",
+    shallowNodes
+  );
 
   return (
     <div className="mb-4">

@@ -16,7 +16,9 @@ const Burn = ({ node, setLocked }) => {
 
   const triggerDraftBurn = async () => {
     if (!node.labels.includes("DummyNode")) return;
-    const didConfirm = confirm("Are you sure you want to permantly delete this Draft Node, and all of it's data?");
+    const didConfirm = confirm(
+      "Are you sure you want to permantly delete this Draft Node, and all of it's data?"
+    );
     if (!didConfirm) return;
 
     let toastId;
@@ -78,7 +80,8 @@ const Burn = ({ node, setLocked }) => {
         <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col">
           <BurnIcon />
           <p className="pt-2 font-semibold">
-            Burning a Draft Node will disconnect it from all other nodes, and delete all drafts permanently.
+            Burning a Draft Node will disconnect it from all other nodes, and
+            delete all drafts permanently.
           </p>
         </div>
       </>

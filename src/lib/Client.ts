@@ -441,15 +441,16 @@ const Client = {
       ).json();
     },
 
-    destroyDummyNode: async function (
-      tokenId: string
-    ): Promise<boolean> {
-      const response = await fetch(`${baseHostWithProtocol}/api/dummyNodes/${tokenId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+    destroyDummyNode: async function (tokenId: string): Promise<boolean> {
+      const response = await fetch(
+        `${baseHostWithProtocol}/api/dummyNodes/${tokenId}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       return response.ok;
-    }
+    },
   },
 };
 

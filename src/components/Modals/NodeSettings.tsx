@@ -94,7 +94,6 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
               <Burn node={meta.node} setLocked={setLocked} />
             )}
           </div>
-
         </div>
       </Modal>
     );
