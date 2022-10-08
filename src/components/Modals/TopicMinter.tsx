@@ -240,14 +240,14 @@ const TopicMinter: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
     });
   };
 
-  const newTopics = topics.filter((t) => t.tokenId.startsWith("-"));
+  const newTopics = topics.filter((t) => t.tokenId.includes("-"));
 
   const attemptClose = () => {
     if (currentlyMinting.current.size)
       return alert("Currently minting, please wait.");
     if (!newTopics.length) return onRequestClose();
     if (confirm("Discard unminted topics?")) {
-      setTopics(topics.filter((t) => !t.tokenId.startsWith("-")));
+      setTopics(topics.filter((t) => !t.tokenId.includes("-")));
       onRequestClose();
     }
   };

@@ -152,7 +152,7 @@ const SubgraphSidebar: FC<Props> = ({
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="absolute pl-2 flex py-4 items-center"
+        className="absolute pl-2 flex py-4 items-center z-10"
       >
         <Menu />
         <p className="ml-1 font-semibold">
@@ -200,7 +200,7 @@ const SubgraphSidebar: FC<Props> = ({
               canEdit ? "cursor-edit" : "pointer-events-none"
             } font-semibold`}
             placeholder={`Subgraph name`}
-            autoFocus={subgraph.tokenId.startsWith("-")}
+            autoFocus={subgraph.tokenId.includes("-")}
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -210,8 +210,8 @@ const SubgraphSidebar: FC<Props> = ({
             node={subgraph}
             canEdit={canEdit}
             imageDidChange={imageDidChange}
-            allowConnect={!subgraph.tokenId.startsWith("-")}
-            allowSettings={!subgraph.tokenId.startsWith("-")}
+            allowConnect={!subgraph.tokenId.includes("-")}
+            allowSettings={!subgraph.tokenId.includes("-")}
             reloadData={reloadData}
           />
         </div>
@@ -260,7 +260,7 @@ const SubgraphSidebar: FC<Props> = ({
               >
                 Documents
               </p>
-              {canEdit && !subgraph.tokenId.startsWith("-") && (
+              {canEdit && !subgraph.tokenId.includes("-") && (
                 <Link href={`/${slugifyNode(subgraph)}/mint`}>
                   <a className="pb-2 text-xs opacity-60 hover:opacity-100">
                     + New
@@ -298,7 +298,7 @@ const SubgraphSidebar: FC<Props> = ({
               <div className="flex flex-col items-center py-8 opacity-50">
                 <Document />
                 <p className="pt-1 text-center">
-                  {subgraph.tokenId.startsWith("-")
+                  {subgraph.tokenId.includes("-")
                     ? "Publish this subgraph to start writing."
                     : "No documents (yet)"}
                 </p>

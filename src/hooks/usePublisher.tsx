@@ -23,7 +23,7 @@ export default function usePublisher(node: BaseNode): PublisherUtils {
   const [imagePreview, imageDidChange, clearImage] = useEditableImage(formik);
 
   const reloadData = async (tx) => {
-    if (node.tokenId.startsWith("-")) {
+    if (node.tokenId.includes("-")) {
       const transferEvent = tx?.events.find((e) => e.event === "Transfer");
       if (transferEvent) {
         window.location.href = `/${transferEvent.args.tokenId.toString()}`;

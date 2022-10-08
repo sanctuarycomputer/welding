@@ -109,6 +109,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           })
         );
         res.send({ drafts: [] });
+        break;
 
       default:
         res.setHeader("Allow", ["GET", "POST"]);

@@ -9,7 +9,6 @@ import History from "src/components/Icons/History";
 import FeeIcon from "src/components/Icons/Fee";
 import BurnIcon from "src/components/Icons/Burn";
 import Network from "src/components/Icons/Network";
-import Uwu from "src/components/Icons/Uwu";
 
 import Metadata from "src/components/Metadata";
 import Revisions from "src/components/Revisions";
@@ -61,16 +60,41 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
           />
         </div>
 
-        <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
-          <Uwu />
-          <p className="pt-2 font-semibold">
-            This node has not been minted. Publish your first revision to edit
-            Node Settings.
-          </p>
-        </div>
+        <div className="flex">
+          <nav>
+            <div
+              style={{ height: "55px" }}
+              className={`flex border-b border-color p-4 ${
+                level === SettingsLevel.METADATA ? bgPassive : ""
+              } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+              onClick={() => !locked && setLevel(SettingsLevel.METADATA)}
+            >
+              <Data />
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                Metadata
+              </p>
+            </div>
+            <div
+              style={{ height: "55px" }}
+              className={`flex border-b border-color p-4 ${
+                level === SettingsLevel.BURN ? bgPassive : ""
+              } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+              onClick={() => !locked && setLevel(SettingsLevel.BURN)}
+            >
+              <BurnIcon />
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                Burn
+              </p>
+            </div>
+          </nav>
 
-        <div className="p-4 flex flex-row-reverse justify-between">
-          <Button label="Got It" onClick={attemptClose} disabled={false} />
+          <div className="border-l border-color grow">
+            {level === SettingsLevel.METADATA && <Metadata node={meta.node} />}
+            {level === SettingsLevel.BURN && (
+              <Burn node={meta.node} setLocked={setLocked} />
+            )}
+          </div>
+
         </div>
       </Modal>
     );

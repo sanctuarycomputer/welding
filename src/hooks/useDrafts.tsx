@@ -12,11 +12,12 @@ const objectIsEmpty = (obj) =>
   Object.getPrototypeOf(obj) === Object.prototype;
 
 // Next
-// - [ ] Serverside draft permissions (support _DELEGATES_PERMISSION_TO)
 // - [ ] SubgraphSidebar should update when editing a Draft Title/Emoji?
 // - [ ] Types & Sentry & Cleanup
 // - [ ] TopicMinter should work too
-// - [ ] Deletable DummyNode
+// - [ ] Ensure Minting works all the way
+// - [ ] Switching accounts should reinitialize defats
+// - [ ] Staging the first draft should not trigger a persist call
 
 // Eventually
 // - [ ] CRDTs for multi-user editing

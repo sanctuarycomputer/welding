@@ -15,7 +15,10 @@ const getRelatedNodes = (
       const n = node.related.find(
         (node: BaseNode) => node.tokenId === e.tokenId
       );
-      if (!n) return null;
+      if (!n) {
+        console.log(e);
+        return null;
+      }
       if (!n.labels.includes(label)) return null;
       return n;
     })

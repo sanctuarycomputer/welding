@@ -75,6 +75,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         ) {
           throw new Error("insufficient_permissions");
         }
+        const deleteQ = `MATCH (n:DummyNode { tokenId: $tokenId })<-[:_REVISES]-(d:Draft)
+          DETACH DELETE d, n`;
+        await session.writeTransaction((tx) =>
+          tx.run(deleteQ, { tokenId: req.query?.nid })
+        );
+        res.status(204).end();
         break;
 
       default:

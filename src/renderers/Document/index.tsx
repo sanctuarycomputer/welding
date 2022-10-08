@@ -81,9 +81,7 @@ const Document: FC<Props> = ({ node }) => {
     "BELONGS_TO"
   )[0];
 
-  const canEdit = node.tokenId.startsWith("-")
-    ? canEditNode(subgraphParent, address)
-    : canEditNode(node, address);
+  const canEdit = canEditNode(node, address);
 
   const {
     initializingDrafts,
@@ -206,8 +204,8 @@ const Document: FC<Props> = ({ node }) => {
               imageDidChange={imageDidChange}
               node={node}
               canEdit={canEdit}
-              allowConnect={!node.tokenId.startsWith("-") && !node.burnt}
-              allowSettings={!node.tokenId.startsWith("-")}
+              allowConnect={!node.tokenId.includes("-") && !node.burnt}
+              allowSettings={!node.tokenId.includes("-")}
               reloadData={reloadData}
             />
           </div>

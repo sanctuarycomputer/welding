@@ -15,7 +15,7 @@ const WrappedHead = ({ node }) => {
   let description = `Mint a ${nodeLabel.toLowerCase()}`;
   let emojiCDN = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/1f469-200d-1f3ed.png`;
 
-  if (!node.tokenId.startsWith("-")) {
+  if (!node.tokenId.includes("-")) {
     name = `${node.currentRevision.name}`;
     description = `${node.currentRevision.description}`;
     if (belongsToNode) {
