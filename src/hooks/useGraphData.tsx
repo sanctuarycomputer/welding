@@ -17,6 +17,7 @@ type RevisionLoadingData = {
 interface IGraphData {
   dummyNodes: BaseNode[];
   dummyNodesLoading: boolean;
+  loadDummyNodes: () => Promise<void>;
   sessionData: Session | null;
   sessionDataLoading: boolean;
   loadCurrentSession: () => Promise<Session | undefined>;
@@ -44,6 +45,7 @@ interface IGraphData {
 const GraphContext = createContext<IGraphData>({
   dummyNodes: [],
   dummyNodesLoading: false,
+  loadDummyNodes: async () => undefined,
   sessionData: null,
   sessionDataLoading: false,
   loadCurrentSession: async () => undefined,
@@ -130,18 +132,25 @@ function GraphProvider({ children }) {
         return sessionData;
       } else {
         setSessionData(null);
+        flushSessionAndDisconnect();
       }
     } catch (e) {
       Sentry.captureException(e);
       setSessionData(null);
+      flushSessionAndDisconnect();
     } finally {
       setSessionDataLoading(false);
     }
   };
 
   const flushSessionAndDisconnect = async () => {
+    flushSession()
+    disconnect();
+    didDisconnect();
+  };
+
+  const flushSession = async () => {
     try {
-      // TODO: If local draft isPersisting: true, open confirm modal
       setSessionDataLoading(true);
       await fetch("/api/logout");
     } catch (e) {
@@ -151,8 +160,6 @@ function GraphProvider({ children }) {
       setSessionData(null);
       setSessionDataLoading(false);
       setDummyNodes([]);
-      disconnect();
-      didDisconnect();
     }
   };
 
@@ -162,6 +169,10 @@ function GraphProvider({ children }) {
       setAccountDataLoading(false);
       setAccountData(null);
       return;
+    }
+
+    if (address !== sessionData?.address && sessionDataLoading === false) {
+      flushSession();
     }
 
     if (accountDataLoading) return;

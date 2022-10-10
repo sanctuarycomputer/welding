@@ -8,7 +8,6 @@ import { BaseNode } from "src/types";
 import Head from "src/components/Head";
 import { withIronSessionSsr } from "iron-session/next";
 import { IRON_OPTIONS } from "src/utils/constants";
-import DEFAULT_EMOJI from "src/utils/defaultEmoji";
 
 import dynamic from "next/dynamic";
 const Subgraph = dynamic(() => import("src/renderers/Subgraph"), {
@@ -56,6 +55,7 @@ export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
     }
 
     let draftTokenId = context.query?.tokenId;
+    draftTokenId = Array.isArray(draftTokenId) ? draftTokenId[0] : draftTokenId;
     if (!draftTokenId) {
       // Should take values
       const newDoc = makeDummyNode("Document");

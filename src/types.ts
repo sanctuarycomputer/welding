@@ -56,7 +56,7 @@ export type Revision = {
   image: string;
   hash?: string;
   block?: number;
-  metadata?: Metadata;
+  metadata: Metadata;
 };
 
 export type Edge = {

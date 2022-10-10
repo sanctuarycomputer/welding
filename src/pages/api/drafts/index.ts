@@ -17,13 +17,7 @@ const driver = neo4j.driver(
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (!req.session.siwe?.address) throw new Error("no_session");
-
     const session = driver.session();
-    await session.writeTransaction((tx) =>
-      tx.run(
-        `CREATE CONSTRAINT hash IF NOT EXISTS FOR (d:Draft) REQUIRE d.hash IS UNIQUE`
-      )
-    );
 
     const { method } = req;
     switch (method) {
@@ -39,14 +33,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const readQ = `MATCH (n { tokenId: $tokenId })<-[e:_REVISES]-(d:Draft)
           WHERE n:BaseNode OR n:DummyNode
-          RETURN d.content, e.submittedAt
-          LIMIT $limit`;
-        const readResult = await session.readTransaction((tx) =>
-          tx.run(readQ, {
+          WITH d, e ORDER BY datetime(e.submittedAt) DESC LIMIT $limit
+          RETURN d.content, e.submittedAt`;
+
+        const readResult = await session.readTransaction((tx) => {
+          let limit = req.query?.limit || "1";
+          limit = Array.isArray(limit) ? limit[0] : limit;
+          return tx.run(readQ, {
             tokenId: req.query?.tokenId,
-            limit: neo4j.int(req.query?.limit || "1"),
+            limit: neo4j.int(limit),
           })
-        );
+        });
         const drafts = readResult.records.map((r) => {
           return {
             submittedAt: r.get("e.submittedAt"),
@@ -104,7 +101,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const deleteQ = `MATCH (d:Draft)-[]-(n:BaseNode {tokenId: $tokenId}) DETACH DELETE d`;
         await session.writeTransaction((tx) =>
-          tx.run(q, {
+          tx.run(deleteQ, {
             tokenId: req.query?.tokenId,
           })
         );

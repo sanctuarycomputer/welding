@@ -51,7 +51,7 @@ const SubgraphSidebar: FC<Props> = ({
   betaIsClosed,
   autoOpenSidebarOnMobile,
 }) => {
-  const { dummyNodes, dummyNodesLoading } = useContext(GraphContext);
+  const { dummyNodes } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
   const [mobileOpen, setMobileOpen] = useState(autoOpenSidebarOnMobile);
 
@@ -83,7 +83,6 @@ const SubgraphSidebar: FC<Props> = ({
   );
 
   const allDocumentNodes = [...documents, ...stashedDocuments];
-
   const stashedSubgraphs = getRelatedNodes(
     subgraph,
     "incoming",
@@ -270,7 +269,7 @@ const SubgraphSidebar: FC<Props> = ({
             </div>
 
             {canEdit
-              ? documentNodes.map((n, i) => renderDocumentLink(n, i))
+              ? documentNodes.map((n, i) => renderDocumentLink(n.tokenId === currentDocument?.tokenId ? currentDocument : n, i))
               : documentNodes.map((d) => {
                   const isStashed = stashedDocuments.indexOf(d) > -1;
                   if (d.tokenId === currentDocument?.tokenId) {
@@ -315,10 +314,10 @@ const SubgraphSidebar: FC<Props> = ({
               </div>
             )}
             {subgraphDummyNodes.map((s) => {
-              if (s.tokenId === currentDocument.tokenId)
+              if (s.tokenId === currentDocument?.tokenId)
                 return (
                   <p key={s.tokenId} className="text-xs font-semibold pb-1">
-                    {s.currentRevision.nativeEmoji} {s.currentRevision.name}
+                    {currentDocument?.currentRevision.nativeEmoji} {currentDocument?.currentRevision.name}
                   </p>
                 );
               return (

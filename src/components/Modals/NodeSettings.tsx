@@ -8,7 +8,6 @@ import TeamIcon from "src/components/Icons/Team";
 import History from "src/components/Icons/History";
 import FeeIcon from "src/components/Icons/Fee";
 import BurnIcon from "src/components/Icons/Burn";
-import Network from "src/components/Icons/Network";
 
 import Metadata from "src/components/Metadata";
 import Revisions from "src/components/Revisions";
@@ -17,7 +16,6 @@ import Team from "src/components/Team";
 import Burn from "src/components/Burn";
 import { bgPassive } from "src/utils/theme";
 import { BaseNode } from "src/types";
-import Button from "src/components/Button";
 
 export type NodeSettingsMeta = {
   node: BaseNode;

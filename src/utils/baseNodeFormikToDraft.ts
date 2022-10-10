@@ -1,4 +1,5 @@
-import { Draft } from "src/types";
+import { FormikProps } from "formik";
+import { BaseNodeFormValues, Draft } from "src/types";
 
 const baseNodeFormikToDraft = (
   baseNodeFormik: FormikProps<BaseNodeFormValues>

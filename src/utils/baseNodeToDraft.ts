@@ -1,4 +1,4 @@
-import { Draft } from "src/types";
+import { BaseNode, Draft } from "src/types";
 import DEFAULT_EMOJI from "src/utils/defaultEmoji";
 
 const baseNodeToDraft = (node: BaseNode): Draft => {

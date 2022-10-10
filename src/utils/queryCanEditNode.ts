@@ -30,5 +30,5 @@ export default async (tokenId, address) => {
     tx.run(delegatedQ, { tokenId, address })
   );
 
-  return delegatedPermissionResult.length > 0;
+  return delegatedPermissionResult.records.length > 0;
 };

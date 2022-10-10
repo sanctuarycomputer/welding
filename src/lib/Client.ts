@@ -5,7 +5,7 @@ import {
   NormalizedCacheObject,
   ObservableQuery,
 } from "@apollo/client";
-import { Account, BaseNode, Metadata, Revision } from "src/types";
+import { Account, BaseNode, Draft, Metadata, Revision } from "src/types";
 import { persistCache, LocalStorageWrapper } from "apollo3-cache-persist";
 import { fetchEnsName } from "@wagmi/core";
 import { emojiIndex, BaseEmoji } from "emoji-mart";
@@ -437,6 +437,19 @@ const Client = {
             draft,
             submittedAt: new Date().toISOString(),
           }),
+        })
+      ).json();
+    },
+
+    linkDummyNode: async function (
+      tokenId: string,
+      onChainTokenId: string
+    ): Promise<BaseNode> {
+      return await (
+        await fetch(`${baseHostWithProtocol}/api/dummyNodes/${tokenId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ onChainTokenId }),
         })
       ).json();
     },

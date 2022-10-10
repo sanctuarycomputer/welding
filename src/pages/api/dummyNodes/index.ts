@@ -30,6 +30,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     switch (method) {
       case "GET":
         const readQ = `MATCH (n:DummyNode)<-[:_OWNS]-(a:Account { address: $sender })
+        WHERE NOT (n)-[:_PRECEDES]->(:BaseNode)
         CALL {
           WITH n
           MATCH (n)<-[r:_REVISES]-(d:Draft)

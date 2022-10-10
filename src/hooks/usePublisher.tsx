@@ -6,6 +6,7 @@ import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import { BaseNode, BaseNodeFormValues } from "src/types";
 import { FormikProps } from "formik";
+import Client from "src/lib/Client";
 
 export interface PublisherUtils {
   formik: FormikProps<BaseNodeFormValues>;
@@ -26,6 +27,10 @@ export default function usePublisher(node: BaseNode): PublisherUtils {
     if (node.tokenId.includes("-")) {
       const transferEvent = tx?.events.find((e) => e.event === "Transfer");
       if (transferEvent) {
+        await Client.Drafts.linkDummyNode(
+          node.tokenId,
+          transferEvent.args.tokenId.toString()
+        );
         window.location.href = `/${transferEvent.args.tokenId.toString()}`;
         return;
       }

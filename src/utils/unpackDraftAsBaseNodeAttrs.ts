@@ -1,6 +1,6 @@
-import { Draft, BaseNode } from "src/types";
+import { Draft } from "src/types";
 
-const unpackDraftToBaseNodeAttrs = (draft: Draft): BaseNode => {
+const unpackDraftToBaseNodeAttrs = (draft: Draft) => {
   return {
     currentRevision: {
       name: draft.name,

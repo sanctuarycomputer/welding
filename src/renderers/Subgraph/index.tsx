@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useState } from "react";
 import type { BaseNode } from "src/types";
 import { GraphContext } from "src/hooks/useGraphData";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
@@ -25,6 +25,7 @@ interface Props {
 }
 
 const Subgraph: FC<Props> = ({ node, document }) => {
+  const [currentDocument, setCurrentDocument] = useState<BaseNode | undefined>(document);
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
 
@@ -56,7 +57,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
         <SubgraphSidebar
           formik={formik}
           canEdit={canEditSubgraph}
-          currentDocument={document}
+          currentDocument={currentDocument}
           imagePreview={imagePreview}
           imageDidChange={imageDidChange}
           clearImage={clearImage}
@@ -68,7 +69,7 @@ const Subgraph: FC<Props> = ({ node, document }) => {
 
       {document ? (
         <div className="md:pl-2 md:ml-52 lg:ml-64 pt-14 md:pr-2 min-h-screen relative">
-          <Document node={document} />
+          <Document node={document} setCurrentDocument={setCurrentDocument} />
         </div>
       ) : (
         <div

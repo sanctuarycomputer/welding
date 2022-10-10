@@ -3,7 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import { IRON_OPTIONS } from "src/utils/constants";
-import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
 import unpackDraftAsBaseNodeAttrs from "src/utils/unpackDraftAsBaseNodeAttrs";
 import queryCanEditNode from "src/utils/queryCanEditNode";
 
@@ -18,13 +17,7 @@ const driver = neo4j.driver(
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (!req.session.siwe?.address) throw new Error("no_session");
-
     const session = driver.session();
-    await session.writeTransaction((tx) =>
-      tx.run(
-        `CREATE CONSTRAINT tokenId IF NOT EXISTS FOR (d:DummyNode) REQUIRE d.tokenId IS UNIQUE`
-      )
-    );
 
     const { method } = req;
     switch (method) {
@@ -69,6 +62,27 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         });
         break;
 
+      case "PUT":
+        if (
+          !(await queryCanEditNode(req.query?.nid, req.session.siwe?.address))
+        ) {
+          throw new Error("insufficient_permissions");
+        }
+
+        const putQ = `MATCH (d:DummyNode {tokenId: $tokenId}), (n:BaseNode {tokenId: $onChainTokenId})
+          MERGE (d)-[e:_PRECEDES]->(n)
+          RETURN e`;
+        const putResult = await session.writeTransaction((tx) =>
+          tx.run(putQ, { tokenId: req.query?.nid, onChainTokenId: req.body.onChainTokenId })
+        );
+
+        if (putResult.records.length === 0) return res.status(404).end();
+        if (putResult.records.length > 1)
+          throw new Error("unexpected_multi_record");
+
+        res.status(204).end();
+        break;
+
       case "DELETE":
         if (
           !(await queryCanEditNode(req.query?.nid, req.session.siwe?.address))
@@ -84,7 +98,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         break;
 
       default:
-        res.setHeader("Allow", ["GET", "DELETE"]);
+        res.setHeader("Allow", ["GET", "PUT", "DELETE"]);
         res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch (e) {

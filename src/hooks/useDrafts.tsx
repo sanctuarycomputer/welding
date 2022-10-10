@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import Drafts from "src/lib/Drafts";
+import { useState, useRef, useMemo, useContext, useEffect } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
 import { diff } from "deep-object-diff";
-import makeHash from "object-hash";
 import debounce from "lodash/debounce";
 import baseNodeFormikToDraft from "src/utils/baseNodeFormikToDraft";
+import canEditNode from "src/utils/canEditNode";
 import Client from "src/lib/Client";
+import { Draft } from "src/types";
 
 const objectIsEmpty = (obj) =>
   obj &&
@@ -12,12 +13,8 @@ const objectIsEmpty = (obj) =>
   Object.getPrototypeOf(obj) === Object.prototype;
 
 // Next
-// - [ ] SubgraphSidebar should update when editing a Draft Title/Emoji?
-// - [ ] Types & Sentry & Cleanup
-// - [ ] TopicMinter should work too
-// - [ ] Ensure Minting works all the way
-// - [ ] Switching accounts should reinitialize defats
-// - [ ] Staging the first draft should not trigger a persist call
+// - [ ] Switching to a new account on a DummyNode should redirect away
+// - [ ] Deploy!
 
 // Eventually
 // - [ ] CRDTs for multi-user editing
@@ -29,20 +26,46 @@ const objectIsEmpty = (obj) =>
 
 const callDebounced = debounce((f) => f(), 2000);
 
-const useDrafts = (address, canEdit, formik, didPersistDraft) => {
+const useDrafts = (formik) => {
+  const skipNextPersist = useRef(true);
+
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
   const [lastPersistErrored, setLastPersistErrored] = useState(false);
-  const [drafts, setDrafts] = useState([]);
-  const [draftsPersisting, setDraftsPersisting] = useState([]);
+  const [drafts, setDrafts] = useState<{ submittedAt: string, draft: Draft }[]>([]);
+  const [draftsPersisting, setDraftsPersisting] = useState<Draft[]>([]);
+
+  const {
+    sessionData,
+    sessionDataLoading,
+  } = useContext(GraphContext);
+
+  const canEdit = canEditNode(node, sessionData?.address);
 
   const initDrafts = async () => {
-    if (address && canEdit) {
+    if (sessionDataLoading) {
+      setInitializingDrafts(true);
+      unstageDraft();
+      setDrafts([]);
+      return;
+    }
+
+    if (sessionData?.address && canEdit) {
       try {
         setInitializingDrafts(true);
-        setDrafts(await Client.Drafts.forTokenId(node.tokenId, 1));
-      } finally {
+        unstageDraft();
+        const drafts = await Client.Drafts.forTokenId(node.tokenId, 1);
+        if (drafts.length) {
+          const nextValues = { ...formik.values, ...drafts[0].draft };
+          if (!objectIsEmpty(diff(formik.values, nextValues))) {
+            skipNextPersist.current = true;
+            formik.setValues(nextValues, false);
+          }
+        }
+        setDrafts(drafts);
         setInitializingDrafts(false);
+      } catch(e) {
+        // TODO: Sentry
       }
     } else {
       setInitializingDrafts(false);
@@ -50,10 +73,10 @@ const useDrafts = (address, canEdit, formik, didPersistDraft) => {
   };
 
   const persistDraft = async () => {
-    if (!address || !canEdit) return;
+    if (!sessionData?.address || !canEdit) return;
     const draft = baseNodeFormikToDraft(formik);
     const shouldPersist =
-      drafts.length === 0 || !objectIsEmpty(diff(drafts[0].values, draft));
+      drafts.length === 0 || !objectIsEmpty(diff(drafts[0].draft, draft));
     if (!shouldPersist) return null;
 
     callDebounced(async () => {
@@ -75,20 +98,21 @@ const useDrafts = (address, canEdit, formik, didPersistDraft) => {
     });
   };
 
-  const stageDraft = ({ draft }) => {
-    const changes = diff({ name: formik.values.name }, draft);
-    Object.keys(changes).forEach((k) => {
-      formik.setFieldValue(k, changes[k]);
-    });
-  };
-
   const unstageDraft = () => {
     if (formik.dirty) formik.resetForm();
   };
 
+  useMemo(() => {
+    if (skipNextPersist.current) {
+      skipNextPersist.current = false;
+      return;
+    }
+    persistDraft();
+  }, [formik.values.name, formik.values.description, formik.values.emoji, formik.values.content]);
+
   useEffect(() => {
     initDrafts();
-  }, [address, node.tokenId]);
+  }, [sessionData, sessionDataLoading, node.tokenId]);
 
   return {
     initializingDrafts,
@@ -96,7 +120,6 @@ const useDrafts = (address, canEdit, formik, didPersistDraft) => {
     drafts,
     draftsPersisting,
     persistDraft,
-    stageDraft,
     unstageDraft,
   };
 };

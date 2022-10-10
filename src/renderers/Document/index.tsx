@@ -1,4 +1,4 @@
-import { FC, useState, useContext, useEffect, useMemo, useRef } from "react";
+import { FC, useContext, useMemo } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -27,6 +27,7 @@ const Editor = dynamic(() => import("src/components/Editor"), {
 
 interface Props {
   node: BaseNode;
+  setCurrentDocument?: (currentDocument: BaseNode) => void;
 }
 
 const DocumentStashInfo = ({ subgraph }) => {
@@ -50,24 +51,29 @@ const DocumentStashInfo = ({ subgraph }) => {
   }
 };
 
-const Document: FC<Props> = ({ node }) => {
-  const draftsReady = useRef(false);
+const Document: FC<Props> = ({ node, setCurrentDocument }) => {
   const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
+
+  const {
+    initializingDrafts,
+    lastPersistErrored,
+    draftsPersisting,
+    unstageDraft,
+  } = useDrafts(formik);
 
   const router = useRouter();
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
   const {
-    sessionData,
-    sessionDataLoading,
     shallowNodes,
     shallowNodesLoading,
     dummyNodesLoading,
     loadDummyNodes,
   } = useContext(GraphContext);
+
   const { setContent } = useContext(NavContext);
 
   useMemo(() => {
@@ -82,22 +88,18 @@ const Document: FC<Props> = ({ node }) => {
   )[0];
 
   const canEdit = canEditNode(node, address);
-
-  const {
-    initializingDrafts,
-    lastPersistErrored,
-    drafts,
-    draftsPersisting,
-    persistDraft,
-    stageDraft,
-    unstageDraft,
-  } = useDrafts(sessionData?.address, canEdit, formik);
+  const isDummyNode = node.labels.includes("DummyNode");
 
   useMemo(() => {
-    if (!canEdit || !formik.dirty) {
+    if (!canEdit) {
       setContent(null);
       return;
     }
+    if (!isDummyNode && !formik.dirty) {
+      setContent(null);
+      return;
+    }
+
     setContent(
       <EditNav
         formik={formik}
@@ -108,51 +110,50 @@ const Document: FC<Props> = ({ node }) => {
     );
   }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
-  useConfirmRouteChange(draftsPersisting.length || formik.isSubmitting, () => {
+  useConfirmRouteChange(draftsPersisting.length > 0 || formik.isSubmitting, () => {
     const didConfirm = confirm("You have unsaved changes. Discard them?");
     if (didConfirm) formik.resetForm();
     return didConfirm;
   });
 
-  //useMemo(() => {
-  //  if (!canEdit) return;
-  //  if (shallowNodesLoading) return;
-  //  if (shallowNodes.length === 0) return;
-  //  const tokenIds = extractTokenIdsFromContentBlocks(
-  //    formik.values.content?.blocks || []
-  //  );
-  //  const referencedNodes = (shallowNodes || []).filter((n) =>
-  //    tokenIds.includes(n.tokenId)
-  //  );
-  //  stageNodeRelations(
-  //    formik,
-  //    "incoming",
-  //    referencedNodes,
-  //    "REFERENCED_BY",
-  //    true
-  //  );
-  //}, [formik.values.content, shallowNodes, shallowNodesLoading]);
-
-  console.log("Document will render", canEdit, lastPersistErrored);
+  useMemo(() => {
+   if (!canEdit) return;
+   if (shallowNodesLoading) return;
+   if (shallowNodes.length === 0) return;
+   const tokenIds = extractTokenIdsFromContentBlocks(
+     formik.values.content?.blocks || []
+   );
+   const referencedNodes = (shallowNodes || []).filter((n) =>
+     tokenIds.includes(n.tokenId)
+   );
+   stageNodeRelations(
+     formik,
+     "incoming",
+     referencedNodes,
+     "REFERENCED_BY",
+     true
+   );
+  }, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
   useMemo(() => {
-    if (initializingDrafts) {
-      draftsReady.current = false;
-      unstageDraft();
-    } else {
-      if (drafts.length === 0) return;
-      stageDraft(drafts[0]);
-    }
-  }, [initializingDrafts]);
-
-  useMemo(() => {
-    if (initializingDrafts) return;
-    if (draftsReady.current) {
-      persistDraft();
-    } else {
-      draftsReady.current = true;
-    }
-  }, [initializingDrafts, formik.values.name]);
+    // This is here to keep the SubgraphSidebar in sync
+    if (!setCurrentDocument) return;
+    setCurrentDocument({
+      ...node,
+      currentRevision: {
+        ...node.currentRevision,
+        name: formik.values.name,
+        nativeEmoji: formik.values.emoji.native,
+        metadata: {
+          ...node.currentRevision.metadata,
+          properties: {
+            ...node.currentRevision.metadata?.properties,
+            emoji: formik.values.emoji
+          }
+        }
+      }
+    });
+  }, [formik.values]);
 
   const references = getRelatedNodes(
     formik,
@@ -180,14 +181,14 @@ const Document: FC<Props> = ({ node }) => {
     <>
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
-          <p className="text-red-500">
-            {drafts.length} Drafts
-            <span>{draftsPersisting.length > 0 && " (Persisting...)"}</span>
-            <span>
-              {lastPersistErrored &&
-                " Hmmm... somethings up. We couldn't save your last draft."}
-            </span>
-          </p>
+
+          {lastPersistErrored && (
+            <p className="text-red-500">
+              <span>
+                Hmmm... somethings up. Your last edit did not save.
+              </span>
+            </p>
+          )}
 
           <div
             className={`flex ${
@@ -219,12 +220,14 @@ const Document: FC<Props> = ({ node }) => {
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
           />
-          <div className="pl-2 md:pl-0">
-            <TopicManager
-              formik={formik}
-              readOnly={!canEdit || formik.isSubmitting}
-            />
-          </div>
+          {!isDummyNode && (
+            <div className="pl-2 md:pl-0">
+              <TopicManager
+                formik={formik}
+                readOnly={!canEdit || formik.isSubmitting}
+              />
+            </div>
+          )}
           <Editor
             readOnly={!canEdit || formik.isSubmitting}
             content={formik.values.content}

@@ -17,8 +17,7 @@ const Metadata = ({ node }) => {
       <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
         <Uwu />
         <p className="pt-2 font-semibold">
-          This node has not been minted. Mint your first revision to see it's
-          metadata.
+          This node has not been minted. Mint your first revision to view metadata.
         </p>
       </div>
     );
