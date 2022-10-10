@@ -73,7 +73,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           MERGE (d)-[e:_PRECEDES]->(n)
           RETURN e`;
         const putResult = await session.writeTransaction((tx) =>
-          tx.run(putQ, { tokenId: req.query?.nid, onChainTokenId: req.body.onChainTokenId })
+          tx.run(putQ, {
+            tokenId: req.query?.nid,
+            onChainTokenId: req.body.onChainTokenId,
+          })
         );
 
         if (putResult.records.length === 0) return res.status(404).end();

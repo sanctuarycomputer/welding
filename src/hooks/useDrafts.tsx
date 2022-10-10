@@ -32,13 +32,12 @@ const useDrafts = (formik) => {
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
   const [lastPersistErrored, setLastPersistErrored] = useState(false);
-  const [drafts, setDrafts] = useState<{ submittedAt: string, draft: Draft }[]>([]);
+  const [drafts, setDrafts] = useState<{ submittedAt: string; draft: Draft }[]>(
+    []
+  );
   const [draftsPersisting, setDraftsPersisting] = useState<Draft[]>([]);
 
-  const {
-    sessionData,
-    sessionDataLoading,
-  } = useContext(GraphContext);
+  const { sessionData, sessionDataLoading } = useContext(GraphContext);
 
   const canEdit = canEditNode(node, sessionData?.address);
 
@@ -64,7 +63,7 @@ const useDrafts = (formik) => {
         }
         setDrafts(drafts);
         setInitializingDrafts(false);
-      } catch(e) {
+      } catch (e) {
         // TODO: Sentry
       }
     } else {
@@ -108,7 +107,12 @@ const useDrafts = (formik) => {
       return;
     }
     persistDraft();
-  }, [formik.values.name, formik.values.description, formik.values.emoji, formik.values.content]);
+  }, [
+    formik.values.name,
+    formik.values.description,
+    formik.values.emoji,
+    formik.values.content,
+  ]);
 
   useEffect(() => {
     initDrafts();

@@ -269,7 +269,14 @@ const SubgraphSidebar: FC<Props> = ({
             </div>
 
             {canEdit
-              ? documentNodes.map((n, i) => renderDocumentLink(n.tokenId === currentDocument?.tokenId ? currentDocument : n, i))
+              ? documentNodes.map((n, i) =>
+                  renderDocumentLink(
+                    n.tokenId === currentDocument?.tokenId
+                      ? currentDocument
+                      : n,
+                    i
+                  )
+                )
               : documentNodes.map((d) => {
                   const isStashed = stashedDocuments.indexOf(d) > -1;
                   if (d.tokenId === currentDocument?.tokenId) {
@@ -317,7 +324,8 @@ const SubgraphSidebar: FC<Props> = ({
               if (s.tokenId === currentDocument?.tokenId)
                 return (
                   <p key={s.tokenId} className="text-xs font-semibold pb-1">
-                    {currentDocument?.currentRevision.nativeEmoji} {currentDocument?.currentRevision.name}
+                    {currentDocument?.currentRevision.nativeEmoji}{" "}
+                    {currentDocument?.currentRevision.name}
                   </p>
                 );
               return (

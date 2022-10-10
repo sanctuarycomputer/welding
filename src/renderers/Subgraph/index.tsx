@@ -25,7 +25,9 @@ interface Props {
 }
 
 const Subgraph: FC<Props> = ({ node, document }) => {
-  const [currentDocument, setCurrentDocument] = useState<BaseNode | undefined>(document);
+  const [currentDocument, setCurrentDocument] = useState<BaseNode | undefined>(
+    document
+  );
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
 

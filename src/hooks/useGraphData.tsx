@@ -144,7 +144,7 @@ function GraphProvider({ children }) {
   };
 
   const flushSessionAndDisconnect = async () => {
-    flushSession()
+    flushSession();
     disconnect();
     didDisconnect();
   };

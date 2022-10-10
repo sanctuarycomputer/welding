@@ -42,7 +42,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           return tx.run(readQ, {
             tokenId: req.query?.tokenId,
             limit: neo4j.int(limit),
-          })
+          });
         });
         const drafts = readResult.records.map((r) => {
           return {

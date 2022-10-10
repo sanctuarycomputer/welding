@@ -110,29 +110,32 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
     );
   }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
-  useConfirmRouteChange(draftsPersisting.length > 0 || formik.isSubmitting, () => {
-    const didConfirm = confirm("You have unsaved changes. Discard them?");
-    if (didConfirm) formik.resetForm();
-    return didConfirm;
-  });
+  useConfirmRouteChange(
+    draftsPersisting.length > 0 || formik.isSubmitting,
+    () => {
+      const didConfirm = confirm("You have unsaved changes. Discard them?");
+      if (didConfirm) formik.resetForm();
+      return didConfirm;
+    }
+  );
 
   useMemo(() => {
-   if (!canEdit) return;
-   if (shallowNodesLoading) return;
-   if (shallowNodes.length === 0) return;
-   const tokenIds = extractTokenIdsFromContentBlocks(
-     formik.values.content?.blocks || []
-   );
-   const referencedNodes = (shallowNodes || []).filter((n) =>
-     tokenIds.includes(n.tokenId)
-   );
-   stageNodeRelations(
-     formik,
-     "incoming",
-     referencedNodes,
-     "REFERENCED_BY",
-     true
-   );
+    if (!canEdit) return;
+    if (shallowNodesLoading) return;
+    if (shallowNodes.length === 0) return;
+    const tokenIds = extractTokenIdsFromContentBlocks(
+      formik.values.content?.blocks || []
+    );
+    const referencedNodes = (shallowNodes || []).filter((n) =>
+      tokenIds.includes(n.tokenId)
+    );
+    stageNodeRelations(
+      formik,
+      "incoming",
+      referencedNodes,
+      "REFERENCED_BY",
+      true
+    );
   }, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
   useMemo(() => {
@@ -148,10 +151,10 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
           ...node.currentRevision.metadata,
           properties: {
             ...node.currentRevision.metadata?.properties,
-            emoji: formik.values.emoji
-          }
-        }
-      }
+            emoji: formik.values.emoji,
+          },
+        },
+      },
     });
   }, [formik.values]);
 
@@ -181,12 +184,9 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
     <>
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
-
           {lastPersistErrored && (
             <p className="text-red-500">
-              <span>
-                Hmmm... somethings up. Your last edit did not save.
-              </span>
+              <span>Hmmm... somethings up. Your last edit did not save.</span>
             </p>
           )}
 
