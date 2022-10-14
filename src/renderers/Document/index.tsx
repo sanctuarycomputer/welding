@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect } from "react";
+import { FC, useContext, useMemo } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { GraphContext } from "src/hooks/useGraphData";
@@ -12,10 +12,13 @@ import Actions from "src/components/Actions";
 import Frontmatter from "src/components/Frontmatter";
 import TopicManager from "src/components/TopicManager";
 import usePublisher from "src/hooks/usePublisher";
+import useDrafts from "src/hooks/useDrafts";
 import { getRelatedNodes, stageNodeRelations } from "src/lib/useBaseNodeFormik";
 import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromContentBlocks";
 import { textPassive } from "src/utils/theme";
 import { useAccount } from "wagmi";
+import Spinner from "src/components/Icons/Spinner";
+import Error from "src/components/Icons/Error";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -25,6 +28,7 @@ const Editor = dynamic(() => import("src/components/Editor"), {
 
 interface Props {
   node: BaseNode;
+  setCurrentDocument?: (currentDocument: BaseNode) => void;
 }
 
 const DocumentStashInfo = ({ subgraph }) => {
@@ -48,17 +52,35 @@ const DocumentStashInfo = ({ subgraph }) => {
   }
 };
 
-const Document: FC<Props> = ({ node }) => {
+const Document: FC<Props> = ({ node, setCurrentDocument }) => {
   const { address } = useAccount();
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
+
+  const {
+    initializingDrafts,
+    initializingDraftsError,
+    lastPersistErrored,
+    draftsPersisting,
+    unstageDraft,
+  } = useDrafts(formik);
 
   const router = useRouter();
   let nid = router.query.nid;
   nid = Array.isArray(nid) ? nid[0] : nid;
 
-  const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
+  const {
+    shallowNodes,
+    shallowNodesLoading,
+    dummyNodesLoading,
+    loadDummyNodes,
+  } = useContext(GraphContext);
+
   const { setContent } = useContext(NavContext);
+
+  useMemo(() => {
+    if (!dummyNodesLoading) loadDummyNodes();
+  }, [node.tokenId]);
 
   const subgraphParent = getRelatedNodes(
     formik,
@@ -67,22 +89,31 @@ const Document: FC<Props> = ({ node }) => {
     "BELONGS_TO"
   )[0];
 
-  const canEdit = node.tokenId.startsWith("-")
-    ? canEditNode(subgraphParent, address)
-    : canEditNode(node, address);
+  const canEdit = canEditNode(node, address);
+  const isDummyNode = node.labels.includes("DummyNode");
 
-  useEffect(() => {
-    if (!canEdit || !formik.dirty) return setContent(null);
+  useMemo(() => {
+    if (!canEdit) {
+      setContent(null);
+      return;
+    }
+    if (!isDummyNode && !formik.dirty) {
+      setContent(null);
+      return;
+    }
+
     setContent(
       <EditNav
         formik={formik}
+        draftsPersisting={draftsPersisting.length > 0}
+        unstageDraft={unstageDraft}
         buttonLabel={formik.isSubmitting ? "Loading..." : "Publish"}
       />
     );
-  }, [canEdit, formik]);
+  }, [canEdit, draftsPersisting, formik.dirty, formik.isSubmitting]);
 
   useConfirmRouteChange(
-    formik.dirty && formik.status?.status !== "COMPLETE",
+    draftsPersisting.length > 0 || formik.isSubmitting,
     () => {
       const didConfirm = confirm("You have unsaved changes. Discard them?");
       if (didConfirm) formik.resetForm();
@@ -90,7 +121,7 @@ const Document: FC<Props> = ({ node }) => {
     }
   );
 
-  useEffect(() => {
+  useMemo(() => {
     if (!canEdit) return;
     if (shallowNodesLoading) return;
     if (shallowNodes.length === 0) return;
@@ -109,6 +140,26 @@ const Document: FC<Props> = ({ node }) => {
     );
   }, [formik.values.content, shallowNodes, shallowNodesLoading]);
 
+  useMemo(() => {
+    // This is here to keep the SubgraphSidebar in sync
+    if (!setCurrentDocument) return;
+    setCurrentDocument({
+      ...node,
+      currentRevision: {
+        ...node.currentRevision,
+        name: formik.values.name,
+        nativeEmoji: formik.values.emoji.native,
+        metadata: {
+          ...node.currentRevision.metadata,
+          properties: {
+            ...node.currentRevision.metadata?.properties,
+            emoji: formik.values.emoji,
+          },
+        },
+      },
+    });
+  }, [formik.values]);
+
   const references = getRelatedNodes(
     formik,
     "incoming",
@@ -119,10 +170,43 @@ const Document: FC<Props> = ({ node }) => {
   const showStashInfo =
     !node.burnt && nid && nid.split("-")[0] !== subgraphParent?.tokenId;
 
+  if (initializingDrafts)
+    return (
+      <div className="absolute top-0 bottom-0 right-0 left-0 h-100 flex items-center justify-center grow flex-row">
+        <div className="flex items-center flex-col">
+          <span className="loader">
+            <Spinner />
+          </span>
+          <p className="pt-2 font-semibold">Loading Editor...</p>
+        </div>
+      </div>
+    );
+
+  if (initializingDraftsError)
+    return (
+      <div className="absolute top-0 bottom-0 right-0 left-0 h-100 flex items-center justify-center grow flex-row">
+        <div className="flex items-center flex-col">
+          <Error />
+          <p className="pt-2 font-semibold">Could not load Editor.</p>
+          <p className="pt-2">
+            {initializingDraftsError?.error ||
+              initializingDraftsError?.message ||
+              "An unexpected error occurred."}
+          </p>
+        </div>
+      </div>
+    );
+
   return (
     <>
       <div className="pt-2 md:pt-8">
         <div className="content pb-20 mx-auto">
+          {lastPersistErrored && (
+            <p className="text-red-500">
+              <span>Hmmm... somethings up. Your last edit did not save.</span>
+            </p>
+          )}
+
           <div
             className={`flex ${
               node.burnt ? "justify-between" : "justify-end"
@@ -138,8 +222,8 @@ const Document: FC<Props> = ({ node }) => {
               imageDidChange={imageDidChange}
               node={node}
               canEdit={canEdit}
-              allowConnect={!node.tokenId.startsWith("-") && !node.burnt}
-              allowSettings={!node.tokenId.startsWith("-")}
+              allowConnect={!node.tokenId.includes("-") && !node.burnt}
+              allowSettings
               reloadData={reloadData}
             />
           </div>
@@ -153,12 +237,14 @@ const Document: FC<Props> = ({ node }) => {
             formik={formik}
             readOnly={!canEdit || formik.isSubmitting}
           />
-          <div className="pl-2 md:pl-0">
-            <TopicManager
-              formik={formik}
-              readOnly={!canEdit || formik.isSubmitting}
-            />
-          </div>
+          {!isDummyNode && (
+            <div className="pl-2 md:pl-0">
+              <TopicManager
+                formik={formik}
+                readOnly={!canEdit || formik.isSubmitting}
+              />
+            </div>
+          )}
           <Editor
             readOnly={!canEdit || formik.isSubmitting}
             content={formik.values.content}

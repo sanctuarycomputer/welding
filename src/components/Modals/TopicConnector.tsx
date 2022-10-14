@@ -27,7 +27,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
   const { openModal } = useContext(ModalContext);
   const { topics: initialTopics, setTopics: setParentTopics } = meta;
   const [topics, setInternalTopics] = useState(initialTopics);
-  const newTopics = topics.filter((t) => t.tokenId.startsWith("-"));
+  const newTopics = topics.filter((t) => t.tokenId.includes("-"));
 
   const suggestions = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Topic") && !n.burnt)
@@ -94,7 +94,7 @@ const TopicConnector: FC<Props> = ({ isOpen, onRequestClose, meta }) => {
   const attemptClose = () => {
     if (newTopics.length === 0) return onRequestClose();
     if (confirm("Discard unminted topics?")) {
-      setTopics(topics.filter((t) => !t.tokenId.startsWith("-")));
+      setTopics(topics.filter((t) => !t.tokenId.includes("-")));
       onRequestClose();
     }
   };

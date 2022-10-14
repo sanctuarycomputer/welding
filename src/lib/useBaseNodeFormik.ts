@@ -52,7 +52,6 @@ const useBaseNodeFormik = (
   node: BaseNode
 ): FormikProps<BaseNodeFormValues> => {
   const label = node.labels.filter((l) => l !== "BaseNode")[0] || "Document";
-  const draftKey = `-welding:Drafts:${label}:${node.tokenId}`;
 
   const formik = useFormik<BaseNodeFormValues>({
     enableReinitialize: true,
@@ -111,7 +110,7 @@ const useBaseNodeFormik = (
         if (!signer) throw new Error("no_signer_present");
 
         let tx;
-        if (node.tokenId.startsWith("-")) {
+        if (node.tokenId.includes("-")) {
           const belongsTo = values.outgoing.find(
             (e) => e.name === "BELONGS_TO"
           );
@@ -172,9 +171,6 @@ const useBaseNodeFormik = (
         status = PublishStep.COMPLETE;
         formik.setStatus({ status, tx });
         toast.success("Success!", { id });
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem(draftKey);
-        }
         return;
       } catch (e: any) {
         if (e && e?.message === "user_rejected") {
@@ -205,17 +201,23 @@ export const getRelatedNodes = (
   formik: FormikProps<BaseNodeFormValues>,
   relation: "incoming" | "outgoing",
   label: string,
-  name: string
+  name: string,
+  bagOfNodes?: BaseNode[]
 ) => {
   const uniqueTokenIds = new Set();
   return formik.values[relation]
     .map((e: Edge) => {
       if (e.active === false) return null;
       if (e.name !== name) return null;
-      const n = formik.values.related.find(
+      let n = formik.values.related.find(
         (node: BaseNode) => node.tokenId === e.tokenId
       );
-      if (!n) return null;
+      if (!n) {
+        n = (bagOfNodes || []).find(
+          (node: BaseNode) => node.tokenId === e.tokenId
+        );
+        if (!n) return null;
+      }
       if (!n.labels.includes(label)) return null;
       return n;
     })

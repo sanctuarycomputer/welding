@@ -47,6 +47,56 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
     onRequestClose();
   };
 
+  if (meta.node.labels.includes("DummyNode")) {
+    return (
+      <Modal isOpen={true} onRequestClose={attemptClose}>
+        <div className="h-screen sm:h-auto flex flex-col">
+          <ModalHeader
+            title="Settings"
+            hint="Update the settings for this Node"
+            onClickClose={attemptClose}
+          />
+        </div>
+
+        <div className="flex">
+          <nav>
+            <div
+              style={{ height: "55px" }}
+              className={`flex border-b border-color p-4 ${
+                level === SettingsLevel.METADATA ? bgPassive : ""
+              } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+              onClick={() => !locked && setLevel(SettingsLevel.METADATA)}
+            >
+              <Data />
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                Metadata
+              </p>
+            </div>
+            <div
+              style={{ height: "55px" }}
+              className={`flex border-b border-color p-4 ${
+                level === SettingsLevel.BURN ? bgPassive : ""
+              } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+              onClick={() => !locked && setLevel(SettingsLevel.BURN)}
+            >
+              <BurnIcon />
+              <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                Burn
+              </p>
+            </div>
+          </nav>
+
+          <div className="border-l border-color grow">
+            {level === SettingsLevel.METADATA && <Metadata node={meta.node} />}
+            {level === SettingsLevel.BURN && (
+              <Burn node={meta.node} setLocked={setLocked} />
+            )}
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal isOpen={true} onRequestClose={attemptClose}>
       <div className="h-screen sm:h-auto flex flex-col">

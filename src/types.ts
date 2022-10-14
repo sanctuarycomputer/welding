@@ -4,18 +4,23 @@ export type Session = {
   address: string;
 };
 
-export type BaseNodeFormValues = {
+export type PersistedDraft = {
   name: string;
   description: string;
   emoji: BaseEmoji;
   ui: any;
   content?: any;
   image: any;
-  related: BaseNode[];
   outgoing: Edge[];
   incoming: Edge[];
+};
+
+export type Draft = PersistedDraft & {
+  related: BaseNode[];
   __node__: BaseNode;
 };
+
+export type BaseNodeFormValues = Draft;
 
 export type Role = {
   role: null | "0" | "1";
@@ -51,7 +56,7 @@ export type Revision = {
   image: string;
   hash?: string;
   block?: number;
-  metadata?: Metadata;
+  metadata: Metadata;
 };
 
 export type Edge = {

@@ -104,7 +104,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               <ModalProvider>
                 <NavProvider>
                   <ErrorBoundary>
-                    <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex">
+                    <div className="absolute right-0 top-0 pr-2 md:pr-4 py-3 md:py-4 flex z-10">
                       <Wallet />
                     </div>
                     <Component {...pageProps} />

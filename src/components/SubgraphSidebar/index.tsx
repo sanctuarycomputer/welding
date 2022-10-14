@@ -8,6 +8,7 @@ import {
   useCallback,
   ChangeEvent,
 } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
 import type { BaseNodeFormValues, BaseNode } from "src/types";
@@ -50,11 +51,22 @@ const SubgraphSidebar: FC<Props> = ({
   betaIsClosed,
   autoOpenSidebarOnMobile,
 }) => {
+  const { dummyNodes } = useContext(GraphContext);
   const { openModal, closeModal } = useContext(ModalContext);
   const [mobileOpen, setMobileOpen] = useState(autoOpenSidebarOnMobile);
 
   const emoji = formik.values.emoji.native;
   const subgraph = formik.values.__node__;
+
+  const subgraphDummyNodes = dummyNodes.filter((node) => {
+    const nodeType = node.labels.filter((l) => l !== "BaseNode")[0];
+    if (nodeType !== "Document") return false;
+    return !!node.outgoing.find((e) => {
+      return (
+        e.active && e.name === "BELONGS_TO" && e.tokenId === subgraph.tokenId
+      );
+    });
+  });
 
   const topics = getRelatedNodes(subgraph, "incoming", "Topic", "DESCRIBES");
   const documents = getRelatedNodes(
@@ -69,8 +81,8 @@ const SubgraphSidebar: FC<Props> = ({
     "Document",
     "STASHED_BY"
   );
-  const allDocumentNodes = [...documents, ...stashedDocuments];
 
+  const allDocumentNodes = [...documents, ...stashedDocuments];
   const stashedSubgraphs = getRelatedNodes(
     subgraph,
     "incoming",
@@ -139,7 +151,7 @@ const SubgraphSidebar: FC<Props> = ({
     <>
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="absolute pl-2 flex py-4 items-center"
+        className="absolute pl-2 flex py-4 items-center z-10"
       >
         <Menu />
         <p className="ml-1 font-semibold">
@@ -187,7 +199,7 @@ const SubgraphSidebar: FC<Props> = ({
               canEdit ? "cursor-edit" : "pointer-events-none"
             } font-semibold`}
             placeholder={`Subgraph name`}
-            autoFocus={subgraph.tokenId.startsWith("-")}
+            autoFocus={subgraph.tokenId.includes("-")}
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -197,8 +209,8 @@ const SubgraphSidebar: FC<Props> = ({
             node={subgraph}
             canEdit={canEdit}
             imageDidChange={imageDidChange}
-            allowConnect={!subgraph.tokenId.startsWith("-")}
-            allowSettings={!subgraph.tokenId.startsWith("-")}
+            allowConnect={!subgraph.tokenId.includes("-")}
+            allowSettings={!subgraph.tokenId.includes("-")}
             reloadData={reloadData}
           />
         </div>
@@ -247,7 +259,7 @@ const SubgraphSidebar: FC<Props> = ({
               >
                 Documents
               </p>
-              {canEdit && !subgraph.tokenId.startsWith("-") && (
+              {canEdit && !subgraph.tokenId.includes("-") && (
                 <Link href={`/${slugifyNode(subgraph)}/mint`}>
                   <a className="pb-2 text-xs opacity-60 hover:opacity-100">
                     + New
@@ -257,7 +269,14 @@ const SubgraphSidebar: FC<Props> = ({
             </div>
 
             {canEdit
-              ? documentNodes.map((n, i) => renderDocumentLink(n, i))
+              ? documentNodes.map((n, i) =>
+                  renderDocumentLink(
+                    n.tokenId === currentDocument?.tokenId
+                      ? currentDocument
+                      : n,
+                    i
+                  )
+                )
               : documentNodes.map((d) => {
                   const isStashed = stashedDocuments.indexOf(d) > -1;
                   if (d.tokenId === currentDocument?.tokenId) {
@@ -285,12 +304,41 @@ const SubgraphSidebar: FC<Props> = ({
               <div className="flex flex-col items-center py-8 opacity-50">
                 <Document />
                 <p className="pt-1 text-center">
-                  {subgraph.tokenId.startsWith("-")
+                  {subgraph.tokenId.includes("-")
                     ? "Publish this subgraph to start writing."
                     : "No documents (yet)"}
                 </p>
               </div>
             )}
+
+            {subgraphDummyNodes.length > 0 && (
+              <div className="flex justify-between">
+                <p
+                  className={`${textPassive} py-2 font-semibold tracking-wide uppercase`}
+                >
+                  Drafts
+                </p>
+              </div>
+            )}
+            {subgraphDummyNodes.map((s) => {
+              if (s.tokenId === currentDocument?.tokenId)
+                return (
+                  <p key={s.tokenId} className="text-xs font-semibold pb-1">
+                    {currentDocument?.currentRevision.nativeEmoji}{" "}
+                    {currentDocument?.currentRevision.name}
+                  </p>
+                );
+              return (
+                <Link
+                  key={s.tokenId}
+                  href={`/${slugifyNode(subgraph)}/mint?tokenId=${s.tokenId}`}
+                >
+                  <a className="block text-xs pb-1">
+                    {s.currentRevision.nativeEmoji} {s.currentRevision.name}
+                  </a>
+                </Link>
+              );
+            })}
 
             {stashedSubgraphs.length > 0 && (
               <div className="flex justify-between">

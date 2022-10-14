@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useState } from "react";
 import type { BaseNode } from "src/types";
 import { GraphContext } from "src/hooks/useGraphData";
 import useConfirmRouteChange from "src/hooks/useConfirmRouteChange";
@@ -25,13 +25,16 @@ interface Props {
 }
 
 const Subgraph: FC<Props> = ({ node, document }) => {
+  const [currentDocument, setCurrentDocument] = useState<BaseNode | undefined>(
+    document
+  );
   const { formik, imagePreview, imageDidChange, clearImage, reloadData } =
     usePublisher(node);
 
   const { address } = useAccount();
   const { shallowNodes, shallowNodesLoading } = useContext(GraphContext);
   const canEditSubgraph =
-    node.tokenId.startsWith("-") || canEditNode(node, address);
+    node.tokenId.includes("-") || canEditNode(node, address);
 
   const subgraphs = shallowNodes
     ? shallowNodes.filter((n) => n.labels.includes("Subgraph") && !n.burnt)
@@ -49,26 +52,26 @@ const Subgraph: FC<Props> = ({ node, document }) => {
     }
   );
 
-  const showSubgraph = node.tokenId.startsWith("-") ? !!address : true;
+  const showSubgraph = node.tokenId.includes("-") ? !!address : true;
   return (
     <>
       {showSubgraph && (
         <SubgraphSidebar
           formik={formik}
           canEdit={canEditSubgraph}
-          currentDocument={document}
+          currentDocument={currentDocument}
           imagePreview={imagePreview}
           imageDidChange={imageDidChange}
           clearImage={clearImage}
           reloadData={reloadData}
           betaIsClosed={IS_BETA && remainingForBeta === "0"}
-          autoOpenSidebarOnMobile={node.tokenId.startsWith("-")}
+          autoOpenSidebarOnMobile={node.tokenId.includes("-")}
         />
       )}
 
       {document ? (
-        <div className="md:pl-2 md:ml-52 lg:ml-64 pt-14 md:pr-2">
-          <Document node={document} />
+        <div className="md:pl-2 md:ml-52 lg:ml-64 pt-14 md:pr-2 min-h-screen relative">
+          <Document node={document} setCurrentDocument={setCurrentDocument} />
         </div>
       ) : (
         <div

@@ -15,6 +15,9 @@ type RevisionLoadingData = {
 };
 
 interface IGraphData {
+  dummyNodes: BaseNode[];
+  dummyNodesLoading: boolean;
+  loadDummyNodes: () => Promise<void>;
   sessionData: Session | null;
   sessionDataLoading: boolean;
   loadCurrentSession: () => Promise<Session | undefined>;
@@ -40,6 +43,9 @@ interface IGraphData {
 }
 
 const GraphContext = createContext<IGraphData>({
+  dummyNodes: [],
+  dummyNodesLoading: false,
+  loadDummyNodes: async () => undefined,
   sessionData: null,
   sessionDataLoading: false,
   loadCurrentSession: async () => undefined,
@@ -65,6 +71,9 @@ function GraphProvider({ children }) {
   const shallowNodesSubscription = useRef<ObservableQuery<{
     baseNodes: BaseNode[];
   }> | null>(null);
+
+  const [dummyNodes, setDummyNodes] = useState<BaseNode[]>([]);
+  const [dummyNodesLoading, setDummyNodesLoading] = useState<boolean>(true);
 
   const [sessionData, setSessionData] = useState<Session | null>(null);
   const [sessionDataLoading, setSessionDataLoading] = useState<boolean>(true);
@@ -99,27 +108,48 @@ function GraphProvider({ children }) {
     await Client.resetStore();
   };
 
+  const loadDummyNodes = async () => {
+    try {
+      setDummyNodesLoading(true);
+      setDummyNodes(await Client.Drafts.fetchDummyNodes());
+    } catch (e) {
+      Sentry.captureException(e);
+      setDummyNodes([]);
+    } finally {
+      setDummyNodesLoading(false);
+    }
+  };
+
   const loadCurrentSession = async () => {
     try {
       setSessionDataLoading(true);
       const res = await fetch("/api/me");
       const json = await res.json();
       if (json.address) {
+        loadDummyNodes();
         const sessionData = { address: json.address } as Session;
         setSessionData(sessionData);
         return sessionData;
       } else {
         setSessionData(null);
+        flushSessionAndDisconnect();
       }
     } catch (e) {
       Sentry.captureException(e);
       setSessionData(null);
+      flushSessionAndDisconnect();
     } finally {
       setSessionDataLoading(false);
     }
   };
 
   const flushSessionAndDisconnect = async () => {
+    flushSession();
+    disconnect();
+    didDisconnect();
+  };
+
+  const flushSession = async () => {
     try {
       setSessionDataLoading(true);
       await fetch("/api/logout");
@@ -129,8 +159,7 @@ function GraphProvider({ children }) {
       // Do this anyway, for security
       setSessionData(null);
       setSessionDataLoading(false);
-      disconnect();
-      didDisconnect();
+      setDummyNodes([]);
     }
   };
 
@@ -140,6 +169,10 @@ function GraphProvider({ children }) {
       setAccountDataLoading(false);
       setAccountData(null);
       return;
+    }
+
+    if (address !== sessionData?.address && sessionDataLoading === false) {
+      flushSession();
     }
 
     if (accountDataLoading) return;
@@ -221,11 +254,13 @@ function GraphProvider({ children }) {
   return (
     <Provider
       value={{
+        dummyNodes,
+        dummyNodesLoading,
+        loadDummyNodes,
         sessionData,
         sessionDataLoading,
         loadCurrentSession,
         flushSessionAndDisconnect,
-
         accountData,
         accountNodesByCollectionType,
         accountDataLoading,

@@ -1,4 +1,5 @@
 import { FC, useContext } from "react";
+import { GraphContext } from "src/hooks/useGraphData";
 import { ModalContext, ModalType } from "src/hooks/useModal";
 import Link from "next/link";
 import TopicTile from "src/components/TopicTile";
@@ -14,12 +15,19 @@ type Props = {
 
 const TopicManager: FC<Props> = ({ formik, readOnly }) => {
   const { openModal } = useContext(ModalContext);
+  const { shallowNodes } = useContext(GraphContext);
 
   const setTopics = (topics) => {
     stageNodeRelations(formik, "incoming", topics, "DESCRIBES", true);
   };
 
-  const topics = getRelatedNodes(formik, "incoming", "Topic", "DESCRIBES");
+  const topics = getRelatedNodes(
+    formik,
+    "incoming",
+    "Topic",
+    "DESCRIBES",
+    shallowNodes
+  );
 
   return (
     <div className="mb-4">

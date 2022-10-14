@@ -1,6 +1,7 @@
 import truncate from "src/utils/truncate";
 import copyToClipboard from "src/utils/copyToClipboard";
 import Copy from "src/components/Icons/Copy";
+import Uwu from "src/components/Icons/Uwu";
 
 import { useNetwork } from "wagmi";
 import { CONTRACT_ADDRESS } from "src/utils/constants";
@@ -10,6 +11,19 @@ const Metadata = ({ node }) => {
   const explorer = chain?.blockExplorers?.default.url;
   const ipfsLink = `https://ipfs.io/ipfs/${node.currentRevision.hash}/metadata.json`;
   const scanLink = `${explorer}/token/${CONTRACT_ADDRESS}?a=${node.tokenId}`;
+
+  if (node.labels.includes("DummyNode")) {
+    return (
+      <div className="py-16 px-4 text-center flex relative flex-grow justify-center items-center flex-col border-b border-color">
+        <Uwu />
+        <p className="pt-2 font-semibold">
+          This node has not been minted. Mint your first revision to view
+          metadata.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <table className="table-auto w-full">
       <tbody>
