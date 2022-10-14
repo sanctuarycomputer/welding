@@ -18,6 +18,7 @@ import extractTokenIdsFromContentBlocks from "src/utils/extractTokenIdsFromConte
 import { textPassive } from "src/utils/theme";
 import { useAccount } from "wagmi";
 import Spinner from "src/components/Icons/Spinner";
+import Error from "src/components/Icons/Error";
 
 import dynamic from "next/dynamic";
 import { BaseNode } from "src/types";
@@ -58,6 +59,7 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
 
   const {
     initializingDrafts,
+    initializingDraftsError,
     lastPersistErrored,
     draftsPersisting,
     unstageDraft,
@@ -180,6 +182,17 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
       </div>
     );
 
+  if (initializingDraftsError)
+    return (
+      <div className="absolute top-0 bottom-0 right-0 left-0 h-100 flex items-center justify-center grow flex-row">
+        <div className="flex items-center flex-col">
+          <Error />
+          <p className="pt-2 font-semibold">Could not load Editor.</p>
+          <p className="pt-2">{initializingDraftsError?.error || initializingDraftsError?.message || 'An unexpected error occurred.'}</p>
+        </div>
+      </div>
+    );
+
   return (
     <>
       <div className="pt-2 md:pt-8">
@@ -206,7 +219,7 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
               node={node}
               canEdit={canEdit}
               allowConnect={!node.tokenId.includes("-") && !node.burnt}
-              allowSettings={!node.tokenId.includes("-")}
+              allowSettings
               reloadData={reloadData}
             />
           </div>

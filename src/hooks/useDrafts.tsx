@@ -6,6 +6,7 @@ import baseNodeFormikToDraft from "src/utils/baseNodeFormikToDraft";
 import canEditNode from "src/utils/canEditNode";
 import Client from "src/lib/Client";
 import { Draft } from "src/types";
+import * as Sentry from "@sentry/nextjs";
 
 const objectIsEmpty = (obj) =>
   obj &&
@@ -31,6 +32,7 @@ const useDrafts = (formik) => {
 
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
+  const [initializingDraftsError, setInitializingDraftsError] = useState<any | null>(null);
   const [lastPersistErrored, setLastPersistErrored] = useState(false);
   const [drafts, setDrafts] = useState<{ submittedAt: string; draft: Draft }[]>(
     []
@@ -43,6 +45,7 @@ const useDrafts = (formik) => {
 
   const initDrafts = async () => {
     if (sessionDataLoading) {
+      setInitializingDraftsError(null);
       setInitializingDrafts(true);
       unstageDraft();
       setDrafts([]);
@@ -51,6 +54,7 @@ const useDrafts = (formik) => {
 
     if (sessionData?.address && canEdit) {
       try {
+        setInitializingDraftsError(null);
         setInitializingDrafts(true);
         unstageDraft();
         const drafts = await Client.Drafts.forTokenId(node.tokenId, 1);
@@ -64,9 +68,12 @@ const useDrafts = (formik) => {
         setDrafts(drafts);
         setInitializingDrafts(false);
       } catch (e) {
-        // TODO: Sentry
+        setInitializingDraftsError(e);
+        setInitializingDrafts(false);
+        Sentry.captureException(e);
       }
     } else {
+      setInitializingDraftsError(null);
       setInitializingDrafts(false);
     }
   };
@@ -120,6 +127,7 @@ const useDrafts = (formik) => {
 
   return {
     initializingDrafts,
+    initializingDraftsError,
     lastPersistErrored,
     drafts,
     draftsPersisting,
