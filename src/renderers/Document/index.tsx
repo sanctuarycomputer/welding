@@ -188,7 +188,11 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
         <div className="flex items-center flex-col">
           <Error />
           <p className="pt-2 font-semibold">Could not load Editor.</p>
-          <p className="pt-2">{initializingDraftsError?.error || initializingDraftsError?.message || 'An unexpected error occurred.'}</p>
+          <p className="pt-2">
+            {initializingDraftsError?.error ||
+              initializingDraftsError?.message ||
+              "An unexpected error occurred."}
+          </p>
         </div>
       </div>
     );

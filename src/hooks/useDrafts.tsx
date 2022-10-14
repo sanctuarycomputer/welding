@@ -32,7 +32,9 @@ const useDrafts = (formik) => {
 
   const node = formik.values.__node__;
   const [initializingDrafts, setInitializingDrafts] = useState(true);
-  const [initializingDraftsError, setInitializingDraftsError] = useState<any | null>(null);
+  const [initializingDraftsError, setInitializingDraftsError] = useState<
+    any | null
+  >(null);
   const [lastPersistErrored, setLastPersistErrored] = useState(false);
   const [drafts, setDrafts] = useState<{ submittedAt: string; draft: Draft }[]>(
     []

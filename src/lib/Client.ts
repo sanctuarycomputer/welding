@@ -396,7 +396,7 @@ const Client = {
         `${baseHostWithProtocol}/api/drafts?tokenId=${tokenId}&limit=${limit}`
       );
       if (response.ok) return (await response.json()).drafts;
-      throw (await response.json());
+      throw await response.json();
     },
 
     persist: async function (draft: Draft): Promise<boolean> {
