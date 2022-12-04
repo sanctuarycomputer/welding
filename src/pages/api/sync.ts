@@ -24,6 +24,7 @@ const merge = async (e, session) => {
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
             SET rev.block = $block
+          SET rev.block = CASE WHEN rev.block = 0 THEN $block ELSE rev.block END
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           `;
@@ -74,6 +75,7 @@ const merge = async (e, session) => {
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
             SET rev.block = $block
+          SET rev.block = CASE WHEN rev.block = 0 THEN $block ELSE rev.block END
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           `;
@@ -98,6 +100,7 @@ const merge = async (e, session) => {
           MERGE (rev:Revision {hash: $hash})
           ON CREATE
             SET rev.block = $block
+          SET rev.block = CASE WHEN rev.block = 0 THEN $block ELSE rev.block END
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
           WITH n
@@ -324,7 +327,7 @@ export default async function handler(
         return res.status(200).json({ status: "already_processed", cursor });
       }
     }
-
+    
     const { endAt, events } = await Welding.queryEvents(
       null,
       cursor + 1,

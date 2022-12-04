@@ -1,9 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { NFTStorage, File } from "nft.storage";
 import { MetadataProperties } from "src/types";
 import { fileTypeFromBuffer } from "file-type";
 import * as Sentry from "@sentry/nextjs";
+import neo4j from "neo4j-driver";
+
+const driver = neo4j.driver(
+  process.env.NEO4J_URI || "",
+  neo4j.auth.basic(
+    process.env.NEO4J_USERNAME || "",
+    process.env.NEO4J_PASSWORD || ""
+  )
+);
 
 type Data = {
   hash: string;
@@ -19,6 +28,30 @@ export const config = {
       sizeLimit: "10mb",
     },
   },
+};
+
+const prewarmMetadataCache = async function(hash, content) {
+  const writeQ = `MERGE (rev:Revision {hash: $hash})
+    ON CREATE
+      SET rev.block = 0
+    SET rev.name = $name
+    SET rev.description = $description
+    SET rev.image = $image
+    SET rev.nativeEmoji = $nativeEmoji
+    SET rev.content = $content
+    SET rev.contentType = $contentType`;
+  const session = driver.session();
+  await session.writeTransaction((tx) =>
+    tx.run(writeQ, {
+      hash,
+      content: JSON.stringify(content),
+      contentType: "application/json",
+      name: content.name,
+      description: content.description,
+      image: content.image,
+      nativeEmoji: content.properties.emoji.native,
+    })
+  );
 };
 
 const nftstorage = new NFTStorage({
@@ -49,8 +82,8 @@ const makeImageFileForEmoji = async (emoji) => {
   });
 
   return new File(
-    [canvas.toBuffer("image/jpeg", { quality: 1 })],
-    "emoji.jpg",
+    [canvas.toBuffer("image/jpeg", 92)],
+    `welding-emoji-v1-${emoji.unified}.jpg`,
     { type: "image/jpeg" }
   );
 };
@@ -69,50 +102,69 @@ export default async function handler(
   try {
     const { name, description, emoji, ui, content, image } = req.body;
 
+    // Process cover image
     let coverImage = image;
     if (coverImage) {
       if (image.startsWith("ipfs://")) {
-        // If it's an emoji, remake it to ensure it's the correct emoji
-        if (image.endsWith("emoji.jpg")) {
+        const splat = image.split("/");
+        const filename = splat[splat.length - 1];
+
+        if (filename === "emoji.jpg") {
+          // This is our old style of emoji. Let's remake it
+          // so it conforms to the new naming style, which
+          // will result in it being passed forward and reused
+          // in consequtive saves.
           coverImage = await makeImageFileForEmoji(emoji);
         }
+
+        if (
+          filename.startsWith("welding-emoji-v1") && 
+          filename !== `welding-emoji-v1-${emoji.unified}.jpg`
+        ) {
+          // This is our new style of emoji, but the emoji
+          // has changed. Let's remake it.
+          coverImage = await makeImageFileForEmoji(emoji);
+        }
+
+        // If we got here, this image is the correct
+        // emoji, OR it is a custom image previously
+        // uploaded by a user. Leave it as a string.
       } else {
         coverImage = await base64ImageToFile(image);
       }
     } else {
+      // This is the first publish call, so let's generate
+      // the emoji for the first time.
       coverImage = await makeImageFileForEmoji(emoji);
+    }
+
+    if (typeof coverImage !== "string") {
+      // We're generating an emoji share card or
+      // processing a user upload. Let's store it
+      // on IPFS seperately.
+      const coverImageHash = await nftstorage.storeDirectory([coverImage]);
+      coverImage = `ipfs://${coverImageHash}/${coverImage.name || 'emoji.jpg'}`;
     }
 
     const properties: MetadataProperties = { emoji };
     if (content) properties.content = content;
     if (ui) properties.ui = ui;
 
-    if (typeof coverImage === "string") {
-      const metadataFile = new File(
-        [
-          JSON.stringify({
-            image: coverImage,
-            name,
-            description,
-            properties,
-          }),
-        ],
-        "metadata.json",
-        { type: "application/json" }
-      );
-      const hash = await nftstorage.storeDirectory([metadataFile]);
-      return res.status(200).json({ hash });
-    }
-
-    const data = await nftstorage.store({
+    const metadata = {
       image: coverImage,
       name,
       description,
       properties,
-    });
-
-    // TODO: Warm the metadata cache?
-    return res.status(200).json({ hash: data.ipnft });
+    };
+    
+    const metadataFile = new File(
+      [JSON.stringify(metadata)],
+      "metadata.json",
+      { type: "application/json" }
+    );
+    const hash = await nftstorage.storeDirectory([metadataFile]);
+    await prewarmMetadataCache(hash, metadata);
+    return res.status(200).json({ hash });
   } catch (e) {
     console.log(e);
     Sentry.captureException(e);

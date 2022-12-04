@@ -1,14 +1,13 @@
 import { ChangeEvent, useState } from "react";
-import Welding from "src/lib/Welding";
 
 const useEditableImage = (
   formik
 ): [string | null, (e: ChangeEvent<HTMLInputElement>) => void, () => void] => {
   let imageSrc = ``;
   if (formik.values.image) {
-    imageSrc = `${Welding.ipfsGateways[0]}${formik.values.image.replace(
+    imageSrc = `${formik.values.image.replace(
       "ipfs://",
-      "/ipfs/"
+      "/api/ipfs/"
     )}`;
   }
   const [imagePreview, setImagePreview] = useState<string | null>(imageSrc);

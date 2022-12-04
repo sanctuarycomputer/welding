@@ -22,6 +22,7 @@ const NodeImage: FC<Props> = ({
 }) => {
   const isDefault =
     (imagePreview || "").endsWith("emoji.jpg") ||
+    !!(imagePreview || "").match(/ipfs\/(.+)\/welding-emoji-v1-(.+)\.(.+)/gm) ||
     (imagePreview || "").length === 0 ||
     imagePreview === null;
   if (!showDefault && isDefault) return null;

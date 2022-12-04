@@ -15,7 +15,15 @@ const Welding = {
 
   fallbackProvider,
 
-  ipfsGateways: ["https://welding.infura-ipfs.io", "https://gateway.ipfs.io"],
+  ipfsGateways: [
+    "https://welding.infura-ipfs.io", 
+    "https://gateway.ipfs.io", 
+    "https://cloudflare-ipfs.com",
+    "https://ipfs-gateway.cloud",
+    "https://4everland.io",
+    "https://cf-ipfs.com",
+    "https://ipfs.joaoleitao.org",
+  ],
 
   getBlockNumber: async function (
     provider: BaseProvider | null

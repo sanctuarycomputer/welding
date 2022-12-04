@@ -25,6 +25,7 @@ export default async function handler(
     const readResult = await session.readTransaction((tx) =>
       tx.run(readQ, { hash })
     );
+
     if (readResult.records.length) {
       const rev = readResult.records[0].get("rev");
       const { content, contentType, name, description, nativeEmoji, image } =
@@ -74,20 +75,23 @@ export default async function handler(
       }
     }
 
-    const response = await fetch(
-      `${Welding.ipfsGateways[0]}/ipfs/${hash}/metadata.json`
-    );
+    // If all else fails, fallback to a full
+    // load from IPFS. We have no other choice.
+    const response = await Promise.race(Welding.ipfsGateways.map(gateway =>
+      fetch(`${gateway}/ipfs/${hash}/metadata.json`)
+    ));
     if (!response.ok) throw new Error("failed_to_fetch");
     const contentType = response.headers.get("content-type");
     const content = await response.json();
-
     const writeQ = `MERGE (rev:Revision {hash: $hash})
-       SET rev.name = $name
-       SET rev.description = $description
-       SET rev.image = $image
-       SET rev.nativeEmoji = $nativeEmoji
-       SET rev.content = $content
-       SET rev.contentType = $contentType`;
+      ON CREATE
+        SET rev.block = 0
+      SET rev.name = $name
+      SET rev.description = $description
+      SET rev.image = $image
+      SET rev.nativeEmoji = $nativeEmoji
+      SET rev.content = $content
+      SET rev.contentType = $contentType`;
     await session.writeTransaction((tx) =>
       tx.run(writeQ, {
         hash,
