@@ -11,6 +11,36 @@ const driver = neo4j.driver(
   )
 );
 
+const executeFullLoadFromIPFS = async (session, hash) => {
+  const response = await Promise.race(Welding.ipfsGateways.map(gateway =>
+    fetch(`${gateway}/ipfs/${hash}/metadata.json`)
+  ));
+  if (!response.ok) throw new Error("failed_to_fetch");
+  const contentType = response.headers.get("content-type");
+  const content = await response.json();
+  const writeQ = `MERGE (rev:Revision {hash: $hash})
+    ON CREATE
+      SET rev.block = 0
+    SET rev.name = $name
+    SET rev.description = $description
+    SET rev.image = $image
+    SET rev.nativeEmoji = $nativeEmoji
+    SET rev.content = $content
+    SET rev.contentType = $contentType`;
+  await session.writeTransaction((tx) =>
+    tx.run(writeQ, {
+      hash,
+      content: JSON.stringify(content),
+      contentType,
+      name: content.name,
+      description: content.description,
+      image: content.image,
+      nativeEmoji: content.properties.emoji.native,
+    })
+  );
+  return { contentType, content };
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<string | { error: string }>
@@ -25,11 +55,30 @@ export default async function handler(
     const readResult = await session.readTransaction((tx) =>
       tx.run(readQ, { hash })
     );
+
     if (readResult.records.length) {
       const rev = readResult.records[0].get("rev");
       const { content, contentType, name, description, nativeEmoji, image } =
         rev.properties;
       const contentAsJSON = JSON.parse(content);
+
+      // If this revision was a "prewarmed" set,
+      // attempt to fully load it from IPFS. It's OK
+      // if we can't though, we'll just fall back to
+      // what we have for now, and our background sync
+      // job will clean it up later.
+      if (contentAsJSON.image.startsWith("data:image/")) {
+        try {
+          const fullLoad = await executeFullLoadFromIPFS(session, hash);
+          return res
+            .status(200)
+            .setHeader("Content-Type", fullLoad.contentType || "")
+            .send(fullLoad.content);
+        } catch(e) {
+          console.log(e);
+          Sentry.captureException(e);
+        }
+      }
 
       if (!name) {
         const writeNameQ = `MERGE (rev:Revision {hash: $hash})
@@ -74,32 +123,9 @@ export default async function handler(
       }
     }
 
-    const response = await fetch(
-      `${Welding.ipfsGateways[0]}/ipfs/${hash}/metadata.json`
-    );
-    if (!response.ok) throw new Error("failed_to_fetch");
-    const contentType = response.headers.get("content-type");
-    const content = await response.json();
-
-    const writeQ = `MERGE (rev:Revision {hash: $hash})
-       SET rev.name = $name
-       SET rev.description = $description
-       SET rev.image = $image
-       SET rev.nativeEmoji = $nativeEmoji
-       SET rev.content = $content
-       SET rev.contentType = $contentType`;
-    await session.writeTransaction((tx) =>
-      tx.run(writeQ, {
-        hash,
-        content: JSON.stringify(content),
-        contentType,
-        name: content.name,
-        description: content.description,
-        image: content.image,
-        nativeEmoji: content.properties.emoji.native,
-      })
-    );
-
+    // If all else fails, fallback to a full
+    // load from IPFS. We have no other choice.
+    const { contentType, content } = await executeFullLoadFromIPFS(session, hash);
     res
       .status(200)
       .setHeader("Content-Type", contentType || "")

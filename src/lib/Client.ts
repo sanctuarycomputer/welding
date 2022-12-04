@@ -110,6 +110,7 @@ const Client = {
 
   processRevision: async function (revision): Promise<void> {
     if (!revision.content && revision.hash) {
+      console.log("Client.fetchMetadataForHash(revision.hash)", { hash: revision.hash });
       revision.metadata = await Client.fetchMetadataForHash(revision.hash);
       return;
     }
@@ -211,15 +212,18 @@ const Client = {
   fetchBaseNodeByTokenId: async function (
     tokenId: string
   ): Promise<BaseNode | null> {
+    console.log("Client.fetchBaseNodeByTokenId()", { tokenId });
     const tx = Sentry.startTransaction({
       name: "Client.fetchBaseNodeByTokenId()",
     });
     Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(tx));
 
+    console.log("Client.getClient()", { tokenId });
     let span = tx.startChild({ op: "Client.getClient()" });
     const client = await Client.getClient();
     span.finish();
 
+    console.log("client.query()", { tokenId });
     span = tx.startChild({ op: "client.query()" });
     const {
       data: { baseNodes },
@@ -234,18 +238,22 @@ const Client = {
     });
     span.finish();
 
+    console.log("JSON.stringify", { tokenId });
     span = tx.startChild({ op: "JSON.stringify" });
     let baseNode: BaseNode = baseNodes[0];
     if (!baseNode) return null;
     baseNode = JSON.parse(JSON.stringify(baseNode));
     span.finish();
 
+    console.log("Client.processRevision()", { tokenId });
     span = tx.startChild({ op: "Client.processRevision()" });
     await Client.processRevision(baseNode.currentRevision);
     for (const connection of baseNode.related)
       await Client.processRevision(connection.currentRevision);
 
+    console.log("span.finish()", { tokenId });
     span.finish();
+    console.log("tx.finish()", { tokenId });
     tx.finish();
     return baseNode;
   },
