@@ -11,6 +11,13 @@ export const config = {
   },
 };
 
+let baseHostWithProtocol = process.env.NEXT_PUBLIC_BASE_HOST;
+if (baseHostWithProtocol === "localhost:3000") {
+  baseHostWithProtocol = `http://${baseHostWithProtocol}`;
+} else {
+  baseHostWithProtocol = `https://${baseHostWithProtocol}`;
+}
+
 const nftstorage = new NFTStorage({
   token: process.env.NFT_STORAGE_API_KEY || "",
 });
@@ -38,9 +45,8 @@ export default async function handler(
         const file = new File([buffer], files.image.originalFilename, {
           type: files.image.mimetype,
         });
-
-        const cid = await nftstorage.storeBlob(file);
-        const url = `https://welding.infura-ipfs.io/ipfs/${cid}`;
+        const imageHash = await nftstorage.storeDirectory([file]);
+        const url = `${baseHostWithProtocol}/api/ipfs/${imageHash}/${file.name}`;
         return res.status(200).json({
           success: 1,
           file: { url },
