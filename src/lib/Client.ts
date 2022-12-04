@@ -452,14 +452,12 @@ const Client = {
     linkDummyNode: async function (
       tokenId: string,
       onChainTokenId: string
-    ): Promise<BaseNode> {
-      return await (
-        await fetch(`${baseHostWithProtocol}/api/dummyNodes/${tokenId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ onChainTokenId }),
-        })
-      ).json();
+    ): Promise<void> {
+      await fetch(`${baseHostWithProtocol}/api/dummyNodes/${tokenId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onChainTokenId }),
+      });
     },
 
     destroyDummyNode: async function (tokenId: string): Promise<boolean> {
