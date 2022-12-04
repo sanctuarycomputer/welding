@@ -165,7 +165,10 @@ const useBaseNodeFormik = (
         status = PublishStep.CONFIRM;
         formik.setStatus({ status });
         toast.loading("Confirming...", { id });
-        await Client.fastForward(tx.blockNumber, window.location.pathname);
+        await Client.fastForward(
+          tx.blockNumber, 
+          (window.location.pathname.endsWith("/mint") ? undefined : window.location.pathname)
+        );
 
         /* Success */
         status = PublishStep.COMPLETE;
