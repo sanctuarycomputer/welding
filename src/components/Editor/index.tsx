@@ -21,11 +21,92 @@ import Image from "@editorjs/image";
 // import Warning from "@editorjs/warning";
 // import CheckList from "@editorjs/checklist";
 
+class ParagraphCallout extends Paragraph {
+  constructor(...args) {
+    const result = super(...args);
+    ParagraphCallout.tunes.forEach(tune => {
+      result._element.classList.toggle(`${result._CSS.wrapper}--${tune.name}`, !!args[0].data[tune.name]);
+    });
+    return result;
+  }
+
+  save(toolsContent) {
+    return {
+     ...(this.data || {}),
+      text: toolsContent.innerHTML
+    };
+  }
+
+  static get tunes() {
+    return [
+      {
+        name: 'asCallout',
+        icon: `<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M15.8 10.592v2.043h2.35v2.138H15.8v2.232h-2.25v-2.232h-2.4v-2.138h2.4v-2.28h2.25v.237h1.15-1.15zM1.9 8.455v-3.42c0-1.154.985-2.09 2.2-2.09h4.2v2.137H4.15v3.373H1.9zm0 2.137h2.25v3.325H8.3v2.138H4.1c-1.215 0-2.2-.936-2.2-2.09v-3.373zm15.05-2.137H14.7V5.082h-4.15V2.945h4.2c1.215 0 2.2.936 2.2 2.09v3.42z"/></svg>`
+      },
+    ]
+  }
+
+  renderSettings(){
+    const wrapper = document.createElement('div');
+    ParagraphCallout.tunes.forEach( tune => {
+      const button = document.createElement('div');
+      button.classList.add('cdx-settings-button');
+      button.innerHTML = tune.icon;
+      wrapper.appendChild(button);
+      button.addEventListener('click', () => {
+        this._toggleTune(tune.name);
+        button.classList.toggle('cdx-settings-button--active');
+      });
+    });
+
+    return wrapper;
+  }
+
+  _toggleTune(tuneName: string) {
+    // inverse tune state
+    const newValue = !this._data[tuneName];
+    this._data[tuneName] = newValue;
+    this._element.classList.toggle(`${this._CSS.wrapper}--${tuneName}`, newValue);
+  }
+}
+
+class CustomQuote extends Quote {
+  render() {
+    const container = this._make('blockquote', [this.CSS.baseClass, this.CSS.wrapper]);
+    const quote = this._make('div', [this.CSS.input, this.CSS.text], {
+      contentEditable: !this.readOnly,
+      innerHTML: this.data.text,
+    });
+    quote.dataset.placeholder = this.quotePlaceholder;
+    container.appendChild(quote);
+
+    // Disable captions for all new quotes, we'll expect the user
+    // to embed sources in the copy of the quote itself. That's a
+    // better editing experience.
+    if (!["", "<br>"].includes(this.data.caption)) {
+      const caption = this._make('div', [this.CSS.input, this.CSS.caption], {
+        contentEditable: !this.readOnly,
+        innerHTML: this.data.caption,
+      });
+      caption.dataset.placeholder = this.captionPlaceholder;
+      container.appendChild(caption);
+    }
+
+    return container;
+  }
+}
+
 class LinkableHeader extends Header {
   constructor(...args) {
     const result = super(...args);
     this.blockId = args[0]?.block?.id;
     this._element = this.getTag();
+
+    for (let i = 0; i < this.api.blocks.getBlocksCount(); i++) {
+      const block = this.api.blocks.getBlockByIndex(i);
+      if (block.name === "tableOfContents") block.call("sync");
+    }
+
     return result;
   }
 
@@ -62,6 +143,7 @@ class TableOfContents {
 
   sync() {
     const headers = [];
+
     for (let i = 0; i < this.api.blocks.getBlocksCount(); i++) {
       const block = this.api.blocks.getBlockByIndex(i);
       if (block.name === "header") {
@@ -148,8 +230,9 @@ const EDITOR_JS_TOOLS = {
   },
 
   paragraph: {
-    class: Paragraph,
+    class: ParagraphCallout,
     inlineToolbar: true,
+    preserveBlank: true,
   },
 
   embed: {
@@ -192,7 +275,15 @@ const EDITOR_JS_TOOLS = {
       defaultLevel: 1,
     },
   },
-  quote: Quote,
+
+  quote: {
+    class: CustomQuote,
+    inlineToolbar: true,
+    config: {
+      quotePlaceholder: 'Add a pullquote',
+    },
+  },
+
   delimiter: Delimiter,
   inlineCode: InlineCode,
 };

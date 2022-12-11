@@ -7,6 +7,22 @@
   }
 }
 
+.ce-paragraph.cdx-block.ce-paragraph--asCallout {
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.cdx-input.cdx-quote__text {
+  border: none;
+  border-left: 3px solid var(--text-color);
+  border-radius: 0px;
+  padding: 0px 0px 0px 10px;
+  min-height: 0px;
+  font-style: italic;
+  color: var(--text-color-passive);
+}
+
 .ce-toc {
   padding: 1rem 0px;
 }
