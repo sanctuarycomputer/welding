@@ -283,7 +283,7 @@ const attemptNotifySubgraphParent = async (block: number, tokenId: string, sessi
       // Needs:
       // {{Subject}}
       // {{AddressOrENS}}
-      // {{Action}}
+      // {{Body}}
       // {{ImageURL}}
       // {{Title}}
       // {{Description}}

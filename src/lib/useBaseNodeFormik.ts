@@ -178,7 +178,7 @@ const useBaseNodeFormik = (
         toast.loading("Confirming...", { id });
         await Client.fastForward(
           tx.blockNumber,
-          !!broadcast,
+          broadcast ? "tokenId" : false,
           (window.location.pathname.endsWith("/mint") ? undefined : window.location.pathname)
         );
 
