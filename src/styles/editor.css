@@ -7,6 +7,39 @@
   }
 }
 
+.ce-email-signup {
+  border: 1px dashed var(--border-color);
+  padding: 1rem;
+  margin: 1rem auto;
+  border-radius: 4px;
+  max-width: 360px;
+}
+
+.ce-email-signup__input {
+  margin-bottom: 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.ce-email-signup__button {
+  border-radius: 2px;
+  background-color: var(--text-color-passive);
+  color: var(--dark);
+  width: 100%;
+  padding: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.ce-email-signup__button:hover {
+  background-color: var(--text-color);
+}
+
 .ce-paragraph.cdx-block.ce-paragraph--asCallout {
   border: 1px solid var(--border-color);
   padding: 1rem;

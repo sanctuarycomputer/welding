@@ -3,6 +3,9 @@ import * as Sentry from "@sentry/nextjs";
 import neo4j from "neo4j-driver";
 import Welding from "src/lib/Welding";
 import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
+import sendgridClient from '@sendgrid/client';
+
+sendgridClient.setApiKey(process.env.SENDGRID_API_KEY || "");
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || "",
@@ -264,6 +267,49 @@ const merge = async (e, session) => {
   }
 };
 
+const attemptNotifySubgraphParent = async (block: number, tokenId: string, session) => {
+  const q = `MATCH (sender)-[:_PUBLISHES]-(rev:Revision)-[:_REVISES {block: $block}]->(n:BaseNode {tokenId: $tokenId})-[:BELONGS_TO]->(s:Subgraph)
+    RETURN sender, rev, n, s.sendgridListId`;
+  const results = await session.readTransaction((tx) =>
+    tx.run(q, { block, tokenId })
+  );
+
+  if (results.records[0]) {
+    const sendgridListId = results.records[0].get('s.sendgridListId');
+    if (!sendgridListId || sendgridListId.length === 0) return;
+
+    try {
+      
+      // Needs:
+      // {{Subject}}
+      // {{AddressOrENS}}
+      // {{Action}}
+      // {{ImageURL}}
+      // {{Title}}
+      // {{Description}}
+      
+      const res = await sendgridClient.request({
+        url: `/v3/marketing/singlesends`,
+        method: 'POST',
+        body: {
+          name: "Some Singlesend Name",
+          send_at: (new Date()).toISOString(),
+          send_to: {
+            list_ids: [sendgridListId]
+          },
+          email_config: {
+            design_id: "20a46fa2-9c33-4960-9b33-be9892cf1d4e",
+            sender_id: 4694974,
+          }
+        }
+      })
+      console.log(res);
+    } catch(e) {
+      console.log(e.response.body);
+    }
+  }
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -272,6 +318,8 @@ export default async function handler(
     let { path } = req.query;
     path = (Array.isArray(path) ? path[0] : path) || "";
     const session = driver.session();
+
+    // TODO: unique index on sendgridListId
 
     //if (false) {
     //  const flushQ1 = `OPTIONAL MATCH (a)-[r]->() DELETE a, r`;
@@ -311,7 +359,7 @@ export default async function handler(
     const latestBlock = await Welding.getBlockNumber(null);
 
     // If we're ensuring that our cursor is up to a point
-    const { ensure } = req.query;
+    const { ensure, notify } = req.query;
     let ensureInt = latestBlock;
     if (ensure) {
       ensureInt = parseInt(Array.isArray(ensure) ? ensure[0] : ensure);
@@ -320,6 +368,13 @@ export default async function handler(
       if (cursor >= ensureInt) {
         try {
           if (path) await res.revalidate(path);
+          if (notify && notify !== "false") {
+            await attemptNotifySubgraphParent(
+              parseInt(Array.isArray(ensure) ? ensure[0] : ensure),
+              Array.isArray(notify) ? notify[0] : notify,
+              session
+            );
+          }
         } catch (e) {
           console.log(e);
           Sentry.captureException(e);
@@ -350,6 +405,11 @@ export default async function handler(
 
     try {
       if (path) await res.revalidate(path);
+
+      // TODO: Better notify d
+      if (ensure && notify !== "false") {
+        //await attemptNotifySubgraphParent(parseInt(Array.isArray(ensure) ? ensure[0] : ensure));
+      }
     } catch (e) {
       console.log(e);
       Sentry.captureException(e);

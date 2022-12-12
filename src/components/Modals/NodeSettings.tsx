@@ -8,12 +8,14 @@ import TeamIcon from "src/components/Icons/Team";
 import History from "src/components/Icons/History";
 import FeeIcon from "src/components/Icons/Fee";
 import BurnIcon from "src/components/Icons/Burn";
+import MailingListIcon from "src/components/Icons/MailingList";
 
 import Metadata from "src/components/Metadata";
 import Revisions from "src/components/Revisions";
 import Fee from "src/components/Fee";
 import Team from "src/components/Team";
 import Burn from "src/components/Burn";
+import MailingList from "src/components/MailingList";
 import { bgPassive } from "src/utils/theme";
 import { BaseNode } from "src/types";
 
@@ -34,6 +36,7 @@ enum SettingsLevel {
   HISTORY = "HISTORY",
   METADATA = "METADATA",
   FEE = "FEE",
+  LIST = "LIST",
   BURN = "BURN",
 }
 
@@ -156,6 +159,22 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
                 Connection Fee
               </p>
             </div>
+
+            {meta.node.labels.includes("Subgraph") && (
+              <div
+                style={{ height: "55px" }}
+                className={`flex border-b border-color p-4 ${
+                  level === SettingsLevel.LIST ? bgPassive : ""
+                } ${locked ? "cursor-progress" : "cursor-pointer"}`}
+                onClick={() => !locked && setLevel(SettingsLevel.LIST)}
+              >
+                <MailingListIcon />
+                <p className="pl-2 font-semibold whitespace-nowrap hidden sm:block">
+                  Mailing List
+                </p>
+              </div>
+            )}
+
             <div
               style={{ height: "55px" }}
               className={`flex border-b border-color p-4 ${
@@ -183,6 +202,9 @@ const NodeSettings: FC<Props> = ({ onRequestClose, meta }) => {
             {level === SettingsLevel.HISTORY && <Revisions node={meta.node} />}
             {level === SettingsLevel.FEE && (
               <Fee node={meta.node} setLocked={setLocked} />
+            )}
+            {level === SettingsLevel.LIST && (
+              <MailingList node={meta.node} currentAddress={address || ""} setLocked={setLocked} locked={locked} />
             )}
             {level === SettingsLevel.BURN && (
               <Burn node={meta.node} setLocked={setLocked} />

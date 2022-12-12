@@ -132,11 +132,12 @@ const Client = {
 
   fastForward: async function (
     blockNumber: number,
-    path?: string
+    notify: string | boolean,
+    path?: string,
   ): Promise<void> {
     const response = await retry(
       async () => {
-        let url = `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}`;
+        let url = `${baseHostWithProtocol}/api/sync?ensure=${blockNumber}&notify=${notify}`;
         if (path) url = `${url}&path=${path}`;
         return await fetch(url);
       },
