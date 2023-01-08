@@ -4,6 +4,7 @@ import neo4j from "neo4j-driver";
 import Welding from "src/lib/Welding";
 import capitalizeFirstLetter from "src/utils/capitalizeFirstLetter";
 import sendgridClient from '@sendgrid/client';
+import findOrCreateListForNodeId from "src/utils/findOrCreateListForNodeId";
 
 sendgridClient.setApiKey(process.env.SENDGRID_API_KEY || "");
 
@@ -81,9 +82,10 @@ const merge = async (e, session) => {
           SET rev.block = CASE WHEN rev.block = 0 THEN $block ELSE rev.block END
           MERGE (sender:Account {address: $sender})
           MERGE (sender)-[:_PUBLISHES]->(rev)-[:_REVISES {block: $block}]->(n)
+          RETURN n.sendgridListId
           `;
 
-      await session.writeTransaction((tx) =>
+      const reviseResult = await session.writeTransaction((tx) =>
         tx.run(q, {
           tokenId: args.tokenId.toString(),
           hash: args.hash,
@@ -91,6 +93,12 @@ const merge = async (e, session) => {
           sender: args.sender,
         })
       );
+
+      if (reviseResult.records.length && reviseResult.records[0].get('n.sendgridListId')) {
+        await findOrCreateListForNodeId(args.tokenId.toString());
+      }
+
+      console.log(reviseResult.records[0]);
 
       break;
     }
