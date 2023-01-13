@@ -287,15 +287,6 @@ const attemptNotifySubgraphParent = async (block: number, tokenId: string, sessi
     if (!sendgridListId || sendgridListId.length === 0) return;
 
     try {
-      
-      // Needs:
-      // {{Subject}}
-      // {{AddressOrENS}}
-      // {{Body}}
-      // {{ImageURL}}
-      // {{Title}}
-      // {{Description}}
-      
       const res = await sendgridClient.request({
         url: `/v3/marketing/singlesends`,
         method: 'POST',
