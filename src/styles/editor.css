@@ -27,7 +27,7 @@
 .ce-email-signup__button {
   border-radius: 2px;
   background-color: var(--text-color-passive);
-  color: var(--dark);
+  color: var(--background-color);
   width: 100%;
   padding: 4px;
   font-size: 0.75rem;

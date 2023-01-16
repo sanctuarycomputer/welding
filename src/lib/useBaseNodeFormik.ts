@@ -76,10 +76,6 @@ const useBaseNodeFormik = (
       try {
         if (!signer) throw new Error("no_signer_present");
 
-        const belongsTo = values.outgoing.find(
-          (e) => e.name === "BELONGS_TO"
-        );
-
         status = PublishStep.INIT;
         const notifyTokenId = await new Promise<string>((resolve, reject) => {
           formik.setStatus({
@@ -126,6 +122,9 @@ const useBaseNodeFormik = (
 
         let tx;
         if (node.tokenId.includes("-")) {
+          const belongsTo = values.outgoing.find(
+            (e) => e.name === "BELONGS_TO"
+          );
           tx = await Welding.Nodes.connect(signer).mint(
             label,
             hash,

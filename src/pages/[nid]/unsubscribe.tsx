@@ -88,8 +88,8 @@ const NodeUnsubscribe: FC<Props> = ({ node }) => {
                   <Button
                     label="Unsubscribe"
                     disabled={
-                      formik.isSubmitting /*||
-                      !(formik.isValid && !formik.dirty)*/
+                      formik.isSubmitting ||
+                      !(formik.isValid && formik.dirty)
                     }
                     onClick={formik.handleSubmit}
                   />
@@ -123,7 +123,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
   let givenNidSlug = context.params?.nid;
   givenNidSlug =
     (Array.isArray(givenNidSlug) ? givenNidSlug[0] : givenNidSlug) || "";
-
   if (
     givenNidSlug !== slugifyNode(node)
   ) {

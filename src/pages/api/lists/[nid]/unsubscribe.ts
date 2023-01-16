@@ -38,8 +38,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           body: { emails: [email] }
         });
 
-        if (!result[email]) 
-          return res.status(404).json({ error: "not_found" });
+        if (!result[email]) return res.send({ status: "ok" });
 
         await sendgridClient.request({
           url: `/v3/marketing/lists/${listId}/contacts`,
@@ -54,7 +53,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch(e) {
-    console.log(e);
+    if (e.code === 404) return res.send({ status: "ok" });
+
     Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
