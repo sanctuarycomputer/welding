@@ -229,7 +229,7 @@ export const getRelatedNodes = (
   name: string,
   bagOfNodes?: BaseNode[]
 ) => {
-  const uniqueTokenIds = new Set();
+  const uniqueTokenIds = new Set();  
   return formik.values[relation]
     .map((e: Edge) => {
       if (e.active === false) return null;
