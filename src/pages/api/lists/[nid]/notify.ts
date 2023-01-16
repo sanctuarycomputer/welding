@@ -200,7 +200,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch(e) {
-    console.log(e.response.body.errors);
+    console.log(e);
     Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
