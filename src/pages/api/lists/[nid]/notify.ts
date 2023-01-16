@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { withIronSessionApiRoute } from "iron-session/next";
 import rateLimit from 'src/utils/rateLimit';
 import sendgridClient from '@sendgrid/client';
 import * as Sentry from "@sentry/nextjs";
@@ -7,6 +8,7 @@ import neo4j from "neo4j-driver";
 import { fetchEnsName } from "@wagmi/core";
 import truncate from "src/utils/truncate";
 import queryCanEditNode from "src/utils/queryCanEditNode";
+import { IRON_OPTIONS } from "src/utils/constants";
 
 sendgridClient.setApiKey(process.env.SENDGRID_API_KEY || "");
 
@@ -166,7 +168,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             email_config: {
               subject: `${sender} ${action} ${nativeEmoji} ${name}`,
               html_content: html,
-              sender_id: 4694974,
+              sender_id: parseInt(process.env.SENDGRID_SENDER_ID || "0"),
               custom_unsubscribe_url: unsubscribeLink
             }
           }
@@ -198,7 +200,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch(e) {
-    console.log(e);
+    console.log(e.response.body.errors);
     Sentry.captureException(e);
     if (e instanceof Error) {
       return res.status(500).json({ error: e.message || "unexpected" });
@@ -207,4 +209,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default handler;
+export default withIronSessionApiRoute(handler, IRON_OPTIONS);
