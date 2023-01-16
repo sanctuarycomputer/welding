@@ -34,6 +34,7 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
   COMPLETE = "COMPLETE",
   ERROR = "ERROR",
+  NOTIFY = "NOTIFY",
 }
 
 const PublisherStep: FC<{
@@ -256,7 +257,7 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
 
 const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
   const { status, error, resolve, reject } = formik.status || {};
-  const [shouldBroadcast, setShouldBroadcast] = useState<boolean>(false);
+  const [shouldNotify, setShouldNotify] = useState<string | null>(null);
 
   const subgraphParent = getRelatedNodes(
     formik,
@@ -312,15 +313,21 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
                     <input
                       className="align-middle inline-block max-w-[20px]"
                       type="checkbox"
-                      checked={shouldBroadcast}
-                      onChange={() => setShouldBroadcast(!shouldBroadcast)}
+                      checked={shouldNotify !== null}
+                      onChange={() => {
+                        if (shouldNotify === null) {
+                          setShouldNotify(subgraphParent.tokenId)
+                        } else {
+                          setShouldNotify(null)
+                        }
+                      }}
                     />
-                    <p className="align-middle inline-block">Notify <span className={`${bgPassive} rounded-full whitespace-nowrap px-2 py-1`}>{subgraphParent.currentRevision.nativeEmoji} {subgraphParent.currentRevision.name}</span> Mailing List</p>
+                    <p className="align-middle inline-block">Notify <span className={`${bgPassive} rounded-full whitespace-nowrap px-2 py-1`}>{subgraphParent.currentRevision.nativeEmoji} {subgraphParent.currentRevision.name}</span> email subscribers of this action</p>
                   </label>
                 ): (
                   <p className={textPassive}>Click confirm to continue</p>
                 )}
-                <Button label="Confirm" onClick={() => resolve(shouldBroadcast)} disabled={false} />
+                <Button label="Confirm" onClick={() => resolve(shouldNotify)} disabled={false} />
               </div>
             </div>
           </PublisherStep>
@@ -372,6 +379,16 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
             active={status === PublishStep.CONFIRM}
             error={error}
           />
+
+          {shouldNotify && (
+            <PublisherStep
+              icon={hasConnectionChanges ? "⑥" : "⑤"}
+              title="Notify Subscribers"
+              description="We're notifiying your subscribers of this action."
+              active={status === PublishStep.NOTIFY}
+              error={error}
+            />
+          )}
         </div>
       </div>
     </Modal>

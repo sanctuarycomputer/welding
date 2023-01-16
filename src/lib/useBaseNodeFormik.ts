@@ -22,6 +22,7 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
   COMPLETE = "COMPLETE",
   ERROR = "ERROR",
+  NOTIFY = "NOTIFY"
 }
 
 const feesRequired = (formik, accountData) => {
@@ -75,15 +76,18 @@ const useBaseNodeFormik = (
       try {
         if (!signer) throw new Error("no_signer_present");
 
+        const belongsTo = values.outgoing.find(
+          (e) => e.name === "BELONGS_TO"
+        );
+
         status = PublishStep.INIT;
-        const broadcast = await new Promise((resolve, reject) => {
+        const notifyTokenId = await new Promise<string>((resolve, reject) => {
           formik.setStatus({
             status,
             resolve,
             reject,
           });
         });
-        console.log("broadcast:", broadcast);
 
         const incomingDiff: any = detailedDiff(node.incoming, values.incoming);
         const hasConnectionChanges =
@@ -122,9 +126,6 @@ const useBaseNodeFormik = (
 
         let tx;
         if (node.tokenId.includes("-")) {
-          const belongsTo = values.outgoing.find(
-            (e) => e.name === "BELONGS_TO"
-          );
           tx = await Welding.Nodes.connect(signer).mint(
             label,
             hash,
@@ -178,9 +179,19 @@ const useBaseNodeFormik = (
         toast.loading("Confirming...", { id });
         await Client.fastForward(
           tx.blockNumber,
-          broadcast ? "tokenId" : false,
           (window.location.pathname.endsWith("/mint") ? undefined : window.location.pathname)
         );
+
+        /* Broadcast */
+        if (notifyTokenId) {
+          status = PublishStep.NOTIFY;
+          formik.setStatus({ status });
+          toast.loading("Notifying Subscribers...", { id });
+          await Client.notify(
+            notifyTokenId,
+            tx.blockNumber
+          );
+        }
 
         /* Success */
         status = PublishStep.COMPLETE;

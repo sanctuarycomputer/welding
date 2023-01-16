@@ -6,6 +6,7 @@ import Welding from "src/lib/Welding";
 import neo4j from "neo4j-driver";
 import { fetchEnsName } from "@wagmi/core";
 import truncate from "src/utils/truncate";
+import queryCanEditNode from "src/utils/queryCanEditNode";
 
 sendgridClient.setApiKey(process.env.SENDGRID_API_KEY || "");
 
@@ -75,24 +76,35 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     switch (method) {
       case "POST":
-        // TODO: Auth user against subgraphId
-
-        const block = req.body.blockNumber;
+        const block = req.body.block;
         const events = await Welding.queryEventsByBlockRange(block, block);
+
+        // @ts-ignore
         const e = events.filter(e => ['Mint', 'Revise'].includes(e.event))[0];
         if (!e) 
           return res.send({ status: "no_send" });
+        
+        // @ts-ignore
+        const tokenId = e.args.tokenId.toString();
+        // @ts-ignore
+        const senderAddress = e.args.sender;
+        // @ts-ignore
+        const event = e.event;
 
-        // Auth user against e.args.tokenId.toString()
+        if (
+          !(await queryCanEditNode(tokenId, req.session.siwe?.address))
+        ) {
+          throw new Error("insufficient_permissions");
+        }
 
         const session = driver.session();
-        const readQ = `MATCH (r:Revision)-[:_REVISES {block: $block}]->(n:BaseNode {tokenId: $tokenId})-[:BELONGS_TO]->(p:BaseNode {tokenId: $parentTokenId})
-          RETURN p.sendgridListId, labels(n), r.nativeEmoji, r.image, r.name, r.description
+        const readQ = `MATCH (r:Revision)-[rev:_REVISES {block: $block}]->(n:BaseNode {tokenId: $tokenId})-[:BELONGS_TO]->(p:BaseNode {tokenId: $parentTokenId})
+          RETURN p.sendgridListId, labels(n), r.nativeEmoji, r.image, r.name, r.description, rev.notifiedAt
         `;
 
         const readResult = await session.readTransaction((tx) =>
           tx.run(readQ, { 
-            tokenId: e.args.tokenId.toString(),
+            tokenId,
             parentTokenId: req.query.nid, 
             block
           })
@@ -106,6 +118,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         if (!sendgridListId) 
           return res.send({ status: "no_send" });
 
+        const notifiedAt = record.get('rev.notifiedAt');
+        if (notifiedAt) 
+          return res.send({ status: "no_send" });
+
         const label = record.get('labels(n)').filter(l => l !== "BaseNode")[0];
         const nativeEmoji = record.get('r.nativeEmoji');
         const image = record.get('r.image');
@@ -114,23 +130,21 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         const unsubscribeLink = `https://www.welding.app/${req.query.nid}/unsubscribe`;
 
         const ensName = await fetchEnsName({
-          address: e.args.sender,
+          address: senderAddress,
           chainId: 1,
         });
-
-        // TODO: Return early if no sendgridListId
 
         const imageSrc = `https://www.welding.app${image.replace(
           "ipfs://",
           "/api/ipfs/"
         )}`;
 
-        const sender = ensName ? ensName : truncate(e.args.sender || "null", 6);
-        const action = e.event === "Mint" ? "published" : "revised";
+        const sender = ensName ? ensName : truncate(senderAddress || "null", 6);
+        const action = event === "Mint" ? "published" : "revised";
 
         const html = makeNotificationHTML(
           action,
-          `https://www.welding.app/${req.query.nid}/${e.args.tokenId.toString()}`,
+          `https://www.welding.app/${req.query.nid}/${tokenId}`,
           label,
           imageSrc,
           `${nativeEmoji} ${name}`,
@@ -139,29 +153,43 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           sender
         );
 
+        const now = (new Date()).toISOString();
         const [,singleSend] = await sendgridClient.request({
           url: `/v3/marketing/singlesends`,
           method: 'POST',
           body: {
-            name: "Notification Relating to Block Number: 1234",
-            send_at: (new Date()).toISOString(),
+            name: `Block: ${block}, List Owner: ${req.query.nid}, Token: ${tokenId}`,
+            send_at: now,
             send_to: {
               list_ids: [sendgridListId]
             },
             email_config: {
-              subject: `${sender} ${action} a ${label} called ${nativeEmoji} ${name}`,
+              subject: `${sender} ${action} ${nativeEmoji} ${name}`,
               html_content: html,
               sender_id: 4694974,
               custom_unsubscribe_url: unsubscribeLink
             }
           }
-        })
+        });
 
         await sendgridClient.request({
           url: `/v3/marketing/singlesends/${singleSend.id}/schedule`,
           method: 'PUT',
           body: { send_at: "now"}
-        })
+        });
+
+        const writeQ = `MATCH (r:Revision)-[rev:_REVISES {block: $block}]->(n:BaseNode {tokenId: $tokenId})-[:BELONGS_TO]->(p:BaseNode {tokenId: $parentTokenId})
+          SET rev.notifiedAt = $notifiedAt
+        `;
+
+        await session.readTransaction((tx) =>
+          tx.run(writeQ, { 
+            tokenId,
+            parentTokenId: req.query.nid, 
+            block,
+            notifiedAt: now
+          })
+        );
 
         return res.send({ status: "ok" });
         
