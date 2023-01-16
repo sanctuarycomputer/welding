@@ -53,7 +53,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch(e) {
-    if (e.code === 404) return res.send({ status: "ok" });
+    // @ts-ignore
+    if (e && e.code === 404) return res.send({ status: "ok" });
 
     Sentry.captureException(e);
     if (e instanceof Error) {
