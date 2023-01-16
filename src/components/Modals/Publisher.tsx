@@ -6,6 +6,7 @@ import { formatUnits } from "ethers/lib/utils";
 import { useNetwork } from "wagmi";
 import Modal from "react-modal";
 
+import { getRelatedNodes } from "src/lib/useBaseNodeFormik";
 import Button from "src/components/Button";
 import ModalHeader from "src/components/Modals/ModalHeader";
 import Spinner from "src/components/Icons/Spinner";
@@ -25,6 +26,7 @@ type Props = {
 };
 
 enum PublishStep {
+  INIT = "INIT",
   FEES = "FEES",
   PUBLISH = "PUBLISH",
   REQUEST_SIG = "REQUEST_SIG",
@@ -32,6 +34,7 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
   COMPLETE = "COMPLETE",
   ERROR = "ERROR",
+  NOTIFY = "NOTIFY",
 }
 
 const PublisherStep: FC<{
@@ -254,9 +257,17 @@ const ConnectionDiff = ({ formik, incomingDiff, resolve }) => {
 
 const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
   const { status, error, resolve, reject } = formik.status || {};
+  const [shouldNotify, setShouldNotify] = useState<string | null>(null);
+
+  const subgraphParent = getRelatedNodes(
+    formik,
+    "outgoing",
+    "Subgraph",
+    "BELONGS_TO"
+  )[0];
 
   const attemptClose = () => {
-    if (error || status === PublishStep.FEES) {
+    if (error || status === PublishStep.FEES || status === PublishStep.INIT) {
       formik.setStatus(null);
       if (reject) reject(new Error("user_rejected"));
       return onRequestClose();
@@ -281,6 +292,46 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
         />
 
         <div className="p-4">
+          <PublisherStep
+            icon="⓪"
+            title="Acknowledgement"
+            description=""
+            active={status === PublishStep.INIT}
+            error={error}
+          >
+            <div className="w-full overflow-x-scroll">
+              {node.tokenId.includes('-') ? (
+                <p className="mb-2"><strong>Important:</strong> You&apos;re about to mint an NFT.</p>
+              ) : (
+                <p className="mb-2"><strong>Important:</strong> You&apos;re about apply a revision to this NFT.</p>
+              )}
+              <p className="mb-4">Your content will be persisted publically on permanent internet, and your NFT will automatically appear in compatible wallets and websites (like <a className="underline" href="https://opensea.io/collection/welding-app" target="_blank" rel="noreferrer">OpenSea</a>).</p>
+
+              <div className="border-t border-color pt-3 text-right flex justify-between items-center">
+                {subgraphParent ? (
+                  <label className="whitespace-nowrap cursor-pointer">
+                    <input
+                      className="align-middle inline-block max-w-[20px]"
+                      type="checkbox"
+                      checked={shouldNotify !== null}
+                      onChange={() => {
+                        if (shouldNotify === null) {
+                          setShouldNotify(subgraphParent.tokenId)
+                        } else {
+                          setShouldNotify(null)
+                        }
+                      }}
+                    />
+                    <p className="align-middle inline-block">Notify <span className={`${bgPassive} rounded-full whitespace-nowrap px-2 py-1`}>{subgraphParent.currentRevision.nativeEmoji} {subgraphParent.currentRevision.name}</span> email subscribers of this action</p>
+                  </label>
+                ): (
+                  <p className={textPassive}>Click confirm to continue</p>
+                )}
+                <Button label="Confirm" onClick={() => resolve(shouldNotify)} disabled={false} />
+              </div>
+            </div>
+          </PublisherStep>
+
           {hasConnectionChanges && (
             <PublisherStep
               icon="①"
@@ -328,6 +379,16 @@ const Publisher: FC<Props> = ({ onRequestClose, meta: { formik } }) => {
             active={status === PublishStep.CONFIRM}
             error={error}
           />
+
+          {shouldNotify && (
+            <PublisherStep
+              icon={hasConnectionChanges ? "⑥" : "⑤"}
+              title="Notify Subscribers"
+              description="We're notifiying your subscribers of this action."
+              active={status === PublishStep.NOTIFY}
+              error={error}
+            />
+          )}
         </div>
       </div>
     </Modal>

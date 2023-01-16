@@ -251,6 +251,7 @@ const Document: FC<Props> = ({ node, setCurrentDocument }) => {
             contentDidChange={(content) =>
               formik.setFieldValue("content", content)
             }
+            formik={formik}
           />
 
           {references.length > 0 && (

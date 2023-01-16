@@ -132,7 +132,7 @@ const Client = {
 
   fastForward: async function (
     blockNumber: number,
-    path?: string
+    path?: string,
   ): Promise<void> {
     const response = await retry(
       async () => {
@@ -143,6 +143,19 @@ const Client = {
       { retries: 3 }
     );
     if (!response.ok) throw new Error("could_not_fastforward");
+  },
+
+  notify: async function (
+    listOwnerTokenId: string,
+    block: number,
+  ): Promise<boolean> {
+    const response = await fetch(`${baseHostWithProtocol}/api/lists/${listOwnerTokenId}/notify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ block }),
+    });
+    if (!response.ok) throw new Error("could_not_notify");
+    return response.ok;
   },
 
   makeShallowNodesSubscription: async function (): Promise<

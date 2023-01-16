@@ -13,6 +13,7 @@ import { notEmpty } from "src/utils/predicates";
 import DEFAULT_EMOJI from "src/utils/defaultEmoji";
 
 enum PublishStep {
+  INIT = "INIT",
   RESOLVE = "RESOLVE",
   FEES = "FEES",
   PUBLISH = "PUBLISH",
@@ -21,6 +22,7 @@ enum PublishStep {
   CONFIRM = "CONFIRM",
   COMPLETE = "COMPLETE",
   ERROR = "ERROR",
+  NOTIFY = "NOTIFY"
 }
 
 const feesRequired = (formik, accountData) => {
@@ -73,6 +75,15 @@ const useBaseNodeFormik = (
 
       try {
         if (!signer) throw new Error("no_signer_present");
+
+        status = PublishStep.INIT;
+        const notifyTokenId = await new Promise<string>((resolve, reject) => {
+          formik.setStatus({
+            status,
+            resolve,
+            reject,
+          });
+        });
 
         const incomingDiff: any = detailedDiff(node.incoming, values.incoming);
         const hasConnectionChanges =
@@ -166,9 +177,20 @@ const useBaseNodeFormik = (
         formik.setStatus({ status });
         toast.loading("Confirming...", { id });
         await Client.fastForward(
-          tx.blockNumber, 
+          tx.blockNumber,
           (window.location.pathname.endsWith("/mint") ? undefined : window.location.pathname)
         );
+
+        /* Broadcast */
+        if (notifyTokenId) {
+          status = PublishStep.NOTIFY;
+          formik.setStatus({ status });
+          toast.loading("Notifying Subscribers...", { id });
+          await Client.notify(
+            notifyTokenId,
+            tx.blockNumber
+          );
+        }
 
         /* Success */
         status = PublishStep.COMPLETE;
